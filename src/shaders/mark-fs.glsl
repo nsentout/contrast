@@ -1,5 +1,4 @@
 in vec2 f_pos;
-in vec2 f_size;
 in vec3 f_color;
 
 out vec4 frag;

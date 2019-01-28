@@ -10,38 +10,16 @@ use luminance_glfw::event::{Action, Key, WindowEvent};
 use luminance_glfw::surface::{GlfwSurface, Surface, WindowDim, WindowOpt};
 use luminance::context::GraphicsContext;
 
+use contrast::MarkTrait;
 use contrast::Mark;
-use contrast::MarkRectangle;
-use contrast::Vertex;
+use contrast::MarkProperty;
 use contrast::MarksManager;
+use contrast::Shape;
 
 // we get the shaders at compile time 
 const VS: &'static str = include_str!("shaders/mark-vs.glsl");
 const FS: &'static str = include_str!("shaders/mark-fs.glsl");
 const GS: &'static str = include_str!("shaders/mark-gs.glsl");
-//const VS: &'static str = include_str!("shaders/prototype/marks.vert");
-//const FS: &'static str = include_str!("shaders/prototype/marks.frag");
-//const GS: &'static str = include_str!("shaders/prototype/marks.geom");
-
-// 2D position ([f32; 2]), a RGB color ([f32; 3]) and a size ([f32; 2])
-/*
-type Vertex = ([f32; 2], [f32; 2], [f32; 3], u32);
-
-const WIDTH_RECT: f32 = 0.1;
-const HEIGHT_RECT: f32 = 0.2;
-
-const TRI_VERTICES: [Vertex2; 9] = [
-    ([-0.5, 0.5], [WIDTH_RECT, HEIGHT_RECT], [1., 0., 0.], 1),
-    ([ 0.0, 0.5], [WIDTH_RECT, HEIGHT_RECT], [0., 1., 0.], 2),
-    ([ 0.5, 0.5], [WIDTH_RECT, HEIGHT_RECT], [0., 0., 1.], 3),
-    ([-0.5, 0.0], [WIDTH_RECT, HEIGHT_RECT], [1., 0., 1.], 4),
-    ([ 0.0, 0.0], [WIDTH_RECT, HEIGHT_RECT], [1., 1., 0.], 5),
-    ([ 0.5, 0.0], [WIDTH_RECT, HEIGHT_RECT], [0., 1., 1.], 6),
-    ([-0.5,-0.5], [WIDTH_RECT, HEIGHT_RECT], [1., 0., 0.], 7),
-    ([ 0.0,-0.5], [WIDTH_RECT, HEIGHT_RECT], [0., 1., 0.], 8),
-    ([ 0.5,-0.5], [WIDTH_RECT, HEIGHT_RECT], [0., 0., 1.], 9)
-];
-*/
 
 fn main()
 {
@@ -49,9 +27,9 @@ fn main()
     let center = [-0.6, 0.0];
     let size = [0.3, 0.5];
     let color = [0., 0., 1.];
-    let rect1 = MarkRectangle::new(center, size, color);
-    let rect2 = MarkRectangle::new([0.0, 0.0], size, [1., 1., 1.]);
-    let rect3 = MarkRectangle::new([0.6, 0.0], size, [1., 0., 0.]);
+    let rect1 = Mark::new(center, size, color, Shape::Rectangle);
+    let rect2 = Mark::new([0.0, 0.0], size, [1., 1., 1.], Shape::Triangle);
+    let rect3 = Mark::new([0.6, 0.0], size, [1., 0., 0.], Shape::Rectangle);
 
     // Add them to the marks manager to render them
     let mut marksmanager = MarksManager::create_marksmanager();
@@ -61,10 +39,10 @@ fn main()
 
     let mut surface = GlfwSurface::new(WindowDim::Windowed(800, 800), "Hello, world!", WindowOpt::default()).expect("GLFW surface creation");
 
-    let (program, _) = Program::<Vertex, (), ()>::from_strings(None, VS, GS, FS).expect("program creation");
+    let (program, _) = Program::<MarkProperty, (), ()>::from_strings(None, VS, GS, FS).expect("program creation");
 
     //let tess = Tess::new(&mut surface, Mode::Point, &TRI_VERTICES[..], None);
-    let tess = Tess::new(&mut surface, Mode::Point, &marksmanager.get_marks()[..], None);
+    let tess = Tess::new(&mut surface, Mode::Point, &marksmanager.get_marks_properties()[..], None);
 
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
 
