@@ -1,5 +1,6 @@
 extern crate luminance;
 extern crate luminance_glfw;
+/*
 extern crate contrast;
 
 use luminance::framebuffer::Framebuffer;
@@ -15,14 +16,34 @@ use contrast::Mark;
 use contrast::MarkProperty;
 use contrast::MarksManager;
 use contrast::Shape;
+*/
 
-// we get the shaders at compile time 
+mod mark;
+use mark::Contrast;
+use mark::Shape;
+use mark::LineMode;
+
+/*
 const VS: &'static str = include_str!("shaders/mark-vs.glsl");
 const FS: &'static str = include_str!("shaders/mark-fs.glsl");
 const GS: &'static str = include_str!("shaders/mark-gs.glsl");
+*/
 
 fn main()
 {
+    let mut contrast = Contrast::init();
+    
+    let mut m_1 = contrast.add_point_mark();    // TODO: faire en sorte que add_point_mark() retourne un &mut PointMark
+    let mark_1 = m_1.set_position(1.0, 3.0, 5.0);
+    dbg!(&mark_1);
+    mark_1.set_position(100.0, 100.0, 100.0).set_shape(Shape::Rectangle);
+    dbg!(&mark_1);
+
+    let mut m_2 = contrast.add_line_mark();     // TODO: faire en sorte que add_line_mark() retourne un &mut LineMark
+    let mark_2 = m_2.set_position(22.0, 25.0, 28.0).set_thickness(5.0).set_mode(LineMode::Dotted);
+    dbg!(&mark_2);
+
+/*
     // Create some rectangles
     let center = [-0.6, 0.0];
     let size = [0.3, 0.5];
@@ -86,4 +107,5 @@ fn main()
 
         surface.swap_buffers();
     }
+*/
 }
