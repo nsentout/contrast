@@ -20,43 +20,56 @@ struct Size {
     height : f32
 }
 
-// structure temporaire pour tester l'architecture
 pub struct Contrast {
-    marks: Vec<Mark>
+    point_marks: Vec<PointMark>,
+    line_marks: Vec<LineMark>,
+    cpt_id : u32,
 }
 
 impl Contrast {
     pub fn init() -> Self { 
         Contrast {
-            marks : Vec::<Mark>::new()
+            point_marks : Vec::<PointMark>::new(),
+            line_marks: Vec::<LineMark>::new(),
+            cpt_id : 0,
         }
     }
 
-    // TODO: incrementer l'id quand on ajoute une marque
-
-    pub fn add_point_mark(&mut self) -> PointMark {
-        let point = PointMark::default();
-        let mark = Mark::Point(point);
-
-        self.marks.push(mark);
-        point
+    fn get_point_mut_mark(&mut self, mark : PointMark) -> Option<&mut PointMark>
+    {
+        self.point_marks.iter_mut().find(|x| **x == mark)
     }
 
-    pub fn add_line_mark(&mut self) -> LineMark {
-        let line = LineMark::default();
-        let mark = Mark::Line(line);
+    pub fn add_point_mark(&mut self) -> &mut PointMark {
+        // Create a PointMark
+        let mut point = PointMark::default();
+        point.common_properties.id = self.cpt_id;
+        self.cpt_id += 1;
 
-        self.marks.push(mark);
-        line
-    }
-/*
-    pub fn add_line_mark(&mut self) -> Mark {
-        let mark = Mark::Line(LineMark::default());
+        // Add it into the PointMark vector
+        self.point_marks.push(point);
 
-        self.marks.push(mark);
-        *self.marks.get(0).unwrap()
+        // Return a mutable reference of this PointMark
+        self.get_point_mut_mark(point).unwrap()
     }
-*/
+
+    fn get_line_mut_mark(&mut self, mark : LineMark) -> Option<&mut LineMark>
+    {
+        self.line_marks.iter_mut().find(|x| **x == mark)
+    }
+
+    pub fn add_line_mark(&mut self) -> &mut LineMark {
+        // Create LineMark
+        let mut line = LineMark::default();
+        line.common_properties.id = self.cpt_id;
+        self.cpt_id += 1;
+
+        // Add it into the LineMark vector
+        self.line_marks.push(line);
+
+        // Return a mutable reference of this LineMark
+        self.get_line_mut_mark(line).unwrap()
+    }
 }
 
 /// Mark common structures ///
@@ -82,6 +95,7 @@ impl MarkProperties {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub enum Mark {
     Point(PointMark),
     Line(LineMark),
@@ -117,8 +131,8 @@ impl MarkTrait for Mark {
 pub enum Shape {
     None = 0,
     Rectangle = 1,
-    /*Triangle = 2,
-    Circle = 3,
+    Triangle = 2,
+    /*Circle = 3,
     Point = 4,
     Squircle = 5,
     Diamond = 6,
@@ -164,6 +178,22 @@ impl PointMark {
         self.shape = shape;
         self
     }
+
+    pub fn set_selection_angle(&mut self, selection_angle : f32) -> &mut Self {
+        self.selection_angle = selection_angle;
+        self
+    }
+
+    pub fn set_start_radius(&mut self, start_radius : f32) -> &mut Self {
+        self.start_radius = start_radius;
+        self
+    }
+}
+
+impl std::cmp::PartialEq for PointMark {
+    fn eq(&self, mark: &PointMark) -> bool {
+        self.common_properties.id == mark.common_properties.id
+    }
 }
 
 /// Mark Line ///
@@ -205,5 +235,11 @@ impl LineMark {
     pub fn set_mode(&mut self, mode : LineMode) -> &mut Self {
         self.mode = mode;
         self
+    }
+}
+
+impl std::cmp::PartialEq for LineMark {
+    fn eq(&self, mark: &LineMark) -> bool {
+        self.common_properties.id == mark.common_properties.id
     }
 }

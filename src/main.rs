@@ -29,18 +29,23 @@ const FS: &'static str = include_str!("shaders/mark-fs.glsl");
 const GS: &'static str = include_str!("shaders/mark-gs.glsl");
 */
 
+//use std::cell::RefCell;
+//use std::rc::Rc;
+
 fn main()
 {
+    //let mut contrast = RefCell::new(Contrast::init());
     let mut contrast = Contrast::init();
-    
-    let mut m_1 = contrast.add_point_mark();    // TODO: faire en sorte que add_point_mark() retourne un &mut PointMark
-    let mark_1 = m_1.set_position(1.0, 3.0, 5.0);
-    dbg!(&mark_1);
-    mark_1.set_position(100.0, 100.0, 100.0).set_shape(Shape::Rectangle);
+
+         // TODO : faire en sorte que les marks survivent
+    let mark_1 = {
+        contrast.add_point_mark().set_position(1.0, 3.0, 5.0).set_shape(Shape::Triangle);
+    };
     dbg!(&mark_1);
 
-    let mut m_2 = contrast.add_line_mark();     // TODO: faire en sorte que add_line_mark() retourne un &mut LineMark
-    let mark_2 = m_2.set_position(22.0, 25.0, 28.0).set_thickness(5.0).set_mode(LineMode::Dotted);
+    let mark_2 = {
+        contrast.add_line_mark().set_position(22.0, 25.0, 28.0).set_thickness(5.0).set_mode(LineMode::Dotted);
+    };
     dbg!(&mark_2);
 
 /*
