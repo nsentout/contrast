@@ -1,7 +1,5 @@
 extern crate luminance;
 extern crate luminance_glfw;
-/*
-extern crate contrast;
 
 use luminance::framebuffer::Framebuffer;
 use luminance::shader::program::Program;
@@ -10,6 +8,11 @@ use luminance::render_state::RenderState;
 use luminance_glfw::event::{Action, Key, WindowEvent};
 use luminance_glfw::surface::{GlfwSurface, Surface, WindowDim, WindowOpt};
 use luminance::context::GraphicsContext;
+
+/*
+extern crate contrast;
+
+
 
 use contrast::MarkTrait;
 use contrast::Mark;
@@ -22,15 +25,24 @@ mod mark;
 use mark::Contrast;
 use mark::Shape;
 use mark::LineMode;
-
-/*
-const VS: &'static str = include_str!("shaders/mark-vs.glsl");
-const FS: &'static str = include_str!("shaders/mark-fs.glsl");
-const GS: &'static str = include_str!("shaders/mark-gs.glsl");
-*/
-
+//use mark::Mark;
 //use std::cell::RefCell;
 //use std::rc::Rc;
+
+
+const VSPOINT: &'static str = include_str!("shaders/point.vertex");
+const FSPOINT: &'static str = include_str!("shaders/point.fragment");
+//const GSPOINT: &'static str = include_str!("shaders/mark-gs.glsl");
+
+type VertexPoint = ([f32; 3], [f32; 4],f32,f32,[f32;2],u32);
+//Position; couleur; radius; angle ;Size;shape
+
+const VERTEXPOINTTAB: [VertexPoint; 3] = [
+    ([-0.5, 0.5, 1.0], [0.0, 0.0, 1.0, 1.0], 0.0, 0.0, [0.01, 0.01], 0),
+    ([ 0.0, 0.5, 1.0], [0.0, 1.0, 0.0, 1.0], 0.0, 0.0, [0.01, 0.01], 0),
+    ([ 0.5, 0.5, 1.0], [1.0, 0.0, 0.0, 1.0], 0.0, 0.0, [0.01, 0.01], 0)
+];
+
 
 fn main()
 {
@@ -47,7 +59,6 @@ fn main()
         contrast.add_line_mark().set_position(22.0, 25.0, 28.0).set_thickness(5.0).set_mode(LineMode::Dotted);
     };
     dbg!(&mark_2);
-
 /*
     // Create some rectangles
     let center = [-0.6, 0.0];
@@ -62,13 +73,13 @@ fn main()
     marksmanager.add_mark(rect1);
     marksmanager.add_mark(rect2);
     marksmanager.add_mark(rect3);
-
+*/
     let mut surface = GlfwSurface::new(WindowDim::Windowed(800, 800), "Hello, world!", WindowOpt::default()).expect("GLFW surface creation");
 
-    let (program, _) = Program::<MarkProperty, (), ()>::from_strings(None, VS, GS, FS).expect("program creation");
+    let (program, _) = Program::<VertexPoint, (), ()>::from_strings(None, VSPOINT, None, FSPOINT).expect("program creation");
 
     //let tess = Tess::new(&mut surface, Mode::Point, &TRI_VERTICES[..], None);
-    let tess = Tess::new(&mut surface, Mode::Point, &marksmanager.get_marks_properties()[..], None);
+    let tess = Tess::new(&mut surface, Mode::Point, &VERTEXPOINTTAB[..], None);
 
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
 
@@ -83,11 +94,11 @@ fn main()
                 {
                     break 'app
                 }
-
+                /*
                 WindowEvent::Key(Key::Space, _, Action::Release, _) =>
                 {
-                    
-                }
+
+                }*/
 
                 WindowEvent::FramebufferSize(width, height) =>
                 {
@@ -112,5 +123,4 @@ fn main()
 
         surface.swap_buffers();
     }
-*/
 }
