@@ -9,47 +9,30 @@ use luminance_glfw::event::{Action, Key, WindowEvent};
 use luminance_glfw::surface::{GlfwSurface, Surface, WindowDim, WindowOpt};
 use luminance::context::GraphicsContext;
 
-/*
-extern crate contrast;
-
-
-
-use contrast::MarkTrait;
-use contrast::Mark;
-use contrast::MarkProperty;
-use contrast::MarksManager;
-use contrast::Shape;
-*/
-
 mod mark;
 use mark::Contrast;
 use mark::Shape;
 use mark::LineMode;
-//use mark::Mark;
-//use std::cell::RefCell;
-//use std::rc::Rc;
-
+use mark::VertexPoint;
 
 const VSPOINT: &'static str = include_str!("shaders/point.vertex");
 const FSPOINT: &'static str = include_str!("shaders/point.fragment");
 //const GSPOINT: &'static str = include_str!("shaders/mark-gs.glsl");
 
-type VertexPoint = ([f32; 3], [f32; 4],f32,f32,[f32;2],u32);
-//Position; couleur; radius; angle ;Size;shape
-
 const VERTEXPOINTTAB: [VertexPoint; 3] = [
-    ([-0.5, 0.5, 1.0], [0.0, 0.0, 1.0, 1.0], 0.0, 0.0, [0.01, 0.01], 0),
-    ([ 0.0, 0.5, 1.0], [0.0, 1.0, 0.0, 1.0], 0.0, 0.0, [0.01, 0.01], 0),
-    ([ 0.5, 0.5, 1.0], [1.0, 0.0, 0.0, 1.0], 0.0, 0.0, [0.01, 0.01], 0)
+    ([-0.5, 0.5, 1.0], [0.01, 0.01], [0.0, 0.0, 1.0, 1.0], 0.0, 0,  0.0, 0.0),
+    ([ 0.0, 0.5, 1.0], [0.01, 0.01], [0.0, 1.0, 0.0, 1.0], 0.0, 0,  0.0, 0.0),
+    ([ 0.5, 0.5, 1.0], [0.01, 0.01], [1.0, 0.0, 0.0, 1.0], 0.0, 0,  0.0, 0.0),
 ];
 
 
 fn main()
 {
-    //let mut contrast = RefCell::new(Contrast::init());
+    // Initialize contrast
     let mut contrast = Contrast::init();
 
-         // TODO : faire en sorte que les marks survivent
+    // Build some marks
+         // TODO : faire en sorte que les marks soient modifiables à postériori de leur création
     let mark_1 = {
         contrast.add_point_mark().set_position(1.0, 3.0, 5.0).set_shape(Shape::Triangle);
     };
@@ -59,26 +42,12 @@ fn main()
         contrast.add_line_mark().set_position(22.0, 25.0, 28.0).set_thickness(5.0).set_mode(LineMode::Dotted);
     };
     dbg!(&mark_2);
-/*
-    // Create some rectangles
-    let center = [-0.6, 0.0];
-    let size = [0.3, 0.5];
-    let color = [0., 0., 1.];
-    let rect1 = Mark::new(center, size, color, Shape::Rectangle);
-    let rect2 = Mark::new([0.0, 0.0], size, [1., 1., 1.], Shape::Triangle);
-    let rect3 = Mark::new([0.6, 0.0], size, [1., 0., 0.], Shape::Rectangle);
 
-    // Add them to the marks manager to render them
-    let mut marksmanager = MarksManager::create_marksmanager();
-    marksmanager.add_mark(rect1);
-    marksmanager.add_mark(rect2);
-    marksmanager.add_mark(rect3);
-*/
+
     let mut surface = GlfwSurface::new(WindowDim::Windowed(800, 800), "Hello, world!", WindowOpt::default()).expect("GLFW surface creation");
 
     let (program, _) = Program::<VertexPoint, (), ()>::from_strings(None, VSPOINT, None, FSPOINT).expect("program creation");
 
-    //let tess = Tess::new(&mut surface, Mode::Point, &TRI_VERTICES[..], None);
     let tess = Tess::new(&mut surface, Mode::Point, &VERTEXPOINTTAB[..], None);
 
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
@@ -94,11 +63,6 @@ fn main()
                 {
                     break 'app
                 }
-                /*
-                WindowEvent::Key(Key::Space, _, Action::Release, _) =>
-                {
-
-                }*/
 
                 WindowEvent::FramebufferSize(width, height) =>
                 {

@@ -20,6 +20,7 @@ struct Size {
     height : f32
 }
 
+// Main structure
 pub struct Contrast {
     point_marks: Vec<PointMark>,
     line_marks: Vec<LineMark>,
@@ -95,6 +96,7 @@ impl MarkProperties {
     }
 }
 
+// unused
 #[derive(Copy, Clone, Debug)]
 pub enum Mark {
     Point(PointMark),
@@ -104,6 +106,7 @@ pub enum Mark {
     //Text 
 }
 
+// unused
 pub trait MarkTrait
 {
     fn set_position(&mut self, x : f32, y : f32, z : f32) -> & mut Mark;
@@ -127,6 +130,9 @@ impl MarkTrait for Mark {
 */
 
 /// Mark Point ///
+pub type VertexPoint = ([f32; 3], [f32; 2], [f32; 4], f32, u32, f32, f32);
+// position; size; color; rotation; shape; selection_angle; start_radius
+
 #[derive(Copy, Clone, Debug)]
 pub enum Shape {
     None = 0,
