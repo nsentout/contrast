@@ -10,21 +10,14 @@ use luminance_glfw::event::{Action, Key, WindowEvent};
 use luminance_glfw::surface::{GlfwSurface, Surface, WindowDim, WindowOpt};
 use luminance::context::GraphicsContext;
 
-use contrast::properties::Contrast;
+use contrast::markscontainer::Contrast;
 use contrast::pointmark::Shape;
 use contrast::pointmark::VertexPoint;
 use contrast::linemark::LineMode;
 
-
-const VSPOINT: &'static str = include_str!("shaders/point.vertex");
-const FSPOINT: &'static str = include_str!("shaders/point.fragment");
-//const GSPOINT: &'static str = include_str!("shaders/mark-gs.glsl");
-
-const VERTEXPOINTTAB: [VertexPoint; 3] = [
-    ([-0.5, 0.5, 1.0], [0.01, 0.01], [0.0, 0.0, 1.0, 1.0], 0.0, 0,  0.0, 0.0),
-    ([ 0.0, 0.5, 1.0], [0.01, 0.01], [0.0, 1.0, 0.0, 1.0], 0.0, 0,  0.0, 0.0),
-    ([ 0.5, 0.5, 1.0], [0.01, 0.01], [1.0, 0.0, 0.0, 1.0], 0.0, 0,  0.0, 0.0),
-];
+const VSPOINT: &'static str = include_str!("shaders/point.vert");
+const FSPOINT: &'static str = include_str!("shaders/point.frag");
+const GSPOINT: &'static str = include_str!("shaders/point.geom");
 
 
 fn main()
@@ -35,21 +28,31 @@ fn main()
     // Build some marks
          // TODO : faire en sorte que les marks soient modifiables à postériori de leur création
     let mark_1 = {
-        contrast.add_point_mark().set_position(1.0, 3.0, 5.0).set_shape(Shape::Triangle);
+        contrast.add_point_mark().set_position(-0.5, 0.5, 0.0).set_size(0.1, 0.1).set_color(0.0, 0.0, 1.0, 1.0).set_shape(Shape::Rectangle);
     };
-    dbg!(&mark_1);
 
     let mark_2 = {
-        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Dotted);
+        contrast.add_point_mark().set_position(0.0, 0.5, 0.0).set_size(0.1, 0.1).set_color(0.0, 1.0, 0.0, 1.0).set_shape(Shape::Rectangle);
     };
-    dbg!(&mark_2);
+
+    let mark_3 = {
+        contrast.add_point_mark().set_position(0.5, 0.5, 0.0).set_size(0.1, 0.1).set_color(1.0, 0.0, 0.0, 1.0).set_shape(Shape::Triangle);
+    };
+
+    let mark_4 = {
+        contrast.add_point_mark().set_position(0.0, 0.0, 0.0).set_size(0.5, 0.2).set_color(0.0, 1.0, 1.0, 1.0).set_shape(Shape::Triangle);
+    };
+
+    let mark_5 = {  // not displayed, lines are not handled at the moment
+        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear);
+    };
 
 
     let mut surface = GlfwSurface::new(WindowDim::Windowed(800, 800), "Hello, world!", WindowOpt::default()).expect("GLFW surface creation");
 
-    let (program, _) = Program::<VertexPoint, (), ()>::from_strings(None, VSPOINT, None, FSPOINT).expect("program creation");
+    let (program, _) = Program::<VertexPoint, (), ()>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
 
-    let tess = Tess::new(&mut surface, Mode::Point, &VERTEXPOINTTAB[..], None);
+    let tess = Tess::new(&mut surface, Mode::Point, &contrast.get_pointmarks_properties()[..], None);
 
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
 

@@ -30,9 +30,9 @@ pub enum Shape {
 #[derive(Copy, Clone, Debug)]
 pub struct PointMark {
     pub common_properties : MarkProperties,
-     shape : Shape,
-     selection_angle : f32,
-     start_radius : f32
+    pub shape : Shape,
+    pub selection_angle : f32,
+    pub start_radius : f32
 }
 
 impl PointMark {
@@ -47,6 +47,21 @@ impl PointMark {
 
     pub fn set_position(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
         self.common_properties.center = Position { x, y, z };
+        self
+    }
+    // TODO: rendre ces méthodes communes à toutes les marques
+    pub fn set_size(&mut self, width : f32, height : f32) -> &mut Self {
+        self.common_properties.size = Size { width, height };
+        self
+    }
+
+    pub fn set_color(&mut self, r : f32, g : f32, b : f32, a : f32) -> &mut Self {
+        self.common_properties.color = Color { r, g, b, a };
+        self
+    }
+
+    pub fn set_rotation(&mut self, rotation : f32) -> &mut Self {
+        self.common_properties.rotation = rotation;
         self
     }
 
