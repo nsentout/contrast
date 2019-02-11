@@ -35,9 +35,3 @@ impl LineMark {
         self
     }
 }
-
-impl std::cmp::PartialEq for LineMark {
-    fn eq(&self, mark: &LineMark) -> bool {
-        self.common_properties.id == mark.common_properties.id
-    }
-}

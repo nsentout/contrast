@@ -32,11 +32,11 @@ pub struct PointMark {
     pub common_properties : MarkProperties,
     pub shape : Shape,
     pub selection_angle : f32,
-    pub start_radius : f32
+    pub start_radius : f32,
 }
 
 impl PointMark {
-    pub fn default() -> Self {
+    pub fn default() -> PointMark {
         PointMark {
             common_properties : MarkProperties::default(),
             shape : Shape::None,
@@ -79,10 +79,10 @@ impl PointMark {
         self.start_radius = start_radius;
         self
     }
-}
 
-impl std::cmp::PartialEq for PointMark {
-    fn eq(&self, mark: &PointMark) -> bool {
-        self.common_properties.id == mark.common_properties.id
+    pub fn as_vertex(self) -> VertexPoint {
+        (self.common_properties.center.as_array(), self.common_properties.size.as_array(),
+         self.common_properties.color.as_array(), self.common_properties.rotation,
+         self.shape as u32, self.selection_angle, self.start_radius)
     }
 }

@@ -2,6 +2,7 @@
 extern crate luminance;
 extern crate luminance_glfw;
 extern crate contrast;
+extern crate rand;
 
 use luminance::framebuffer::Framebuffer;
 use luminance::shader::program::Program;
@@ -18,9 +19,13 @@ use contrast::pointmark::VertexPoint;
 use contrast::linemark::LineMode;
 use contrast::camera::Camera;
 
+use rand::Rng;
+
 const VSPOINT: &'static str = include_str!("shaders/point.vert");
 const FSPOINT: &'static str = include_str!("shaders/point.frag");
 const GSPOINT: &'static str = include_str!("shaders/point.geom");
+const WINDOW_WIDTH : u32 = 800;
+const WINDOW_HEIGHT : u32 = 800;
 
 uniform_interface!
 {
@@ -35,32 +40,30 @@ fn main()
     // Initialize contrast
     let mut contrast = Contrast::init();
 
-    let mut cam = Camera::init(800, 800);
+    // Initialize the camera
+    let mut cam = Camera::init(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Build some marks
          // TODO : faire en sorte que les marks soient modifiables à postériori de leur création
-    let mark_1 = {
-        contrast.add_point_mark().set_position(100.0, 100.0, 0.0).set_size(0.1, 0.1).set_color(0.0, 0.0, 1.0, 1.0).set_shape(Shape::Rectangle);
-    };
+    let mut rng = rand::thread_rng();
 
-    let mark_2 = {
-        contrast.add_point_mark().set_position(200.0, 100.0, 0.0).set_size(0.1, 0.1).set_color(0.0, 1.0, 0.0, 1.0).set_shape(Shape::Rectangle);
-    };
+    println!("Building marks ...");
+    for _ in 0..100_000 {
+        contrast.add_point_mark().set_position(rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0)
+            .set_size(0.01, 0.01)
+            .set_color(rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0)
+            .set_shape(Shape::Triangle);
+    }
 
-    let mark_3 = {
-        contrast.add_point_mark().set_position(400.0, 400.0, 1.0).set_size(0.1, 0.1).set_color(1.0, 0.0, 0.0, 1.0).set_shape(Shape::Triangle);
-    };
+    println!("Building finished!");
 
-    let mark_4 = {
-        contrast.add_point_mark().set_position(400.0, 400.0, 0.0).set_size(0.5, 0.2).set_color(0.0, 1.0, 1.0, 1.0).set_shape(Shape::Triangle);
-    };
-
-    let mark_5 = {  // not displayed, lines are not handled at the moment
+    let mark_line = {  // not displayed, lines are not handled at the moment
         contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear);
     };
 
+    println!("Rendering ...");
 
-    let mut surface = GlfwSurface::new(WindowDim::Windowed(800, 800), "Hello, world!", WindowOpt::default()).expect("GLFW surface creation");
+    let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "contrast playground", WindowOpt::default()).expect("GLFW surface creation");
 
     let (program, _) = Program::<VertexPoint, (), ShaderInterface>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
 
