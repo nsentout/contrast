@@ -1,5 +1,6 @@
 extern crate luminance;
 extern crate luminance_glfw;
+extern crate contrast;
 
 use luminance::framebuffer::Framebuffer;
 use luminance::shader::program::Program;
@@ -9,11 +10,11 @@ use luminance_glfw::event::{Action, Key, WindowEvent};
 use luminance_glfw::surface::{GlfwSurface, Surface, WindowDim, WindowOpt};
 use luminance::context::GraphicsContext;
 
-mod mark;
-use mark::Contrast;
-use mark::Shape;
-use mark::LineMode;
-use mark::VertexPoint;
+use contrast::properties::Contrast;
+use contrast::pointmark::Shape;
+use contrast::pointmark::VertexPoint;
+use contrast::linemark::LineMode;
+
 
 const VSPOINT: &'static str = include_str!("shaders/point.vertex");
 const FSPOINT: &'static str = include_str!("shaders/point.fragment");
@@ -39,7 +40,7 @@ fn main()
     dbg!(&mark_1);
 
     let mark_2 = {
-        contrast.add_line_mark().set_position(22.0, 25.0, 28.0).set_thickness(5.0).set_mode(LineMode::Dotted);
+        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Dotted);
     };
     dbg!(&mark_2);
 
