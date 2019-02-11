@@ -7,3 +7,4 @@ authors = ["Nicolas Sentout <nicodufcbas@hotmail.fr>"]
 luminance = "0.30.1"
 luminance-glfw = "0.5.4"
 luminance-windowing = "0.2.4"
+nalgebra = "0.17"
