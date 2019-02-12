@@ -42,7 +42,7 @@ impl Color {
 /// Mark common properties ///
 #[derive(Copy, Clone, Debug)]
 pub struct MarkProperties {
-    pub id : u32,   // TODO: enlever les pub où c'est possible
+    pub id : usize,   // TODO: enlever les pub où c'est possible
     pub center: Position,
     pub size : Size,
     pub color: Color,

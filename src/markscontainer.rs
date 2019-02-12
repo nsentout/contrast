@@ -5,18 +5,14 @@ use linemark::LineMark;
 // Main structure
 pub struct Contrast {
     point_marks: Vec<PointMark>,
-    line_marks: Vec<LineMark>,
-    cpt_point_id : u32,
-    cpt_line_id : u32
+    line_marks: Vec<LineMark>
 }
 
 impl Contrast {
     pub fn init() -> Self { 
         Contrast {
             point_marks : Vec::<PointMark>::new(),
-            line_marks : Vec::<LineMark>::new(),
-            cpt_point_id : 0,
-            cpt_line_id : 0
+            line_marks : Vec::<LineMark>::new()
         }
     }
 
@@ -32,26 +28,36 @@ impl Contrast {
     pub fn add_point_mark(&mut self) -> &mut PointMark {
         // Create a PointMark
         let mut point = PointMark::default();
-        point.common_properties.id = self.cpt_point_id;
-        self.cpt_point_id += 1;
+        point.common_properties.id = self.point_marks.len();
 
         // Add it into the PointMark vector
         self.point_marks.push(point);
 
         // Returns a mutable reference of this PointMark
-        self.point_marks.get_mut((self.cpt_point_id - 1) as usize).unwrap()
+        self.point_marks.last_mut().unwrap()
+    }
+
+    pub fn remove_point_mark(&mut self, mark: usize)
+    {
+        if self.point_marks.len() > mark { self.point_marks.swap_remove(mark); }
+        if !self.point_marks.is_empty() { self.point_marks.last_mut().unwrap().common_properties.id = mark; }
     }
 
     pub fn add_line_mark(&mut self) -> &mut LineMark {
         // Create a LineMark
         let mut line = LineMark::default();
-        line.common_properties.id = self.cpt_line_id;
-        self.cpt_line_id += 1;
+        line.common_properties.id = self.line_marks.len();
 
         // Add it into the LineMark vector
         self.line_marks.push(line);
 
         // Return a mutable reference of this LineMark
-        self.line_marks.get_mut((self.cpt_line_id - 1) as usize).unwrap()
+        self.line_marks.last_mut().unwrap()
+    }
+
+    pub fn remove_line_mark(&mut self, mark: usize)
+    {
+        if self.line_marks.len() > mark { self.line_marks.swap_remove(mark); }
+        if !self.line_marks.is_empty() { self.line_marks.last_mut().unwrap().common_properties.id = mark; }
     }
 }
