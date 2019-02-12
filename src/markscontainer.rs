@@ -27,8 +27,7 @@ impl Contrast {
 
     pub fn add_point_mark(&mut self) -> &mut PointMark {
         // Create a PointMark
-        let mut point = PointMark::default();
-        point.common_properties.id = self.point_marks.len();
+        let point = PointMark::new(self.point_marks.len());
 
         // Add it into the PointMark vector
         self.point_marks.push(point);
@@ -39,14 +38,13 @@ impl Contrast {
 
     pub fn remove_point_mark(&mut self, mark: usize)
     {
-        if self.point_marks.len() > mark { self.point_marks.swap_remove(mark); }
         if !self.point_marks.is_empty() { self.point_marks.last_mut().unwrap().common_properties.id = mark; }
+        if self.point_marks.len() > mark { self.point_marks.swap_remove(mark); }
     }
 
     pub fn add_line_mark(&mut self) -> &mut LineMark {
         // Create a LineMark
-        let mut line = LineMark::default();
-        line.common_properties.id = self.line_marks.len();
+        let line = LineMark::new(self.line_marks.len());
 
         // Add it into the LineMark vector
         self.line_marks.push(line);
@@ -57,7 +55,7 @@ impl Contrast {
 
     pub fn remove_line_mark(&mut self, mark: usize)
     {
-        if self.line_marks.len() > mark { self.line_marks.swap_remove(mark); }
         if !self.line_marks.is_empty() { self.line_marks.last_mut().unwrap().common_properties.id = mark; }
+        if self.line_marks.len() > mark { self.line_marks.swap_remove(mark); }
     }
 }

@@ -40,9 +40,9 @@ impl Color {
 
 
 /// Mark common properties ///
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug)]
 pub struct MarkProperties {
-    pub id : usize,   // TODO: enlever les pub où c'est possible
+    pub id : usize,
     pub center: Position,
     pub size : Size,
     pub color: Color,
@@ -50,10 +50,10 @@ pub struct MarkProperties {
 }
 
 impl MarkProperties {
-    pub fn default() -> Self
+    pub fn default(id : usize) -> Self
     {
         MarkProperties {
-            id : 0,
+            id,
             center: Position { x : 0.0, y : 0.0, z : 0.0 },
             size : Size { width : 0.0, height : 0.0},
             color: Color { r : 0.0, g : 0.0, b : 0.0, a : 0.0 },

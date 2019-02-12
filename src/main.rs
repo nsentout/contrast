@@ -58,7 +58,7 @@ fn main()
     println!("Building finished!");
 
     let mark_line = {  // not displayed, lines are not handled at the moment
-        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).common_properties.id
+        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).get_id()
     };
 
     contrast.remove_line_mark(mark_line);

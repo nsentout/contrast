@@ -27,18 +27,18 @@ pub enum Shape {
     Arrow = 19*/
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug)]
 pub struct PointMark {
     pub common_properties : MarkProperties,
-    pub shape : Shape,
-    pub selection_angle : f32,
-    pub start_radius : f32,
+    shape : Shape,
+    selection_angle : f32,
+    start_radius : f32,
 }
 
 impl PointMark {
-    pub fn default() -> PointMark {
+    pub fn new(id : usize) -> Self {
         PointMark {
-            common_properties : MarkProperties::default(),
+            common_properties : MarkProperties::default(id),
             shape : Shape::None,
             selection_angle : 0.0,
             start_radius : 0.0
@@ -49,7 +49,14 @@ impl PointMark {
         self.common_properties.center = Position { x, y, z };
         self
     }
+
     // TODO: rendre ces méthodes communes à toutes les marques
+
+    pub fn get_id(&self) -> usize
+    {
+        self.common_properties.id
+    }
+
     pub fn set_size(&mut self, width : f32, height : f32) -> &mut Self {
         self.common_properties.size = Size { width, height };
         self
@@ -80,7 +87,7 @@ impl PointMark {
         self
     }
 
-    pub fn as_vertex(self) -> VertexPoint {
+    pub fn as_vertex(&self) -> VertexPoint {
         (self.common_properties.center.as_array(), self.common_properties.size.as_array(),
          self.common_properties.color.as_array(), self.common_properties.rotation,
          self.shape as u32, self.selection_angle, self.start_radius)
