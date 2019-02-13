@@ -1,46 +1,36 @@
 use properties::*;
 
 /*
- *  Those are the different ways we shoud be able to
- *  draw lines.
- */
-#[derive(Debug)]
-pub enum LineMode {
-    Linear,
-    Dashed,
-    Dotted
-}
-
-/*
- *  This is the structure that describes the marks of type Line (or polyline).
+ *  This is the structure that describes the marks of type Polygon.
  *  Each type of mark share some properties, that is an id, a position,
  *  a size, a color and a rotation. Those properties are described by the
  *  attribute common_properties.
- *  Line marks also have a vector of positions representing its points,
- *  a thickness and a mode to draw them differently.
+ *  Polygon marks also have a vector of positions representing its points,
+ *  a stroke width and a boolean to indicate whether or not we must
+ *  draw the stroke.
  */
 #[derive(Debug)]
-pub struct LineMark {
+pub struct PolygonMark {
     pub common_properties : MarkProperties,
     points : Vec<Position>,
-    thickness : f32,
-    mode : LineMode
+    stroke_width : f32,
+    full : bool
 }
 
-impl LineMark {
+impl PolygonMark {
     /*
-     *   Simply returns a new instance of LineMark, initializing
+     *   Simply returns a new instance of PolygonMark, initializing
      *   all attributes to their default value, except the id.
      */
     pub fn new(id : usize) -> Self {
-        LineMark {
+        PolygonMark {
             common_properties : MarkProperties::default(id),
             points : Vec::<Position>::new(),
-            thickness : 0.0,
-            mode : LineMode::Linear
+            stroke_width : 0.0,
+            full : false
         }
     }
-    
+
     pub fn add_point(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
         self.points.push(Position { x, y, z });
         self
@@ -66,13 +56,18 @@ impl LineMark {
         self
     }
 
-    pub fn set_thickness(&mut self, thickness : f32) -> &mut Self {
-        self.thickness = thickness;
+    pub fn set_stroke_width(&mut self, stroke_width : f32) -> &mut Self {
+        self.stroke_width = stroke_width;
         self
     }
 
-    pub fn set_mode(&mut self, mode : LineMode) -> &mut Self {
-        self.mode = mode;
+    pub fn set_full(&mut self) -> &mut Self {
+        self.full = true;
+        self
+    }
+
+    pub fn set_empty(&mut self) -> &mut Self {
+        self.full = false;
         self
     }
 }

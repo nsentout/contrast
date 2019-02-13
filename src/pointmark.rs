@@ -1,8 +1,15 @@
 use properties::*;
 
+/*
+ *  This is the type that will receive our shaders when we will want to render our marks point.
+ *  We could describe it this way to be more clear :
+ *  type VertexPoint = (position, size, color, rotation, shape, selection_angle, start_radius).
+ */
 pub type VertexPoint = ([f32; 3], [f32; 2], [f32; 4], f32, u32, f32, f32);
-// position; size; color; rotation; shape; selection_angle; start_radius
 
+/*
+ *  This enum describes every shape that should be drawable.
+ */
 #[derive(Copy, Clone, Debug)]
 pub enum Shape {
     None = 0,
@@ -27,6 +34,14 @@ pub enum Shape {
     Arrow = 19*/
 }
 
+/*
+ *  This is the structure that describes the marks of type Point.
+ *  Each type of mark share some properties, that is an id, a position,
+ *  a size, a color and a rotation. Those properties are described by the
+ *  attribute common_properties.
+ *  Point marks also have a shape and a selection angle and start radius
+ *  for some specific shapes.
+ */
 #[derive(Debug)]
 pub struct PointMark {
     pub common_properties : MarkProperties,
@@ -36,6 +51,10 @@ pub struct PointMark {
 }
 
 impl PointMark {
+    /*
+     *   Simply returns a new instance of PointMark, initializing
+     *   all attributes to their default values, except the id.
+     */
     pub fn new(id : usize) -> Self {
         PointMark {
             common_properties : MarkProperties::default(id),
@@ -45,12 +64,22 @@ impl PointMark {
         }
     }
 
+    /*
+     *  Converts a MarkPoint into a VertexPoint, which is a type 
+     *  understandable by the renderer.
+     */
+    pub fn as_vertex(&self) -> VertexPoint {
+        (self.common_properties.center.as_array(), self.common_properties.size.as_array(),
+         self.common_properties.color.as_array(), self.common_properties.rotation,
+         self.shape as u32, self.selection_angle, self.start_radius)
+    }
+
     pub fn set_position(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
         self.common_properties.center = Position { x, y, z };
         self
     }
 
-    // TODO: rendre ces méthodes communes à toutes les marques
+    // TODO: rendre certaines méthodes communes à toutes les marques
 
     pub fn get_id(&self) -> usize
     {
@@ -85,11 +114,5 @@ impl PointMark {
     pub fn set_start_radius(&mut self, start_radius : f32) -> &mut Self {
         self.start_radius = start_radius;
         self
-    }
-
-    pub fn as_vertex(&self) -> VertexPoint {
-        (self.common_properties.center.as_array(), self.common_properties.size.as_array(),
-         self.common_properties.color.as_array(), self.common_properties.rotation,
-         self.shape as u32, self.selection_angle, self.start_radius)
     }
 }
