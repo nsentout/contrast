@@ -7,11 +7,10 @@ pub mod pointmark;
 pub mod linemark;
 pub mod camera;
 
-/*
- *  This is the trait that all mark types will derive
- *  from. They will hence have access to those methods
- *  and their implementation, described in mark_macro_derive/src/lib.rs.
- */
+
+/// This is the trait that all mark types will derive
+/// from. They will hence have access to those methods
+/// and their implementation, described in mark_macro_derive/src/lib.rs.
 pub trait MarkMacro {
     fn get_mark_type(&self) -> String;
     fn get_id(&self) -> usize;
