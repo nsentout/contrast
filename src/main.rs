@@ -22,7 +22,7 @@ use contrast::MarkMacro;
 
 use rand::Rng;
 
-// Path of the shaders
+// Path to the shaders
 const VSPOINT: &'static str = include_str!("shaders/point.vert");
 const FSPOINT: &'static str = include_str!("shaders/point.frag");
 const GSPOINT: &'static str = include_str!("shaders/point.geom");

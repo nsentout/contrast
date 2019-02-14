@@ -71,30 +71,105 @@ impl Contrast {
     }
 }
 
-#[test]
-fn new()
-{
-    assert_eq!(Contrast::new().get_pointmarks_properties().len(), 0);
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pointmark::Shape;
+    use MarkMacro;
 
-#[test]
-fn add_point_mark()
-{
-    let mut c = Contrast::new();
+    #[test]
+    fn new()
+    {
+        assert_eq!(Contrast::new().get_pointmarks_properties().len(), 0);
+    }
 
-    let p = { c.add_point_mark().get_id() };
-    let s = { c.get_pointmarks_properties().len() };
-    assert_eq!(p, 0);
-    assert_eq!(s, 1);
-}
+    #[test]
+    fn add_point_mark()
+    {
+        let mut c = Contrast::new();
+        
+        let m1 = c.add_point_mark().get_id();
+        
+        assert_eq!(c.point_marks.len(), 1);
+        assert_eq!(m1, 0);
 
-#[test]
-fn remove_point_mark()
-{
-    let mut c = Contrast::new();
-    let p1 = { c.add_point_mark().get_id() };
-    { c.add_point_mark().get_id() };
+        let m2 = c.add_point_mark().get_id();
+        let m3 = c.add_point_mark().get_id();
 
-    c.remove_point_mark(p1);
-    assert_eq!(c.get_pointmarks_properties().len(), 1);
+        assert_eq!(c.point_marks.len(), 3);
+        assert_eq!(m1, 0);
+        assert_eq!(m2, 1);
+        assert_eq!(m3, 2);
+    }
+
+    #[test]
+    fn remove_point_mark()
+    {
+        let mut c = Contrast::new();
+
+        let m1 = c.add_point_mark().get_id();
+        let m2 = c.add_point_mark().get_id();
+
+        assert_eq!(m1, 0);
+        assert_eq!(m2, 1);
+
+        c.remove_point_mark(m1);
+
+        assert_eq!(c.point_marks.len(), 1);
+        assert_eq!(c.point_marks.get(0).unwrap().get_id(), 0);
+    }
+
+    #[test]
+    fn get_pointmarks_properties()
+    {
+        let mut c = Contrast::new();
+
+        c.add_point_mark().set_position(1.0, 5.0, 9.0);
+        c.add_point_mark().set_shape(Shape::Rectangle);
+        c.add_point_mark().set_position(3.6, 5.0, 9.2).set_shape(Shape::Triangle)
+            .set_size(0.5, 0.3).set_rotation(90.0).set_color(1.0, 0.0, 0.5, 1.0)
+            .set_selection_angle(120.0).set_start_radius(45.0);
+
+        let marks_properties = c.get_pointmarks_properties();
+
+        assert_eq!(marks_properties[0], ([1.0, 5.0, 9.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+        assert_eq!(marks_properties[1], ([0.0, 0.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 1, 0.0, 0.0));
+        assert_eq!(marks_properties[2], ([3.6, 5.0, 9.2], [0.5, 0.3], [1.0, 0.0, 0.5, 1.0], 90.0, 2, 120.0, 45.0));
+    }
+
+    #[test]
+    fn add_line_mark()
+    {
+        let mut c = Contrast::new();
+        
+        let m1 = c.add_line_mark().get_id();
+        
+        assert_eq!(c.line_marks.len(), 1);
+        assert_eq!(m1, 0);
+
+        let m2 = c.add_line_mark().get_id();
+        let m3 = c.add_line_mark().get_id();
+
+        assert_eq!(c.line_marks.len(), 3);
+        assert_eq!(m1, 0);
+        assert_eq!(m2, 1);
+        assert_eq!(m3, 2);
+    }
+
+    #[test]
+    fn remove_line_mark()
+    {
+        let mut c = Contrast::new();
+        
+        let m1 = { c.add_line_mark().get_id() };
+        let m2 = { c.add_line_mark().get_id() };
+
+        assert_eq!(m1, 0);
+        assert_eq!(m2, 1);
+
+        c.remove_line_mark(m1);
+
+        assert_eq!(c.line_marks.len(), 1);
+        assert_eq!(c.line_marks.get(0).unwrap().get_id(), 0);
+    }
 }
