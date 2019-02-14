@@ -83,3 +83,31 @@ impl Contrast {
         if self.line_marks.len() > mark { self.line_marks.swap_remove(mark); }
     }
 }
+
+#[test]
+fn new()
+{
+    assert_eq!(Contrast::new().get_pointmarks_properties().len(), 0);
+}
+
+#[test]
+fn add_point_mark()
+{
+    let mut c = Contrast::new();
+
+    let p = { c.add_point_mark().get_id() };
+    let s = { c.get_pointmarks_properties().len() };
+    assert_eq!(p, 0);
+    assert_eq!(s, 1);
+}
+
+#[test]
+fn remove_point_mark()
+{
+    let mut c = Contrast::new();
+    let p1 = { c.add_point_mark().get_id() };
+    { c.add_point_mark().get_id() };
+
+    c.remove_point_mark(p1);
+    assert_eq!(c.get_pointmarks_properties().len(), 1);
+}
