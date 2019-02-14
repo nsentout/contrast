@@ -36,12 +36,15 @@ la position et la couleur ont été générées aléatoirement.
 Tout le code, à l'exception de la macro procédurale, est dans le dossier *src*. Il est divisé en 
 plusieurs fichiers qui sont des modules *Rust*. Le seul shader actuellement utilisé, celui pour afficher
 les marques de type point, est dans le dossier *src/shaders*.
+
 La macro procédurale a pour but de générer automatiquement du code à la compilation.
 Elle nous permet d'éviter de dupliquer le code commun aux marques. Vous pourrez la trouver dans
 le dossier *mark_macro_derive*.
+
 Concernant la contenu des fichiers, *pointmark.rs*, *linemark.rs* et *polygonmark.rs* sont les fichiers
 contenant la structure de la marque correspondant au nom du fichier, ainsi que son implémentation.
 *properties.rs* contient les structures communes utilisées par toutes les marques.
 *lib.rs* permet de lier les différents modules entre eux et *camera.rs* contient le code de prototype de caméra.
+
 Enfin, *markscontainer.rs* est le fichier contenant la structure principale de la bibliothèque, ainsi que son
 implémentation et des tests appropriés.
