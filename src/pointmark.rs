@@ -1,4 +1,6 @@
 use properties::*;
+use MarkMacro;
+use mark_macro_derive::MarkMacro;
 
 /*
  *  This is the type that will receive our shaders when we will want to render our marks point.
@@ -36,15 +38,16 @@ pub enum Shape {
 
 /*
  *  This is the structure that describes the marks of type Point.
- *  Each type of mark share some properties, that is an id, a position,
- *  a size, a color and a rotation. Those properties are described by the
+ *  Each type of mark share some properties, that is an id, a size,
+ *  a color and a rotation. Those properties are described by the
  *  attribute common_properties.
- *  Point marks also have a shape and a selection angle and start radius
- *  for some specific shapes.
+ *  Point marks also have a position, a shape and a selection angle 
+ *  and start radius for some specific shapes.
  */
-#[derive(Debug)]
+#[derive(MarkMacro, Debug)]
 pub struct PointMark {
     pub common_properties : MarkProperties,
+    center : Position,
     shape : Shape,
     selection_angle : f32,
     start_radius : f32,
@@ -58,6 +61,7 @@ impl PointMark {
     pub fn new(id : usize) -> Self {
         PointMark {
             common_properties : MarkProperties::default(id),
+            center : Position { x : 0.0, y : 0.0, z : 0.0 },
             shape : Shape::None,
             selection_angle : 0.0,
             start_radius : 0.0
@@ -69,35 +73,13 @@ impl PointMark {
      *  understandable by the renderer.
      */
     pub fn as_vertex(&self) -> VertexPoint {
-        (self.common_properties.center.as_array(), self.common_properties.size.as_array(),
+        (self.center.as_array(), self.common_properties.size.as_array(),
          self.common_properties.color.as_array(), self.common_properties.rotation,
          self.shape as u32, self.selection_angle, self.start_radius)
     }
 
     pub fn set_position(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
-        self.common_properties.center = Position { x, y, z };
-        self
-    }
-
-    // TODO: rendre certaines méthodes communes à toutes les marques
-
-    pub fn get_id(&self) -> usize
-    {
-        self.common_properties.id
-    }
-
-    pub fn set_size(&mut self, width : f32, height : f32) -> &mut Self {
-        self.common_properties.size = Size { width, height };
-        self
-    }
-
-    pub fn set_color(&mut self, r : f32, g : f32, b : f32, a : f32) -> &mut Self {
-        self.common_properties.color = Color { r, g, b, a };
-        self
-    }
-
-    pub fn set_rotation(&mut self, rotation : f32) -> &mut Self {
-        self.common_properties.rotation = rotation;
+        self.center = Position { x, y, z };
         self
     }
 

@@ -9,3 +9,4 @@ luminance-glfw = "0.5.4"
 luminance-windowing = "0.2.4"
 nalgebra = "0.17"
 rand = "0.4"
+mark_macro_derive = { path = "mark_macro_derive" }

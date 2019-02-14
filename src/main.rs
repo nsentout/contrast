@@ -18,6 +18,7 @@ use contrast::pointmark::Shape;
 use contrast::pointmark::VertexPoint;
 use contrast::linemark::LineMode;
 use contrast::camera::Camera;
+use contrast::MarkMacro;
 
 use rand::Rng;
 

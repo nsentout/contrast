@@ -1,0 +1,12 @@
+[package]
+name = "mark_macro_derive"
+version = "0.1.0"
+authors = ["Nicolas Sentout <nicodufcbas@hotmail.fr>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "0.14.4" # parses Rust code from a string into a data structure that we can perform operations on
+quote = "0.6.3" # takes syn data structures and turns them back into Rust code

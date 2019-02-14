@@ -61,13 +61,12 @@ impl Color {
 
 /*
  *  Structure representing the properties shared
- *  by every type of marks, that is an id, a position,
+ *  by every type of marks, that is an id,
  *  a size, a color and a rotation.
  */
 #[derive(Debug)]
 pub struct MarkProperties {
     pub id : usize,
-    pub center: Position,
     pub size : Size,
     pub color: Color,
     pub rotation : f32,
@@ -82,7 +81,6 @@ impl MarkProperties {
     {
         MarkProperties {
             id,
-            center: Position { x : 0.0, y : 0.0, z : 0.0 },
             size : Size { width : 0.0, height : 0.0},
             color: Color { r : 0.0, g : 0.0, b : 0.0, a : 0.0 },
             rotation : 0.0,
