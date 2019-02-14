@@ -2,12 +2,12 @@
 
 [//]: # (Contrast is a Rust crate developed as part of the Bordeaux computer science Master.)
 
-Notre projet est programmé en *Rust*. C'est un langage qui évolue très fréquement.
+Notre projet est programmé en *Rust*. C'est un langage qui évolue très fréquemment.
 Par conséquence, il vous faut la dernière version du compilateur, c'est actuellement la
 version **1.32.0**.
 
 
-### Instalation
+### Installation
 Nous vous conseillons d'installer [**rustup**](https://rustup.rs/) qui est l'installateur
 officiel de la toolchain de *Rust*. Il se chargera de la maintenir à jour.
 La commande ```rustup update``` vous le confirmera.
