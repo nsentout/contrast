@@ -3,14 +3,13 @@
 [//]: # (Contrast is a Rust crate developed as part of the Bordeaux computer science Master.)
 
 Notre projet est programmé en *Rust*. C'est un langage qui évolue très fréquement.
-Par conséquence, il vous faut la dernière version du compilateur, actuellement la
+Par conséquence, il vous faut la dernière version du compilateur, c'est actuellement la
 version **1.32.0**.
 
 
 ### Instalation
 Nous vous conseillons d'installer [**rustup**](https://rustup.rs/) qui est l'installateur
 officiel de la toolchain de *Rust*. Il se chargera de la maintenir à jour.
-
 La commande ```rustup update``` vous le confirmera.
 
 La toolchain comporte entre autre :
@@ -29,7 +28,7 @@ et d'exécuter les commandes suivantes :
 Certaines opérations peuvent prendre du temps...
 
 ### Exemple
-Notre projet est le développement d'une bibliothèque mais il y a un programme d'example (*main.rs*) qui,
+Notre projet est le développement d'une bibliothèque mais il y a un programme d'exemple (*main.rs*) qui,
 si tout se passe bien, doit afficher 100k petits triangles dont la position et la couleur est générée
 aléatoirement.
 
