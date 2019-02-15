@@ -9,32 +9,34 @@ out vec3 f_pos;
 out vec2 f_size;
 out vec4 f_color;
 
+uniform mat4 projection;
+
 void build_simple_shape(vec4 position)
 {
     f_color = v_color[0];
-    f_size = v_size[0];
+    f_size = v_size[0]/2;
     f_pos = position.xyz;
 
     if (v_shape[0] == 0u) { // TODO: utiliser la fonction distance
         // NONE
     }
     else if (v_shape[0] == 1u) {    // RECTANGLE
-        gl_Position = position + vec4(-f_size.x, -f_size.y, 0.0, 0.0);    // 1:bottom-left
+        gl_Position = projection*(position + vec4(-f_size.x, -f_size.y, 0.0, 0.0));    // 1:bottom-left
         EmitVertex();
-        gl_Position = position + vec4(f_size.x, -f_size.y, 0.0, 0.0);    // 2:bottom-right
+        gl_Position = projection*(position + vec4(f_size.x, -f_size.y, 0.0, 1.0));    // 2:bottom-right
         EmitVertex();
-        gl_Position = position + vec4(-f_size.x, f_size.y, 0.0, 0.0);    // 3:top-left
+        gl_Position = projection*(position + vec4(-f_size.x, f_size.y, 0.0, 1.0));    // 3:top-left
         EmitVertex();
-        gl_Position = position + vec4(f_size.x, f_size.y, 0.0, 0.0);    // 4:top-right
+        gl_Position = projection*(position + vec4(f_size.x, f_size.y, 0.0, 1.0));    // 4:top-right
         EmitVertex();
         EndPrimitive();
     }
     else if (v_shape[0] == 2u) {    // TRIANGLE
-        gl_Position = position + vec4(0, f_size.y, 0.0, 0.0);
+        gl_Position = projection*(position + vec4(0, f_size.y, 0.0, 0.0));
         EmitVertex();
-        gl_Position = position + vec4(-f_size.x, -f_size.y, 0.0, 0.0);
+        gl_Position = projection*(position + vec4(-f_size.x, -f_size.y, 0.0, 0.0));
         EmitVertex();
-        gl_Position = position + vec4(f_size.x, -f_size.y, 0.0, 0.0);
+        gl_Position = projection*(position + vec4(f_size.x, -f_size.y, 0.0, 0.0));
         EmitVertex();
         EndPrimitive();
     }

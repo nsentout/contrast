@@ -13,7 +13,7 @@ out vec4 v_color;
 out uint v_shape;
 
 void main() {
-  gl_Position = projection * vec4(pos, 1.);
+  gl_Position = vec4(pos, 1.);
   v_size = size;
   v_color = color;
   v_shape = shape;
