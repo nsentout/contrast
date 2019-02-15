@@ -1,6 +1,3 @@
-extern crate nalgebra as na;
-extern crate mark_macro_derive;
-
 pub mod markscontainer;
 pub mod properties;
 pub mod pointmark;

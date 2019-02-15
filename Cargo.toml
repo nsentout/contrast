@@ -2,6 +2,7 @@
 name = "contrast"
 version = "0.1.0"
 authors = ["Nicolas Sentout <nicodufcbas@hotmail.fr>"]
+edition = "2018"
 
 [dependencies]
 luminance = "0.30.1"

@@ -1,5 +1,5 @@
-use properties::*;
-use MarkMacro;
+use crate::properties::*;
+use crate::MarkMacro;
 use mark_macro_derive::MarkMacro;
 
 /// This is the type that will receive our shaders when we will want to render our marks point.

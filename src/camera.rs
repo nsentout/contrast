@@ -1,4 +1,4 @@
-use na::Matrix4;
+use nalgebra::Matrix4;
 
 /// Camera 2D (Orthographic)
 #[derive(Copy, Clone)]

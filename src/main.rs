@@ -1,8 +1,5 @@
 #[macro_use]
 extern crate luminance;
-extern crate luminance_glfw;
-extern crate contrast;
-extern crate rand;
 
 use luminance::framebuffer::Framebuffer;
 use luminance::shader::program::Program;
