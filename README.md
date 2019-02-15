@@ -22,6 +22,7 @@ placer dans le répertoire du projet, c'est-à-dire le dossier qui contient le f
 et d'exécuter les commandes suivantes :
 * ```cargo build``` pour compiler.
 * ```cargo run``` pour compiler & exécuter l'exemple.
+* ```cargo run --release``` pour compiler avec optimisations & exécuter l'exemple.
 * ```cargo test``` pour compiler & lancer les tests.
 * ```cargo doc --open``` pour générer la doc et l'ouvrir à l'index dans votre navigateur.
 
