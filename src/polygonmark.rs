@@ -22,7 +22,7 @@ impl PolygonMark {
     /// all attributes to their default value, except the id.
     pub fn new(id : usize) -> Self {
         PolygonMark {
-            common_properties : MarkProperties::default(id),
+            common_properties : MarkProperties::new(id),
             points : Vec::<Position>::new(),
             stroke_width : 0.0,
             full : false

@@ -31,7 +31,7 @@ impl LineMark {
     /// all attributes to their default value, except the id.
     pub fn new(id : usize) -> Self {
         LineMark {
-            common_properties : MarkProperties::default(id),
+            common_properties : MarkProperties::new(id),
             points : Vec::<Position>::new(),
             thickness : 0.0,
             mode : LineMode::Linear

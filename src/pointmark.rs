@@ -52,7 +52,7 @@ impl PointMark {
     /// all attributes to their default values, except the id.
     pub fn new(id : usize) -> Self {
         PointMark {
-            common_properties : MarkProperties::default(id),
+            common_properties : MarkProperties::new(id),
             center : Position { x : 0.0, y : 0.0, z : 0.0 },
             shape : Shape::None,
             selection_angle : 0.0,

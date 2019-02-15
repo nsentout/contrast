@@ -23,11 +23,11 @@ void build_simple_shape(vec4 position)
     else if (v_shape[0] == 1u) {    // RECTANGLE
         gl_Position = projection*(position + vec4(-f_size.x, -f_size.y, 0.0, 0.0));    // 1:bottom-left
         EmitVertex();
-        gl_Position = projection*(position + vec4(f_size.x, -f_size.y, 0.0, 1.0));    // 2:bottom-right
+        gl_Position = projection*(position + vec4(f_size.x, -f_size.y, 0.0, 0.0));    // 2:bottom-right
         EmitVertex();
-        gl_Position = projection*(position + vec4(-f_size.x, f_size.y, 0.0, 1.0));    // 3:top-left
+        gl_Position = projection*(position + vec4(-f_size.x, f_size.y, 0.0, 0.0));    // 3:top-left
         EmitVertex();
-        gl_Position = projection*(position + vec4(f_size.x, f_size.y, 0.0, 1.0));    // 4:top-right
+        gl_Position = projection*(position + vec4(f_size.x, f_size.y, 0.0, 0.0));    // 4:top-right
         EmitVertex();
         EndPrimitive();
     }

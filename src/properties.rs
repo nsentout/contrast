@@ -62,7 +62,7 @@ pub struct MarkProperties {
 impl MarkProperties {
     /// Simply returns a new instance of MarkProperties, initializing
     /// all attributes to their default values, except the id.
-    pub fn default(id : usize) -> Self
+    pub fn new(id : usize) -> Self
     {
         MarkProperties {
             id,

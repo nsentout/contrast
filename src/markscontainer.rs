@@ -20,25 +20,25 @@ impl Contrast {
         }
     }
 
-     /// Create a mark of type Point with default values and add it into the vector
-     /// containing all the PointMark, then returns a mutable reference of this
-     /// newly created mark, all of this in O(1). We return a mutable reference because we
-     /// want to be able to modify it just after calling add_point_mark in a way
-     /// similar to this : add_point_mark.set_rotation(90.0).
+    /// Create a mark of type Point with default values and add it into the vector
+    /// containing all the PointMark, then returns a mutable reference of this
+    /// newly created mark, all of this in O(1). We return a mutable reference because we
+    /// want to be able to modify it just after calling add_point_mark in a way
+    /// similar to this : add_point_mark.set_rotation(90.0).
     pub fn add_point_mark(&mut self) -> &mut PointMark {
         let point = PointMark::new(self.point_marks.len());
         self.point_marks.push(point);
         self.point_marks.last_mut().unwrap()
     }
 
-     /// Remove the point mark with the id mark. We will call this mark the target.
-     /// We first set the id of the last element of the vector containing all
-     /// the PointMark to the target's id (mark).
-     /// We then swap the target with the last element. We can now safely remove the target.
-     /// This way, the mark that was the last element before the removal holds now the id
-     /// of the target. This explains why we can always use "self.point_marks.len()" when
-     /// we want to give a unique id to a new mark. Furthermore, this allows us to remove
-     /// an element in O(1).
+    /// Remove the point mark with the id mark. We will call this mark the target.
+    /// We first set the id of the last element of the vector containing all
+    /// the PointMark to the target's id (mark).
+    /// We then swap the target with the last element. We can now safely remove the target.
+    /// This way, the mark that was the last element before the removal holds now the id
+    /// of the target. This explains why we can always use "self.point_marks.len()" when
+    /// we want to give a unique id to a new mark. Furthermore, this allows us to remove
+    /// an element in O(1).
     pub fn remove_point_mark(&mut self, mark: usize)
     {
         if !self.point_marks.is_empty() { self.point_marks.last_mut().unwrap().common_properties.id = mark; }

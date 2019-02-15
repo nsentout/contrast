@@ -53,7 +53,7 @@ fn main()
     println!("Building marks ...");
     for _ in 0..100_000 {
         contrast.add_point_mark().set_position(rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0)
-            .set_size(20.0, 20.0)
+            .set_size(8.0, 8.0)
             .set_color(rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0)
             .set_shape(Shape::Triangle);
     }
