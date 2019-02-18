@@ -1,6 +1,12 @@
-use crate::properties::*;
 use crate::MarkMacro;
+use crate::properties::markproperties::MarkProperties;
+use crate::properties::position::Position;
 use mark_macro_derive::MarkMacro;
+
+/// This is the type that will receive our shaders when we will want to render our line marks.
+/// We could describe it this way to be more clear :
+/// type VertexLine = (size, color, rotation, points, thickness, line_mode).
+pub type VertexLine = ([f32; 2], [f32; 4], f32, Vec<Position>, f32, u32);
 
 
 /// Those are the different ways we shoud be able to

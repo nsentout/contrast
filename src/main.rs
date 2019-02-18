@@ -11,9 +11,9 @@ use luminance::context::GraphicsContext;
 use luminance::linear::M44;
 
 use contrast::markscontainer::Contrast;
-use contrast::pointmark::Shape;
-use contrast::pointmark::VertexPoint;
-use contrast::linemark::LineMode;
+use contrast::marks::pointmark::Shape;
+use contrast::marks::pointmark::VertexPoint;
+use contrast::marks::linemark::LineMode;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
 

@@ -1,8 +1,9 @@
-use crate::properties::*;
 use crate::MarkMacro;
+use crate::properties::markproperties::MarkProperties;
+use crate::properties::position::Position;
 use mark_macro_derive::MarkMacro;
 
-/// This is the type that will receive our shaders when we will want to render our marks point.
+/// This is the type that will receive our shaders when we will want to render our point marks.
 /// We could describe it this way to be more clear :
 /// type VertexPoint = (position, size, color, rotation, shape, selection_angle, start_radius).
 pub type VertexPoint = ([f32; 3], [f32; 2], [f32; 4], f32, u32, f32, f32);

@@ -1,5 +1,6 @@
-use crate::properties::*;
 use crate::MarkMacro;
+use crate::properties::markproperties::MarkProperties;
+use crate::properties::position::Position;
 use mark_macro_derive::MarkMacro;
 
 /// This is the structure that describes the marks of type Polygon.
@@ -14,7 +15,7 @@ pub struct PolygonMark {
     pub common_properties : MarkProperties,
     points : Vec<Position>,
     stroke_width : f32,
-    full : bool
+    fill : bool
 }
 
 impl PolygonMark {
@@ -25,7 +26,7 @@ impl PolygonMark {
             common_properties : MarkProperties::new(id),
             points : Vec::<Position>::new(),
             stroke_width : 0.0,
-            full : false
+            fill : false
         }
     }
 
@@ -39,13 +40,13 @@ impl PolygonMark {
         self
     }
 
-    pub fn set_full(&mut self) -> &mut Self {
-        self.full = true;
+    pub fn set_fill(&mut self) -> &mut Self {
+        self.fill = true;
         self
     }
 
     pub fn set_empty(&mut self) -> &mut Self {
-        self.full = false;
+        self.fill = false;
         self
     }
 }

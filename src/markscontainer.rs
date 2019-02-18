@@ -1,6 +1,6 @@
-use crate::pointmark::PointMark;
-use crate::pointmark::VertexPoint;
-use crate::linemark::LineMark;
+use crate::marks::pointmark::PointMark;
+use crate::marks::pointmark::VertexPoint;
+use crate::marks::linemark::LineMark;
 
 /// This is the main structure of the library. It contains all the marks
 /// displayed on screen. The user can add and remove marks as he wishes
@@ -74,7 +74,7 @@ impl Contrast {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pointmark::Shape;
+    use crate::marks::pointmark::Shape;
     use crate::MarkMacro;
 
     #[test]
@@ -161,8 +161,8 @@ mod tests {
     {
         let mut c = Contrast::new();
         
-        let m1 = { c.add_line_mark().get_id() };
-        let m2 = { c.add_line_mark().get_id() };
+        let m1 = c.add_line_mark().get_id();
+        let m2 = c.add_line_mark().get_id();
 
         assert_eq!(m1, 0);
         assert_eq!(m2, 1);
