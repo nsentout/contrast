@@ -10,11 +10,13 @@ uniform mat4 projection;
 
 out vec2 v_size;
 out vec4 v_color;
-out uint v_shape;
+out float v_rotation;
+flat out uint v_shape;
 
 void main() {
   gl_Position = vec4(pos, 1.);
   v_size = size;
   v_color = color;
   v_shape = shape;
+  v_rotation= rotation;
 }
