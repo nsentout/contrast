@@ -30,8 +30,10 @@ impl PolygonMark {
         }
     }
 
-    pub fn add_point(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
-        self.points.push(Position { x, y, z });
+    /// Add a point to a line. You can pass as argument a tuple of 3 floats or
+    /// a Position directly
+    pub fn add_point<P : Into <Position>>(&mut self, point : P) -> &mut Self {
+        self.points.push(point.into());
         self
     }
 

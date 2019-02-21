@@ -16,6 +16,7 @@ use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::LineMode;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
+use contrast::properties::position::Position;
 
 use rand::Rng;
 
@@ -51,18 +52,35 @@ fn main()
     let mut rng = rand::thread_rng();    // TODO : faire en sorte que les marks soient modifiables à postériori de leur création
 
     println!("Building marks ...");
-    for _ in 0..100_000 {
+   /* for _ in 0..100_000 {
         contrast.add_point_mark().set_position(rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0)
             .set_size(8.0, 8.0)
             .set_color(rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0)
             .set_shape(Shape::Triangle);
-    }
+    }*/
+
+    let pos = Position { x : 200.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
+
+    contrast.add_point_mark().set_position(pos)
+        .set_size(200.0, 200.0)
+        .set_color(1.0, 0.0, 0.0, 1.0)
+        .set_shape(Shape::Triangle);
+
+    contrast.add_point_mark().set_position((pos.x + 200.0, pos.y, pos.z))
+        .set_size(200.0, 200.0)
+        .set_color(0.0, 1.0, 0.0, 1.0)
+        .set_shape(Shape::Rectangle);
+
+    contrast.add_point_mark().set_position((pos.x + 400.0, pos.y, pos.z))
+        .set_size(200.0, 200.0)
+        .set_color(0.0, 0.0, 1.0, 1.0)
+        .set_shape(Shape::Circle);
 
     println!("Building finished!");
 
     // Add a line mark for testing
     let mark_line = {  // not displayed, lines are not handled at the moment
-        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).get_id()
+        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).add_point((100.0, 100.0, 0.0)).get_id()
     };
 
     // Remove a line mark for testing

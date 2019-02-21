@@ -69,8 +69,10 @@ impl PointMark {
          self.shape as u32, self.selection_angle, self.start_radius)
     }
 
-    pub fn set_position(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
-        self.center = Position { x, y, z };
+    /// Set the position of a mark. You can pass as argument a tuple of 3 floats or
+    /// a Position directly
+    pub fn set_position<P : Into <Position>>(&mut self, position : P) -> &mut Self {
+        self.center = position.into();
         self
     }
 

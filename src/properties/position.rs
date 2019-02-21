@@ -13,3 +13,11 @@ impl Position { // TODO: éviter de dupliquer la fonction as_array()
         [self.x, self.y, self.z]
     }
 }
+
+impl From <(f32, f32, f32)> for Position {
+    fn from(p : (f32, f32, f32)) -> Position {
+       Position {
+           x : p.0, y : p.1, z : p.2
+       }
+    }
+}

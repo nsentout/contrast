@@ -124,9 +124,9 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        c.add_point_mark().set_position(1.0, 5.0, 9.0);
+        c.add_point_mark().set_position((1.0, 5.0, 9.0));
         c.add_point_mark().set_shape(Shape::Rectangle);
-        c.add_point_mark().set_position(3.6, 5.0, 9.2).set_shape(Shape::Triangle)
+        c.add_point_mark().set_position((3.6, 5.0, 9.2)).set_shape(Shape::Triangle)
             .set_size(0.5, 0.3).set_rotation(90.0).set_color(1.0, 0.0, 0.5, 1.0)
             .set_selection_angle(120.0).set_start_radius(45.0);
 
