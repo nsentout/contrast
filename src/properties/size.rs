@@ -1,5 +1,5 @@
 /// Structure representing a size
-#[derive(Copy, Clone, Debug)]
+#[derive(Default, Copy, Clone, Debug)]
 pub struct Size {
     pub width : f32,
     pub height : f32

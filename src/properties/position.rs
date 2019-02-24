@@ -1,5 +1,5 @@
 /// Structure representing a 3D position
-#[derive(Copy, Clone, Debug)]
+#[derive(Default, Copy, Clone, Debug)]
 pub struct Position {
     pub x : f32,
     pub y : f32,

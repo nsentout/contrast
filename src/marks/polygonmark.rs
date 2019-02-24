@@ -12,7 +12,7 @@ use mark_macro_derive::MarkMacro;
 /// draw the stroke.
 #[derive(MarkMacro, Debug)]
 pub struct PolygonMark {
-    pub common_properties : MarkProperties,
+    pub(crate) common_properties : MarkProperties,
     points : Vec<Position>,
     stroke_width : f32,
     fill : bool

@@ -26,7 +26,7 @@ pub enum LineMode {
 /// a thickness and a mode to draw them differently.
 #[derive(MarkMacro, Debug)]
 pub struct LineMark {
-    pub common_properties : MarkProperties,
+    pub(crate) common_properties : MarkProperties,
     points : Vec<Position>,
     thickness : f32,
     mode : LineMode

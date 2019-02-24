@@ -41,7 +41,7 @@ pub enum Shape {
 /// and start radius for some specific shapes.
 #[derive(MarkMacro, Debug)]
 pub struct PointMark {
-    pub common_properties : MarkProperties,
+    pub(crate) common_properties : MarkProperties,
     center : Position,
     shape : Shape,
     selection_angle : f32,
@@ -54,7 +54,7 @@ impl PointMark {
     pub fn new(id : usize) -> Self {
         PointMark {
             common_properties : MarkProperties::new(id),
-            center : Position { x : 0.0, y : 0.0, z : 0.0 },
+            center : Position::default(),
             shape : Shape::None,
             selection_angle : 0.0,
             start_radius : 0.0
