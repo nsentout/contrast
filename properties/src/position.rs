@@ -6,7 +6,7 @@ pub struct Position {
     pub z : f32
 }
 
-impl Position { // TODO: éviter de dupliquer la fonction as_array()
+impl Position {
     /// Convert a position structure to an array.
     /// Useful when converting our marks to vertices.
     pub fn as_array(self) -> [f32; 3] {

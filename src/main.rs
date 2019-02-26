@@ -17,7 +17,8 @@ use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::LineMode;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
-use contrast::properties::position::Position;
+use properties::position::Position;
+use properties::size::Size;
 
 use rand::Rng;
 
@@ -55,28 +56,29 @@ fn main()
     println!("Building marks ...");
     /*for _ in 0..100_000 {
         contrast.add_point_mark().set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0))
-            .set_size(8.0, 8.0)
-            .set_color(rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0)
+            .set_size((8.0, 8.0))
+            .set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0))
             .set_shape(Shape::Triangle);
     }*/
 
     let pos = Position { x : 200.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
+    let size = Size { width : 200.0, height : 200.0 };
 
     let mark_triangle = contrast.add_point_mark().set_position(pos)
-        .set_size(200.0, 200.0)
-        .set_color(1.0, 0.0, 0.0, 1.0)
+        .set_size(size)
+        .set_color((1.0, 0.0, 0.0, 1.0))
         .set_shape(Shape::Triangle)
         .get_id();
 
     let mark_rectangle = contrast.add_point_mark().set_position((pos.x + 200.0, pos.y, pos.z))
-        .set_size(200.0, 200.0)
-        .set_color(0.0, 1.0, 0.0, 1.0)
+        .set_size(size)
+        .set_color((0.0, 1.0, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
     let mark_circle = contrast.add_point_mark().set_position((pos.x + 400.0, pos.y, pos.z))
-        .set_size(200.0, 200.0)
-        .set_color(0.0, 0.0, 1.0, 1.0)
+        .set_size(size)
+        .set_color((0.0, 0.0, 1.0, 1.0))
         .set_shape(Shape::Circle)
         .get_id();
 

@@ -1,6 +1,6 @@
 use crate::MarkMacro;
-use crate::properties::markproperties::MarkProperties;
-use crate::properties::position::Position;
+use crate::markproperties::MarkProperties;
+use properties::position::Position;
 use mark_macro_derive::MarkMacro;
 
 /// This is the type that will receive our shaders when we will want to render our line marks.

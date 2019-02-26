@@ -1,6 +1,6 @@
 use crate::MarkMacro;
-use crate::properties::markproperties::MarkProperties;
-use crate::properties::position::Position;
+use crate::markproperties::MarkProperties;
+use properties::position::Position;
 use mark_macro_derive::MarkMacro;
 
 /// This is the structure that describes the marks of type Polygon.

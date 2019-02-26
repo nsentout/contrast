@@ -1,7 +1,7 @@
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::LineMark;
-use crate::properties::color::Color;
+use properties::color::Color;
 
 #[derive(Debug)]
 pub enum Mark {

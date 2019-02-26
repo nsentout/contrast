@@ -12,3 +12,11 @@ impl Size {
         [self.width, self.height]
     }
 }
+
+impl From <(f32, f32)> for Size {
+    fn from(s : (f32, f32)) -> Size {
+       Size {
+           width : s.0, height : s.1
+       }
+    }
+}

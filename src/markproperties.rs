@@ -1,5 +1,5 @@
-use super::size::Size;
-use super::color::Color;
+use properties::size::Size;
+use properties::color::Color;
 
 /// Structure representing the properties shared
 /// by every type of marks, that is an id,

@@ -1,0 +1,7 @@
+[package]
+name = "properties"
+version = "0.1.0"
+authors = ["Nicolas Sentout <nicodufcbas@hotmail.fr>"]
+edition = "2018"
+
+[dependencies]
