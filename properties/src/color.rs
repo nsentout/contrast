@@ -1,5 +1,5 @@
 /// Structure representing a RGBA color
-#[derive(Default, Copy, Clone, Debug)]
+#[derive(PartialEq, Default, Copy, Clone, Debug)]
 pub struct Color {
     pub r : f32,
     pub g : f32,

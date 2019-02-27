@@ -30,6 +30,21 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
                 self.common_properties.id
             }
 
+            fn get_size(&self) -> properties::size::Size
+            {
+                self.common_properties.size
+            }
+
+            fn get_color(&self) -> properties::color::Color
+            {
+                self.common_properties.color
+            }
+
+            fn get_rotation(&self) -> f32
+            {
+                self.common_properties.rotation
+            }
+
             fn set_size<S : Into <properties::size::Size>>(&mut self, size : S) -> &mut #name
             {
                 self.common_properties.size = size.into();

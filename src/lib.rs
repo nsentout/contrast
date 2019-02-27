@@ -7,9 +7,19 @@ pub mod camera;
 /// This is the trait that all mark types will derive
 /// from. They will hence have access to those methods
 /// and their implementation, described in mark_macro_derive/src/lib.rs.
-pub trait MarkMacro {
+pub trait MarkMacro
+{
     /// Returns the id of a mark
     fn get_id(&self) -> usize;
+
+    /// Returns the size of a mark
+    fn get_size(&self) -> properties::size::Size;
+
+    /// Returns the color of a mark
+    fn get_color(&self) -> properties::color::Color;
+
+    /// Returns the rotation of a mark
+    fn get_rotation(&self) -> f32;
 
     /// Set the size of a mark. You can pass as argument a tuple of 2 floats (width and height) or
     /// a Size directly
@@ -19,6 +29,6 @@ pub trait MarkMacro {
     /// a Color directly
     fn set_color<C : Into <properties::color::Color>>(&mut self, color : C) -> &mut Self;
 
-    /// Set the rotation of a mark.
+    /// Set the rotation of a mark
     fn set_rotation(&mut self, rotation : f32) -> &mut Self;
 }

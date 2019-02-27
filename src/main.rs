@@ -126,7 +126,7 @@ fn main()
                 {
                     unsafe {
                         // Change the color of the rectangle mark   //TODO: update la fenetre avec la nouvelle couleur
-                        (*mark_rectangle_ptr).set_color(rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0);
+                        (*mark_rectangle_ptr).set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
                         let color = (*mark_rectangle_ptr).get_color();
                         println!("Mark rectangle color : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a); 
                     }

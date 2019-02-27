@@ -1,89 +1,81 @@
+use crate::MarkMacro;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::LineMark;
 use properties::color::Color;
+use properties::size::Size;
 
+/// Union of every type of mark.
 #[derive(Debug)]
 pub enum Mark {
 	Point(PointMark),
 	Line(LineMark),
 }
 
-impl Mark  {
-    pub fn get_id(&self) -> usize {  //TODO: éviter de dupliquer ce que font ces matchs
-        match self {
-            Mark::Point(p) => p.common_properties.id,
-            Mark::Line(l) => l.common_properties.id
+/// Macro calling the getter $get of the MarkMacro trait on the mark $mark.
+/// Example : mark_get!(mark_point_1, get_color) calls the get_color method
+/// implemented in the procedural macro "mark_macro_derive" that returns
+/// the color of "mark mark_point_1"
+macro_rules! mark_get {
+    ($mark:ident, $get:ident) => (
+        match $mark {
+            Mark::Point(p) => p.$get(),
+            Mark::Line(l)  => l.$get()
         }
+    )
+}
+
+/// Macro calling the setter $set of the MarkMacro trait (with parameter $param) on the mark $mark.
+/// Example : mark_set!(mark_point_1, set_color, (1.0, 0.0, 0.0, 1.0)) calls the set_color method
+/// implemented in the procedural macro "mark_macro_derive" that set the color of "mark mark_point_1"
+/// to (1.0, 0.0, 0.0, 1.0).
+macro_rules! mark_set {
+    ($mark:ident, $set:ident, $param:expr) => {
+        {
+            match $mark {
+                Mark::Point(p) => { p.$set($param); } ,
+                Mark::Line(l)  => { l.$set($param); }
+            }
+            $mark
+        }
+    }
+}
+
+impl Mark  {
+    pub fn get_id(&self) -> usize {
+        mark_get!(self, get_id)
+    }
+
+    pub fn get_size(&self) -> Size {
+        mark_get!(self, get_size)
+    }
+
+    pub fn get_color(&self) -> Color {
+        mark_get!(self, get_color)
+    }
+
+    pub fn get_rotation(&self) -> f32 {
+        mark_get!(self, get_rotation)
     }
 
     pub(self) fn set_id(&mut self, id : usize) -> &mut Self {
-        match self {
+        match self {    // cannot use the macro because set_id is not a method of MarkMacro
             Mark::Point(p) => p.common_properties.id = id,
             Mark::Line(l) => l.common_properties.id = id
         }
         self
     }
 
-    pub fn set_size(&mut self, width : f32, height : f32) -> &mut Self {
-        match self {
-            Mark::Point(p) => {
-                p.common_properties.size.width = width;
-                p.common_properties.size.height = height;
-            },
-            Mark::Line(l) => {
-                l.common_properties.size.width = width;
-                l.common_properties.size.height = height;
-            }
-        }
-        self
+    pub fn set_size<S : Into <properties::size::Size>>(&mut self, size : S) -> &mut Self {
+        mark_set!(self, set_size, size)
     }
 
-    pub fn get_color(&self) -> Color {
-        match self {
-            Mark::Point(p) => {
-                Color {
-                    r : p.common_properties.color.r,
-                    g : p.common_properties.color.g,
-                    b : p.common_properties.color.b,
-                    a : p.common_properties.color.a
-                }
-            },
-            Mark::Line(l) => {
-                 Color {
-                    r : l.common_properties.color.r,
-                    g : l.common_properties.color.g,
-                    b : l.common_properties.color.b,
-                    a : l.common_properties.color.a
-                }
-            }
-        }
-    }
-
-    pub fn set_color(&mut self, r : f32, g : f32, b : f32, a : f32) -> &mut Self {
-        match self {
-            Mark::Point(p) => {
-                p.common_properties.color.r = r;
-                p.common_properties.color.g = g;
-                p.common_properties.color.b = b;
-                p.common_properties.color.a = a;
-            },
-            Mark::Line(l) => {
-                l.common_properties.color.r = r;
-                l.common_properties.color.g = g;
-                l.common_properties.color.b = b;
-                l.common_properties.color.a = a;
-            }
-        }
-        self
+    pub fn set_color<C : Into <properties::color::Color>>(&mut self, color : C) -> &mut Self {
+        mark_set!(self, set_color, color)
     }
 
     pub fn set_rotation(&mut self, rotation : f32) -> &mut Self {
-        match self {
-            Mark::Point(p) => p.common_properties.rotation = rotation,
-            Mark::Line(l) =>  l.common_properties.rotation = rotation
-        }
-        self
+        mark_set!(self, set_rotation, rotation)
     }
 }
 
@@ -163,7 +155,6 @@ impl Contrast {
 
 }
 
-// TODO: mettre à jour les tests
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -183,13 +174,13 @@ mod tests {
         
         let m1 = c.add_point_mark().get_id();
         
-        assert_eq!(c.point_marks.len(), 1);
+        assert_eq!(c.marks.len(), 1);
         assert_eq!(m1, 0);
 
         let m2 = c.add_point_mark().get_id();
         let m3 = c.add_point_mark().get_id();
 
-        assert_eq!(c.point_marks.len(), 3);
+        assert_eq!(c.marks.len(), 3);
         assert_eq!(m1, 0);
         assert_eq!(m2, 1);
         assert_eq!(m3, 2);
@@ -206,10 +197,10 @@ mod tests {
         assert_eq!(m1, 0);
         assert_eq!(m2, 1);
 
-        c.remove_point_mark(m1);
+        c.remove_mark(m1);
 
-        assert_eq!(c.point_marks.len(), 1);
-        assert_eq!(c.point_marks.get(0).unwrap().get_id(), 0);
+        assert_eq!(c.marks.len(), 1);
+        assert_eq!(c.marks.get(0).unwrap().get_id(), 0);
     }
 
     #[test]
@@ -220,7 +211,7 @@ mod tests {
         c.add_point_mark().set_position((1.0, 5.0, 9.0));
         c.add_point_mark().set_shape(Shape::Rectangle);
         c.add_point_mark().set_position((3.6, 5.0, 9.2)).set_shape(Shape::Triangle)
-            .set_size(0.5, 0.3).set_rotation(90.0).set_color(1.0, 0.0, 0.5, 1.0)
+            .set_size((0.5, 0.3)).set_rotation(90.0).set_color((1.0, 0.0, 0.5, 1.0))
             .set_selection_angle(120.0).set_start_radius(45.0);
 
         let marks_properties = c.get_pointmarks_properties();
@@ -237,13 +228,13 @@ mod tests {
         
         let m1 = c.add_line_mark().get_id();
         
-        assert_eq!(c.line_marks.len(), 1);
+        assert_eq!(c.marks.len(), 1);
         assert_eq!(m1, 0);
 
         let m2 = c.add_line_mark().get_id();
         let m3 = c.add_line_mark().get_id();
 
-        assert_eq!(c.line_marks.len(), 3);
+        assert_eq!(c.marks.len(), 3);
         assert_eq!(m1, 0);
         assert_eq!(m2, 1);
         assert_eq!(m3, 2);
@@ -260,9 +251,78 @@ mod tests {
         assert_eq!(m1, 0);
         assert_eq!(m2, 1);
 
-        c.remove_line_mark(m1);
+        c.remove_mark(m1);
 
-        assert_eq!(c.line_marks.len(), 1);
-        assert_eq!(c.line_marks.get(0).unwrap().get_id(), 0);
+        assert_eq!(c.marks.len(), 1);
+        assert_eq!(c.marks.get(0).unwrap().get_id(), 0);
+    }
+
+    #[test]
+    fn get_id()
+    {
+        let mut c = Contrast::new();
+
+        c.add_point_mark();
+        c.add_point_mark();
+
+        let m0 = c.get_mark(0).unwrap().get_id();
+        let m1 = c.get_mark(1).unwrap().get_id();
+
+        assert_eq!(m0, 0); 
+        assert_eq!(m1, 1); 
+    }
+
+    #[test]
+    fn get_and_set_size()
+    {
+        let mut c = Contrast::new();
+
+        c.add_point_mark();
+        c.add_point_mark();
+
+        let m0 = c.get_mark(0).unwrap().get_id();
+        let m1 = c.get_mark(1).unwrap().get_id();
+
+        c.get_mark(m0).unwrap().set_size((10.0, 20.0));
+        c.get_mark(m1).unwrap().set_size((30.0, 40.0));
+
+        assert_eq!(c.get_mark(m0).unwrap().get_size(), Size { width : 10.0, height : 20.0 });
+        assert_eq!(c.get_mark(m1).unwrap().get_size(), Size { width : 30.0, height : 40.0 });
+    }
+
+    #[test]
+    fn get_and_set_color()
+    {
+        let mut c = Contrast::new();
+
+        c.add_line_mark();
+        c.add_line_mark();
+
+        let m0 = c.get_mark(0).unwrap().get_id();
+        let m1 = c.get_mark(1).unwrap().get_id();
+
+        c.get_mark(m0).unwrap().set_color((0.1, 0.2, 0.3, 0.4));
+        c.get_mark(m1).unwrap().set_color((0.5, 0.6, 0.7, 0.8));
+
+        assert_eq!(c.get_mark(m0).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 }); 
+        assert_eq!(c.get_mark(m1).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 }); 
+    }
+
+    #[test]
+    fn get_and_set_rotation()
+    {
+        let mut c = Contrast::new();
+
+        c.add_line_mark();
+        c.add_line_mark();
+
+        let m0 = c.get_mark(0).unwrap().get_id();
+        let m1 = c.get_mark(1).unwrap().get_id();
+
+        c.get_mark(m0).unwrap().set_rotation(90.0);
+        c.get_mark(m1).unwrap().set_rotation(180.0);
+
+        assert_eq!(c.get_mark(m0).unwrap().get_rotation(), 90.0); 
+        assert_eq!(c.get_mark(m1).unwrap().get_rotation(), 180.0); 
     }
 }
