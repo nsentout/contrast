@@ -1,8 +1,9 @@
-use crate::properties::*;
 use crate::MarkMacro;
+use crate::markproperties::MarkProperties;
+use properties::position::Position;
 use mark_macro_derive::MarkMacro;
 
-/// This is the type that will receive our shaders when we will want to render our marks point.
+/// This is the type that will receive our shaders when we will want to render our point marks.
 /// We could describe it this way to be more clear :
 /// type VertexPoint = (position, size, color, rotation, shape, selection_angle, start_radius).
 pub type VertexPoint = ([f32; 3], [f32; 2], [f32; 4], f32, u32, f32, f32);
@@ -40,7 +41,7 @@ pub enum Shape {
 /// and start radius for some specific shapes.
 #[derive(MarkMacro, Debug)]
 pub struct PointMark {
-    pub common_properties : MarkProperties,
+    pub(crate) common_properties : MarkProperties,
     center : Position,
     shape : Shape,
     selection_angle : f32,
@@ -53,7 +54,7 @@ impl PointMark {
     pub fn new(id : usize) -> Self {
         PointMark {
             common_properties : MarkProperties::new(id),
-            center : Position { x : 0.0, y : 0.0, z : 0.0 },
+            center : Position::default(),
             shape : Shape::None,
             selection_angle : 0.0,
             start_radius : 0.0
@@ -68,8 +69,10 @@ impl PointMark {
          self.shape as u32, self.selection_angle, self.start_radius)
     }
 
-    pub fn set_position(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
-        self.center = Position { x, y, z };
+    /// Set the position of a mark. You can pass as argument a tuple of 3 floats or
+    /// a Position directly
+    pub fn set_position<P : Into <Position>>(&mut self, position : P) -> &mut Self {
+        self.center = position.into();
         self
     }
 

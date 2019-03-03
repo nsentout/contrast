@@ -1,5 +1,6 @@
-use crate::properties::*;
 use crate::MarkMacro;
+use crate::markproperties::MarkProperties;
+use properties::position::Position;
 use mark_macro_derive::MarkMacro;
 
 /// This is the structure that describes the marks of type Polygon.
@@ -11,10 +12,10 @@ use mark_macro_derive::MarkMacro;
 /// draw the stroke.
 #[derive(MarkMacro, Debug)]
 pub struct PolygonMark {
-    pub common_properties : MarkProperties,
+    pub(crate) common_properties : MarkProperties,
     points : Vec<Position>,
     stroke_width : f32,
-    full : bool
+    fill : bool
 }
 
 impl PolygonMark {
@@ -25,12 +26,14 @@ impl PolygonMark {
             common_properties : MarkProperties::new(id),
             points : Vec::<Position>::new(),
             stroke_width : 0.0,
-            full : false
+            fill : false
         }
     }
 
-    pub fn add_point(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
-        self.points.push(Position { x, y, z });
+    /// Add a point to a line. You can pass as argument a tuple of 3 floats or
+    /// a Position directly
+    pub fn add_point<P : Into <Position>>(&mut self, point : P) -> &mut Self {
+        self.points.push(point.into());
         self
     }
 
@@ -39,13 +42,13 @@ impl PolygonMark {
         self
     }
 
-    pub fn set_full(&mut self) -> &mut Self {
-        self.full = true;
+    pub fn set_fill(&mut self) -> &mut Self {
+        self.fill = true;
         self
     }
 
     pub fn set_empty(&mut self) -> &mut Self {
-        self.full = false;
+        self.fill = false;
         self
     }
 }

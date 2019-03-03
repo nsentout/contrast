@@ -1,6 +1,12 @@
-use crate::properties::*;
 use crate::MarkMacro;
+use crate::markproperties::MarkProperties;
+use properties::position::Position;
 use mark_macro_derive::MarkMacro;
+
+/// This is the type that will receive our shaders when we will want to render our line marks.
+/// We could describe it this way to be more clear :
+/// type VertexLine = (size, color, rotation, points, thickness, line_mode).
+pub type VertexLine = ([f32; 2], [f32; 4], f32, Vec<Position>, f32, u32);
 
 
 /// Those are the different ways we shoud be able to
@@ -20,7 +26,7 @@ pub enum LineMode {
 /// a thickness and a mode to draw them differently.
 #[derive(MarkMacro, Debug)]
 pub struct LineMark {
-    pub common_properties : MarkProperties,
+    pub(crate) common_properties : MarkProperties,
     points : Vec<Position>,
     thickness : f32,
     mode : LineMode
@@ -38,8 +44,10 @@ impl LineMark {
         }
     }
     
-    pub fn add_point(&mut self, x : f32, y : f32, z : f32) -> &mut Self {
-        self.points.push(Position { x, y, z });
+    /// Add a point to a line. You can pass as argument a tuple of 3 floats or
+    /// a Position directly
+    pub fn add_point<P : Into <Position>>(&mut self, point : P) -> &mut Self {
+        self.points.push(point.into());
         self
     }
 

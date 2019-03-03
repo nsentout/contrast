@@ -11,11 +11,14 @@ use luminance::context::GraphicsContext;
 use luminance::linear::M44;
 
 use contrast::markscontainer::Contrast;
-use contrast::pointmark::Shape;
-use contrast::pointmark::VertexPoint;
-use contrast::linemark::LineMode;
+use contrast::markscontainer::Mark;
+use contrast::marks::pointmark::Shape;
+use contrast::marks::pointmark::VertexPoint;
+use contrast::marks::linemark::LineMode;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
+use properties::position::Position;
+use properties::size::Size;
 
 use rand::Rng;
 
@@ -48,28 +51,51 @@ fn main()
     let mut cam = Camera::init(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Build 100 000 point marks with random positions and random colors
-    let mut rng = rand::thread_rng();    // TODO : faire en sorte que les marks soient modifiables à postériori de leur création
+    let mut rng = rand::thread_rng();
 
     println!("Building marks ...");
-    for _ in 0..100_000 {
-        contrast.add_point_mark().set_position(rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0)
-            .set_size(8.0, 8.0)
-            .set_color(rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0)
+    /*for _ in 0..100_000 {
+        contrast.add_point_mark().set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0))
+            .set_size((8.0, 8.0))
+            .set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0))
             .set_shape(Shape::Triangle);
-    }
+    }*/
+
+    let pos = Position { x : 200.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
+    let size = Size { width : 200.0, height : 200.0 };
+
+    let mark_triangle = contrast.add_point_mark().set_position(pos)
+        .set_size(size)
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_shape(Shape::Triangle)
+        .get_id();
+
+    let mark_rectangle = contrast.add_point_mark().set_position((pos.x + 200.0, pos.y, pos.z))
+        .set_size(size)
+        .set_color((0.0, 1.0, 0.0, 1.0))
+        .set_shape(Shape::Rectangle)
+        .get_id();
+
+    let mark_circle = contrast.add_point_mark().set_position((pos.x + 400.0, pos.y, pos.z))
+        .set_size(size)
+        .set_color((0.0, 0.0, 1.0, 1.0))
+        .set_shape(Shape::Circle)
+        .get_id();
+
+    let mark_rectangle_ptr : *mut Mark = contrast.get_mark(mark_rectangle).unwrap();
 
     println!("Building finished!");
 
-    // Add a line mark for testing
-    let mark_line = {  // not displayed, lines are not handled at the moment
-        contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).get_id()
-    };
+    // Add a line mark for testing (not displayed, lines are not handled at the moment)
+    let mark_line = contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).add_point((100.0, 100.0, 0.0)).get_id();
+    dbg!(&contrast.get_mark(mark_line));
 
     // Remove a line mark for testing
-    contrast.remove_line_mark(mark_line);
-
+    contrast.remove_mark(mark_line);
+    dbg!(&contrast.get_mark(mark_line));
 
     println!("Rendering ...");
+
 
     // Create a new surface to render to and get events from
     let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "contrast playground", WindowOpt::default()).expect("GLFW surface creation");
@@ -94,6 +120,16 @@ fn main()
                 WindowEvent::Close | WindowEvent::Key(Key::Escape, _, Action::Release, _) =>
                 {
                     break 'app
+                }
+
+                WindowEvent::Key(Key::Space, _, Action::Release, _) =>
+                {
+                    unsafe {
+                        // Change the color of the rectangle mark   //TODO: update la fenetre avec la nouvelle couleur
+                        (*mark_rectangle_ptr).set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
+                        let color = (*mark_rectangle_ptr).get_color();
+                        println!("Mark rectangle color : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a); 
+                    }
                 }
 
                 // Handle window resizing
