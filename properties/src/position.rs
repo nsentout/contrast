@@ -9,8 +9,10 @@ pub struct Position {
 impl Position {
     /// Convert a position structure to an array.
     /// Useful when converting our marks to vertices.
-    pub fn as_array(self) -> [f32; 3] {
-        [self.x, self.y, self.z]
+    pub fn as_array(&self) -> &[f32; 3] {
+        unsafe {
+            std::mem::transmute::<&Position, &[f32; 3]>(self)
+        }
     }
 }
 

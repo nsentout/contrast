@@ -124,7 +124,7 @@ impl Contrast {
 
     /// Returns an Option of the mark at the index "id". If there is no mark having this id,
     /// returns None.
-    pub fn get_mark(&mut self, id : usize) -> Option<&mut Mark> {
+    pub fn get_mark_mut(&mut self, id : usize) -> Option<&mut Mark> {
         self.marks.get_mut(id)
     }
 
@@ -143,7 +143,7 @@ impl Contrast {
 
     /// Convert the MarkPoints contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
-    pub fn get_pointmarks_properties(self) -> Vec<VertexPoint> {    // TODO: éviter cette copie
+    pub fn get_pointmarks_properties(self) -> Vec<VertexPoint> {
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
         for pt in &self.marks {
             if let Mark::Point(p) = pt {
@@ -265,8 +265,8 @@ mod tests {
         c.add_point_mark();
         c.add_point_mark();
 
-        let m0 = c.get_mark(0).unwrap().get_id();
-        let m1 = c.get_mark(1).unwrap().get_id();
+        let m0 = c.get_mark_mut(0).unwrap().get_id();
+        let m1 = c.get_mark_mut(1).unwrap().get_id();
 
         assert_eq!(m0, 0); 
         assert_eq!(m1, 1); 
@@ -280,14 +280,14 @@ mod tests {
         c.add_point_mark();
         c.add_point_mark();
 
-        let m0 = c.get_mark(0).unwrap().get_id();
-        let m1 = c.get_mark(1).unwrap().get_id();
+        let m0 = c.get_mark_mut(0).unwrap().get_id();
+        let m1 = c.get_mark_mut(1).unwrap().get_id();
 
-        c.get_mark(m0).unwrap().set_size((10.0, 20.0));
-        c.get_mark(m1).unwrap().set_size((30.0, 40.0));
+        c.get_mark_mut(m0).unwrap().set_size((10.0, 20.0));
+        c.get_mark_mut(m1).unwrap().set_size((30.0, 40.0));
 
-        assert_eq!(c.get_mark(m0).unwrap().get_size(), Size { width : 10.0, height : 20.0 });
-        assert_eq!(c.get_mark(m1).unwrap().get_size(), Size { width : 30.0, height : 40.0 });
+        assert_eq!(c.get_mark_mut(m0).unwrap().get_size(), Size { width : 10.0, height : 20.0 });
+        assert_eq!(c.get_mark_mut(m1).unwrap().get_size(), Size { width : 30.0, height : 40.0 });
     }
 
     #[test]
@@ -298,14 +298,14 @@ mod tests {
         c.add_line_mark();
         c.add_line_mark();
 
-        let m0 = c.get_mark(0).unwrap().get_id();
-        let m1 = c.get_mark(1).unwrap().get_id();
+        let m0 = c.get_mark_mut(0).unwrap().get_id();
+        let m1 = c.get_mark_mut(1).unwrap().get_id();
 
-        c.get_mark(m0).unwrap().set_color((0.1, 0.2, 0.3, 0.4));
-        c.get_mark(m1).unwrap().set_color((0.5, 0.6, 0.7, 0.8));
+        c.get_mark_mut(m0).unwrap().set_color((0.1, 0.2, 0.3, 0.4));
+        c.get_mark_mut(m1).unwrap().set_color((0.5, 0.6, 0.7, 0.8));
 
-        assert_eq!(c.get_mark(m0).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 }); 
-        assert_eq!(c.get_mark(m1).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 }); 
+        assert_eq!(c.get_mark_mut(m0).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 }); 
+        assert_eq!(c.get_mark_mut(m1).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 }); 
     }
 
     #[test]
@@ -316,13 +316,13 @@ mod tests {
         c.add_line_mark();
         c.add_line_mark();
 
-        let m0 = c.get_mark(0).unwrap().get_id();
-        let m1 = c.get_mark(1).unwrap().get_id();
+        let m0 = c.get_mark_mut(0).unwrap().get_id();
+        let m1 = c.get_mark_mut(1).unwrap().get_id();
 
-        c.get_mark(m0).unwrap().set_rotation(90.0);
-        c.get_mark(m1).unwrap().set_rotation(180.0);
+        c.get_mark_mut(m0).unwrap().set_rotation(90.0);
+        c.get_mark_mut(m1).unwrap().set_rotation(180.0);
 
-        assert_eq!(c.get_mark(m0).unwrap().get_rotation(), 90.0); 
-        assert_eq!(c.get_mark(m1).unwrap().get_rotation(), 180.0); 
+        assert_eq!(c.get_mark_mut(m0).unwrap().get_rotation(), 90.0); 
+        assert_eq!(c.get_mark_mut(m1).unwrap().get_rotation(), 180.0); 
     }
 }

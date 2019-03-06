@@ -61,7 +61,7 @@ fn main()
             .set_shape(Shape::Triangle);
     }*/
 
-    let pos = Position { x : 200.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
+    let pos = Position { x : 150.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
     let size = Size { width : 200.0, height : 200.0 };
 
     let mark_triangle = contrast.add_point_mark().set_position(pos)
@@ -70,27 +70,27 @@ fn main()
         .set_shape(Shape::Triangle)
         .get_id();
 
-    let mark_rectangle = contrast.add_point_mark().set_position((pos.x + 200.0, pos.y, pos.z))
+    let mark_rectangle = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y, pos.z))
         .set_size(size)
         .set_color((0.0, 1.0, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
-    let mark_circle = contrast.add_point_mark().set_position((pos.x + 400.0, pos.y, pos.z))
+    let mark_circle = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y, pos.z))
         .set_size(size)
         .set_color((0.0, 0.0, 1.0, 1.0))
         .set_shape(Shape::Circle)
         .get_id();
 
-    let mark_point = contrast.add_point_mark().set_position((pos.x + 400.0, pos.y+200.0, pos.z))
-    .set_size(size)
-    .set_color((1.0, 0.0, 1.0, 1.0))
-    .set_shape(Shape::Point)
-    .get_id();
-
-    let mark_squircle = contrast.add_point_mark().set_position((pos.x + 200.0, pos.y+250.0, pos.z))
+    let mark_point = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y+200.0, pos.z))
         .set_size(size)
         .set_color((1.0, 0.0, 1.0, 1.0))
+        .set_shape(Shape::Point)
+        .get_id();
+
+    let mark_squircle = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y+250.0, pos.z))
+        .set_size(size)
+        .set_color((1.0, 1.0, 1.0, 1.0))
         .set_shape(Shape::Squircle)
         .get_id();
 
@@ -106,26 +106,16 @@ fn main()
         .set_shape(Shape::Donut)
         .get_id();
 
-    let mark_pin = contrast.add_point_mark().set_position((pos.x + 200.0, pos.y -250.0, pos.z))
+    let mark_pin = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y -250.0, pos.z))
         .set_size(size)
         .set_color((0.0, 1.0, 1.0, 1.0))
         .set_shape(Shape::Pin)
         .get_id();
 
-    let mark_rectangle_ptr : *mut Mark = contrast.get_mark(mark_rectangle).unwrap();
+    let mark_rectangle_ptr : *mut Mark = contrast.get_mark_mut(mark_rectangle).unwrap();
 
     println!("Building finished!");
-
-    // Add a line mark for testing (not displayed, lines are not handled at the moment)
-    let mark_line = contrast.add_line_mark().set_thickness(5.0).set_mode(LineMode::Linear).add_point((100.0, 100.0, 0.0)).get_id();
-    dbg!(&contrast.get_mark(mark_line));
-
-    // Remove a line mark for testing
-    contrast.remove_mark(mark_line);
-    dbg!(&contrast.get_mark(mark_line));
-
     println!("Rendering ...");
-
 
     // Create a new surface to render to and get events from
     let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "contrast playground", WindowOpt::default()).expect("GLFW surface creation");

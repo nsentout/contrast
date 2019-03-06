@@ -64,9 +64,9 @@ impl PointMark {
     /// Converts a MarkPoint into a VertexPoint, which is a type
     /// understandable by the renderer.
     pub fn as_vertex(&self) -> VertexPoint {
-        (self.center.as_array(), self.common_properties.size.as_array(),
-         self.common_properties.color.as_array(), self.common_properties.rotation,
-         self.shape as u32, self.selection_angle, self.start_radius)
+        (*self.center.as_array(), *self.common_properties.size.as_array(),
+            *self.common_properties.color.as_array(), self.common_properties.rotation,
+            self.shape as u32, self.selection_angle, self.start_radius)
     }
 
     /// Set the position of a mark. You can pass as argument a tuple of 3 floats or

@@ -8,8 +8,10 @@ pub struct Size {
 impl Size {
     /// Convert a size structure to an array.
     /// Useful when converting our marks to vertices.
-    pub fn as_array(self) -> [f32; 2] {
-        [self.width, self.height]
+    pub fn as_array(&self) -> &[f32; 2] {
+        unsafe {
+            std::mem::transmute::<&Size, &[f32; 2]>(self)
+        }
     }
 }
 

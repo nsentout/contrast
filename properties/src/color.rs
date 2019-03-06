@@ -10,8 +10,10 @@ pub struct Color {
 impl Color {
     /// Convert a color structure to an array.
     /// Useful when converting our marks to vertices.
-    pub fn as_array(self) -> [f32; 4] {
-        [self.r, self.g, self.b, self.a]
+    pub fn as_array(&self) -> &[f32; 4] {
+        unsafe {
+            std::mem::transmute::<&Color, &[f32; 4]>(self)
+        }
     }
 }
 
