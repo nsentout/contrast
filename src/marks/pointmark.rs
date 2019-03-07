@@ -20,7 +20,7 @@ pub enum Shape {
     Diamond = 6,
     Donut = 7,
     Pin = 8,
-    /*Club = 9,
+    Club = 9,
     Heart = 10,
     Spade = 11,
     Chevron = 12,
@@ -30,7 +30,7 @@ pub enum Shape {
     Cross = 16,
     Asterisk = 17,
     Infinity = 18,
-    Arrow = 19*/
+    Arrow = 19
 }
 
 /// This is the structure that describes the marks of type Point.

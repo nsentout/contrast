@@ -73,43 +73,49 @@ fn main()
     let mark_rectangle = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y, pos.z))
         .set_size(size)
         .set_color((0.0, 1.0, 0.0, 1.0))
-        .set_shape(Shape::Rectangle)
+        .set_shape(Shape::Infinity)
         .get_id();
 
     let mark_circle = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y, pos.z))
         .set_size(size)
         .set_color((0.0, 0.0, 1.0, 1.0))
-        .set_shape(Shape::Circle)
+        .set_shape(Shape::Point)
         .get_id();
 
-    let mark_point = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y+200.0, pos.z))
+    let mark_point = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y+250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 0.0, 1.0, 1.0))
-        .set_shape(Shape::Point)
+        .set_shape(Shape::Spade)
         .get_id();
 
     let mark_squircle = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y+250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 1.0, 1.0, 1.0))
-        .set_shape(Shape::Squircle)
+        .set_shape(Shape::Clover)
         .get_id();
 
     let mark_diamond = contrast.add_point_mark().set_position((pos.x , pos.y+250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 1.0, 0.0, 1.0))
-        .set_shape(Shape::Diamond)
+        .set_shape(Shape::Ring)
         .get_id();
 
     let mark_donut = contrast.add_point_mark().set_position((pos.x, pos.y -250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 0.5, 0.0, 1.0))
-        .set_shape(Shape::Donut)
+        .set_shape(Shape::Tag)
         .get_id();
 
     let mark_pin = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y -250.0, pos.z))
         .set_size(size)
         .set_color((0.0, 1.0, 1.0, 1.0))
-        .set_shape(Shape::Pin)
+        .set_shape(Shape::Cross)
+        .get_id();
+
+    let mark_pin = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y -250.0, pos.z))
+        .set_size(size)
+        .set_color((0.0, 0.5, 1.0, 1.0))
+        .set_shape(Shape::Asterisk)
         .get_id();
 
     let mark_rectangle_ptr : *mut Mark = contrast.get_mark_mut(mark_rectangle).unwrap();
