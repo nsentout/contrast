@@ -6,12 +6,12 @@ use mark_macro_derive::MarkMacro;
 /// This is the type that will receive our shaders when we will want to render our line marks.
 /// We could describe it this way to be more clear :
 /// type VertexLine = (size, color, rotation, points, thickness, line_mode).
-pub type VertexLine = ([f32; 2], [f32; 4], f32, Vec<Position>, f32, u32);
+pub type VertexLine = ([f32; 2], [f32; 4], f32, Position, f32, u32);
 
 
 /// Those are the different ways we shoud be able to
 /// draw lines.
-#[derive(Debug)]
+#[derive(Debug,Copy,Clone)]
 pub enum LineMode {
     Linear,
     Dashed,
@@ -43,7 +43,21 @@ impl LineMark {
             mode : LineMode::Linear
         }
     }
-    
+
+    /// Converts a LineMark into a VertexLine, which is a type
+    /// understandable by the renderer.
+    pub fn as_vertex(&self) -> Vec<VertexLine> {
+        let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
+        let mode = &self.mode;
+        for p in self.points.clone() {
+            let vl : VertexLine = (*self.common_properties.size.as_array(),
+            *self.common_properties.color.as_array(), self.common_properties.rotation,
+            p, self.thickness, *mode as u32);
+            properties.push(vl);
+        }
+        properties
+    }
+
     /// Add a point to a line. You can pass as argument a tuple of 3 floats or
     /// a Position directly
     pub fn add_point<P : Into <Position>>(&mut self, point : P) -> &mut Self {
@@ -60,4 +74,5 @@ impl LineMark {
         self.mode = mode;
         self
     }
+
 }

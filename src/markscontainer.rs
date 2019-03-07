@@ -1,6 +1,7 @@
 use crate::MarkMacro;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
+use crate::marks::linemark::VertexLine;
 use crate::marks::linemark::LineMark;
 use properties::color::Color;
 use properties::size::Size;
@@ -80,7 +81,7 @@ impl Mark  {
 }
 
 /// This is the main structure of the library. It contains all the marks
-/// displayed on screen. The user can add, get, remove and modify marks 
+/// displayed on screen. The user can add, get, remove and modify marks
 /// as he wishes. The id of each mark represents their index in the vector,
 /// which allows for adding and removal of marks in O(1).
 pub struct Contrast {
@@ -90,7 +91,7 @@ pub struct Contrast {
 impl Contrast {
     /// Simply returns a new instance of Contrast, initializing
     /// the vector containing all the marks.
-    pub fn new() -> Self { 
+    pub fn new() -> Self {
         Contrast {
             marks : Vec::<Mark>::new()
         }
@@ -104,7 +105,7 @@ impl Contrast {
     pub fn add_point_mark(&mut self) -> &mut PointMark {
         let point = Mark::Point(PointMark::new(self.marks.len()));
         self.marks.push(point);
-        
+
         match self.marks.last_mut().unwrap() {
             Mark::Point(p) => p,
             _ => panic!("A problem occured when adding a new point mark!")
@@ -115,7 +116,7 @@ impl Contrast {
     pub fn add_line_mark(&mut self) -> &mut LineMark {
         let line = Mark::Line(LineMark::new(self.marks.len()));
         self.marks.push(line);
-        
+
         match self.marks.last_mut().unwrap() {
             Mark::Line(l) => l,
             _ => panic!("A problem occured when adding a new line mark!")
@@ -153,6 +154,18 @@ impl Contrast {
         properties
     }
 
+	/// Convert the LineMarks contained in the main vector into a vector
+    /// of vertices understandable by the renderer, then returns it.
+    pub fn get_linemarks_properties(self) -> Vec<VertexLine> {
+		let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
+        for lt in &self.marks {
+            if let Mark::Line(l) = lt {
+				properties.append(&mut l.as_vertex());
+            }
+        }
+        properties
+    }
+
 }
 
 #[cfg(test)]
@@ -171,9 +184,9 @@ mod tests {
     fn add_point_mark()
     {
         let mut c = Contrast::new();
-        
+
         let m1 = c.add_point_mark().get_id();
-        
+
         assert_eq!(c.marks.len(), 1);
         assert_eq!(m1, 0);
 
@@ -225,9 +238,9 @@ mod tests {
     fn add_line_mark()
     {
         let mut c = Contrast::new();
-        
+
         let m1 = c.add_line_mark().get_id();
-        
+
         assert_eq!(c.marks.len(), 1);
         assert_eq!(m1, 0);
 
@@ -244,7 +257,7 @@ mod tests {
     fn remove_line_mark()
     {
         let mut c = Contrast::new();
-        
+
         let m1 = c.add_line_mark().get_id();
         let m2 = c.add_line_mark().get_id();
 
@@ -268,8 +281,8 @@ mod tests {
         let m0 = c.get_mark_mut(0).unwrap().get_id();
         let m1 = c.get_mark_mut(1).unwrap().get_id();
 
-        assert_eq!(m0, 0); 
-        assert_eq!(m1, 1); 
+        assert_eq!(m0, 0);
+        assert_eq!(m1, 1);
     }
 
     #[test]
@@ -304,8 +317,8 @@ mod tests {
         c.get_mark_mut(m0).unwrap().set_color((0.1, 0.2, 0.3, 0.4));
         c.get_mark_mut(m1).unwrap().set_color((0.5, 0.6, 0.7, 0.8));
 
-        assert_eq!(c.get_mark_mut(m0).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 }); 
-        assert_eq!(c.get_mark_mut(m1).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 }); 
+        assert_eq!(c.get_mark_mut(m0).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 });
+        assert_eq!(c.get_mark_mut(m1).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 });
     }
 
     #[test]
@@ -322,7 +335,7 @@ mod tests {
         c.get_mark_mut(m0).unwrap().set_rotation(90.0);
         c.get_mark_mut(m1).unwrap().set_rotation(180.0);
 
-        assert_eq!(c.get_mark_mut(m0).unwrap().get_rotation(), 90.0); 
-        assert_eq!(c.get_mark_mut(m1).unwrap().get_rotation(), 180.0); 
+        assert_eq!(c.get_mark_mut(m0).unwrap().get_rotation(), 90.0);
+        assert_eq!(c.get_mark_mut(m1).unwrap().get_rotation(), 180.0);
     }
 }
