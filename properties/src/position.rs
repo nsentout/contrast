@@ -1,3 +1,6 @@
+use std::ops::Add;
+use std::ops::AddAssign;
+
 /// Structure representing a 3D position
 #[derive(PartialEq, Default, Copy, Clone, Debug)]
 pub struct Position {
@@ -21,5 +24,27 @@ impl From <(f32, f32, f32)> for Position {
        Position {
            x : p.0, y : p.1, z : p.2
        }
+    }
+}
+
+impl Add for Position {
+    type Output = Position;
+
+    fn add(self, other: Position) -> Position {
+        Position {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z
+        }
+    }
+}
+
+impl AddAssign for Position {
+    fn add_assign(&mut self, pos: Position) {
+        *self = Position {
+            x: self.x + pos.x,
+            y: self.y + pos.y,
+            z: self.z + pos.z
+        };
     }
 }

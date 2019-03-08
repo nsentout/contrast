@@ -1,3 +1,4 @@
+use properties::markid::MarkId;
 use properties::size::Size;
 use properties::color::Color;
 
@@ -6,10 +7,10 @@ use properties::color::Color;
 /// a size, a color and a rotation.
 #[derive(Debug)]
 pub(crate) struct MarkProperties {
-    pub id : usize,
+    pub markid : MarkId,
     pub size : Size,
     pub color: Color,
-    pub rotation : f32,
+    pub rotation : f32
 }
 
 impl MarkProperties {
@@ -18,7 +19,7 @@ impl MarkProperties {
     pub(crate) fn new(id : usize) -> Self
     {
         MarkProperties {
-            id,
+            markid : MarkId::new(id),
             size : Size::default(),
             color: Color::default(),
             rotation : 0.0,

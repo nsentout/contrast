@@ -25,9 +25,9 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
 
     let gen = quote! {  // quote! lets us write the Rust code that we want to return
         impl MarkMacro for #name {
-            fn get_id(&self) -> usize
+            fn get_id(&self) -> properties::markid::MarkId
             {
-                self.common_properties.id
+                self.common_properties.markid
             }
 
             fn get_size(&self) -> properties::size::Size
@@ -45,6 +45,11 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
                 self.common_properties.rotation
             }
 
+            fn get_layer(&self) -> usize
+            {
+                self.common_properties.markid.layer
+            }
+
             fn set_size<S : Into <properties::size::Size>>(&mut self, size : S) -> &mut #name
             {
                 self.common_properties.size = size.into();
@@ -56,9 +61,16 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
                 self.common_properties.color = color.into();
                 self
             }
+
             fn set_rotation(&mut self, rotation : f32) -> &mut #name
             {
                 self.common_properties.rotation = rotation;
+                self
+            }
+
+            fn set_layer(&mut self, layer : usize) -> &mut #name
+            {
+                self.common_properties.markid.layer = layer;
                 self
             }
         }

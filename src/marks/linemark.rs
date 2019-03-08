@@ -75,4 +75,8 @@ impl LineMark {
         self
     }
 
+    pub(crate) fn get_points_mut(&mut self) -> &mut Vec<Position> {
+        &mut self.points
+    }
+
 }

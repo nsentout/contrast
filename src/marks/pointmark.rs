@@ -76,6 +76,10 @@ impl PointMark {
         self
     }
 
+    pub fn get_position(&self) -> Position {
+        self.center
+    }
+
     pub fn set_shape(&mut self, shape : Shape) -> &mut Self {
         self.shape = shape;
         self

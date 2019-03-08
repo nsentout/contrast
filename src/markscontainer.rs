@@ -1,100 +1,31 @@
-use crate::MarkMacro;
+use properties::markid::MarkId;
+use crate::marks::mark::Mark;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::VertexLine;
 use crate::marks::linemark::LineMark;
-use properties::color::Color;
-use properties::size::Size;
-
-/// Union of every type of mark.
-#[derive(Debug)]
-pub enum Mark {
-	Point(PointMark),
-	Line(LineMark),
-}
-
-/// Macro calling the getter $get of the MarkMacro trait on the mark $mark.
-/// Example : mark_get!(mark_point_1, get_color) calls the get_color method
-/// implemented in the procedural macro "mark_macro_derive" that returns
-/// the color of "mark mark_point_1"
-macro_rules! mark_get {
-    ($mark:ident, $get:ident) => (
-        match $mark {
-            Mark::Point(p) => p.$get(),
-            Mark::Line(l)  => l.$get()
-        }
-    )
-}
-
-/// Macro calling the setter $set of the MarkMacro trait (with parameter $param) on the mark $mark.
-/// Example : mark_set!(mark_point_1, set_color, (1.0, 0.0, 0.0, 1.0)) calls the set_color method
-/// implemented in the procedural macro "mark_macro_derive" that set the color of "mark mark_point_1"
-/// to (1.0, 0.0, 0.0, 1.0).
-macro_rules! mark_set {
-    ($mark:ident, $set:ident, $param:expr) => {
-        {
-            match $mark {
-                Mark::Point(p) => { p.$set($param); } ,
-                Mark::Line(l)  => { l.$set($param); }
-            }
-            $mark
-        }
-    }
-}
-
-impl Mark  {
-    pub fn get_id(&self) -> usize {
-        mark_get!(self, get_id)
-    }
-
-    pub fn get_size(&self) -> Size {
-        mark_get!(self, get_size)
-    }
-
-    pub fn get_color(&self) -> Color {
-        mark_get!(self, get_color)
-    }
-
-    pub fn get_rotation(&self) -> f32 {
-        mark_get!(self, get_rotation)
-    }
-
-    pub(self) fn set_id(&mut self, id : usize) -> &mut Self {
-        match self {    // cannot use the macro because set_id is not a method of MarkMacro
-            Mark::Point(p) => p.common_properties.id = id,
-            Mark::Line(l) => l.common_properties.id = id
-        }
-        self
-    }
-
-    pub fn set_size<S : Into <properties::size::Size>>(&mut self, size : S) -> &mut Self {
-        mark_set!(self, set_size, size)
-    }
-
-    pub fn set_color<C : Into <properties::color::Color>>(&mut self, color : C) -> &mut Self {
-        mark_set!(self, set_color, color)
-    }
-
-    pub fn set_rotation(&mut self, rotation : f32) -> &mut Self {
-        mark_set!(self, set_rotation, rotation)
-    }
-}
+use crate::layer::Layer;
 
 /// This is the main structure of the library. It contains all the marks
 /// displayed on screen. The user can add, get, remove and modify marks
 /// as he wishes. The id of each mark represents their index in the vector,
 /// which allows for adding and removal of marks in O(1).
 pub struct Contrast {
-    marks : Vec<Mark>
+    layers : Vec<Layer>,
+    total_marks : usize
 }
 
 impl Contrast {
     /// Simply returns a new instance of Contrast, initializing
     /// the vector containing all the marks.
     pub fn new() -> Self {
-        Contrast {
-            marks : Vec::<Mark>::new()
-        }
+        let mut contrast = Contrast {
+            layers : Vec::<Layer>::new(),
+            total_marks : 0
+        };
+
+        contrast.layers.push(Layer::new(0));
+        contrast
     }
 
     /// Create a mark of type "point" with default values and add it into the main
@@ -103,10 +34,11 @@ impl Contrast {
     /// to be able to modify it just after calling add_point_mark in a way
     /// similar to this : add_point_mark.set_rotation(90.0).
     pub fn add_point_mark(&mut self) -> &mut PointMark {
-        let point = Mark::Point(PointMark::new(self.marks.len()));
-        self.marks.push(point);
+        let point = Mark::Point(PointMark::new(self.total_marks));
+        self.layers.get_mut(0).unwrap().add_mark(point);
+        self.total_marks += 1;
 
-        match self.marks.last_mut().unwrap() {
+        match self.layers.get_mut(0).unwrap().get_last_mark_mut() {
             Mark::Point(p) => p,
             _ => panic!("A problem occured when adding a new point mark!")
         }
@@ -114,19 +46,26 @@ impl Contrast {
 
     /// Same behavior than add_point_mark but it adds a mark of type "line".
     pub fn add_line_mark(&mut self) -> &mut LineMark {
-        let line = Mark::Line(LineMark::new(self.marks.len()));
-        self.marks.push(line);
+        let line = Mark::Line(LineMark::new(self.total_marks));
+        self.layers.get_mut(0).unwrap().add_mark(line);
+        self.total_marks += 1;
 
-        match self.marks.last_mut().unwrap() {
-            Mark::Line(l) => l,
+        match self.layers.get_mut(0).unwrap().get_last_mark_mut() {
+            Mark::Line(p) => p,
             _ => panic!("A problem occured when adding a new line mark!")
         }
     }
 
-    /// Returns an Option of the mark at the index "id". If there is no mark having this id,
-    /// returns None.
-    pub fn get_mark_mut(&mut self, id : usize) -> Option<&mut Mark> {
-        self.marks.get_mut(id)
+    /// Returns a reference wrapped into an Option of the mark at the index "id". 
+    /// If there is no mark having this id, returns None.
+    pub fn get_mark(&mut self, markid : &MarkId) -> Option<&Mark> {
+        self.layers.get(markid.layer).unwrap().get_mark(markid)
+    }
+
+    /// Returns a mutable reference wrapped into an Option of the mark at the index "id". 
+    /// If there is no mark having this id, returns None.
+    pub fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
+        self.layers.get_mut(markid.layer).unwrap().get_mark_mut(&*markid)
     }
 
     /// Remove the mark with the id mark. We will call this mark the target.
@@ -137,18 +76,72 @@ impl Contrast {
     /// of the target. This explains why we can always use "self.marks.len()" when we
     /// want to give a unique id to a new mark. Furthermore, this allows us to remove
     /// an element in O(1).
-    pub fn remove_mark(&mut self, mark : usize) {
-        if !self.marks.is_empty() { self.marks.last_mut().unwrap().set_id(mark); }
-        if self.marks.len() > mark { self.marks.swap_remove(mark); }
+    pub fn remove_mark(&mut self, markid : &MarkId) {
+        let layer = self.layers.get_mut(markid.layer).unwrap();
+
+        if !layer.has_no_mark() {
+            layer.get_last_mark_mut().set_id(*markid);
+        }
+
+        if layer.get_marks_nb() > markid.id { 
+            layer.swap_remove_mark(&*markid);
+            self.total_marks -= 1;
+        }
+    }
+
+    pub(crate) fn remove_and_get_mark(&mut self, markid : &MarkId) -> Option<Mark> {
+        let layer : &mut Layer = self.layers.get_mut(markid.layer).unwrap();
+
+        if !layer.has_no_mark() { 
+            layer.get_last_mark_mut().set_id(*markid);
+        }
+
+        if layer.get_marks_nb() > markid.id { 
+            Some(layer.swap_remove_mark(markid))
+        }
+        else {
+            None
+        }
+    }
+
+    /// Add a new layer into contrast.
+    pub fn add_layer(&mut self) {
+        self.layers.push(Layer::new(self.layers.len()));
+    }
+
+    /// Assign a new layer to a mark.
+    /// DOES NOT WORK
+    pub fn set_mark_layer(&mut self, markid : &MarkId, layer : usize) {
+        let mark = self.remove_and_get_mark(markid).unwrap();
+        self.layers.get_mut(layer).unwrap().add_mark(mark);
+    }
+
+    /// Returns a reference wrapped into an Option of the Layer 
+    /// at the index <layer>.
+    pub fn get_layer(&self, layer : usize) -> Option<&Layer> {
+        self.layers.get(layer)
+    }
+
+    /// Returns a mutable reference wrapped into an Option of the Layer 
+    /// at the index <layer>.
+    pub fn get_layer_mut(&mut self, layer : usize) -> Option<&mut Layer> {
+        self.layers.get_mut(layer)
+    }
+
+    /// Returns the number of marks in total.
+    pub fn get_marks_nb(&self) -> usize {
+        self.total_marks
     }
 
     /// Convert the MarkPoints contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
     pub fn get_pointmarks_properties(self) -> Vec<VertexPoint> {
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
-        for pt in &self.marks {
-            if let Mark::Point(p) = pt {
-                properties.push(p.as_vertex());
+        for layer in &self.layers {
+            for mark in layer.get_all_marks() {
+                if let Mark::Point(p) = mark {
+                    properties.push(p.as_vertex());
+                }
             }
         }
         properties
@@ -157,10 +150,12 @@ impl Contrast {
 	/// Convert the LineMarks contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
     pub fn get_linemarks_properties(self) -> Vec<VertexLine> {
-		let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
-        for lt in &self.marks {
-            if let Mark::Line(l) = lt {
-				properties.append(&mut l.as_vertex());
+        let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
+        for layer in &self.layers {
+            for mark in layer.get_all_marks() {
+                if let Mark::Line(l) = mark {
+                    properties.append(&mut l.as_vertex());
+                }
             }
         }
         properties
@@ -171,6 +166,8 @@ impl Contrast {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use properties::color::Color;
+    use properties::size::Size;
     use crate::marks::pointmark::Shape;
     use crate::MarkMacro;
 
@@ -204,16 +201,19 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        let m1 = c.add_point_mark().get_id();
-        let m2 = c.add_point_mark().get_id();
+        let m1 = c.add_point_mark().set_rotation(45.0).get_id();
+        let m2 = c.add_point_mark().set_rotation(90.0).get_id();
 
-        assert_eq!(m1, 0);
-        assert_eq!(m2, 1);
+        assert_eq!(m1.id, 0);
+        assert_eq!(m2.id, 1);
+        assert_eq!(m1.layer, 0);
+        assert_eq!(m2.layer, 0);
 
-        c.remove_mark(m1);
+        c.remove_mark(&m1);
+        let m2 = &c.layers.get_mut(0).unwrap().get_last_mark_mut().get_id();
 
-        assert_eq!(c.marks.len(), 1);
-        assert_eq!(c.marks.get(0).unwrap().get_id(), 0);
+        assert_eq!(c.get_marks_nb(), 1);
+        assert_eq!(m2.id, 0);
     }
 
     #[test]
