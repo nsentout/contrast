@@ -50,8 +50,8 @@ impl LineMark {
         let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
         let mode = &self.mode;
         for p in self.points.clone() {
-            let vl : VertexLine = (*self.common_properties.size.as_array(),
-            *self.common_properties.color.as_array(), self.common_properties.rotation,
+            let vl : VertexLine = (*self.common_properties.size.to_array(),
+            *self.common_properties.color.to_array(), self.common_properties.rotation,
             p, self.thickness, *mode as u32);
             properties.push(vl);
         }

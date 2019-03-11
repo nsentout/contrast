@@ -52,7 +52,7 @@ impl Mark {
 
         match self {
             Mark::Point(p) => { 
-                p.set_position(p.get_position() + position); 
+                p.set_position(*p.get_position() + position); 
             },
             Mark::Line(l) => {
                 for pt in l.get_points_mut() {
@@ -88,8 +88,8 @@ impl MarkMacro for Mark  {
         mark_get!(self, get_rotation)
     }
 
-    fn get_layer(&self) -> usize {
-        mark_get!(self, get_layer)
+    fn get_layer_index(&self) -> usize {
+        mark_get!(self, get_layer_index)
     }
 
     fn set_size<S : Into <properties::size::Size>>(&mut self, size : S) -> &mut Self {

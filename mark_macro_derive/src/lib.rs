@@ -45,7 +45,7 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
                 self.common_properties.rotation
             }
 
-            fn get_layer(&self) -> usize
+            fn get_layer_index(&self) -> usize
             {
                 self.common_properties.markid.layer
             }

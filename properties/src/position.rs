@@ -12,7 +12,7 @@ pub struct Position {
 impl Position {
     /// Convert a position structure to an array.
     /// Useful when converting our marks to vertices.
-    pub fn as_array(&self) -> &[f32; 3] {
+    pub fn to_array(&self) -> &[f32; 3] {
         unsafe {
             std::mem::transmute::<&Position, &[f32; 3]>(self)
         }
@@ -46,5 +46,20 @@ impl AddAssign for Position {
             y: self.y + pos.y,
             z: self.z + pos.z
         };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn to_array()
+    {
+        let p1 = Position { x : 10.0, y : 15.5, z : 0.0 };
+        let p2 = Position { x : -10.0, y : -15.5, z : -10.0 };
+
+        assert_eq!(&[10.0, 15.5, 0.0], p1.to_array());
+        assert_eq!(&[-10.0, -15.5, -10.0], p2.to_array());
     }
 }

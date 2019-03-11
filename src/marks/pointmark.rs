@@ -64,8 +64,8 @@ impl PointMark {
     /// Converts a MarkPoint into a VertexPoint, which is a type
     /// understandable by the renderer.
     pub fn as_vertex(&self) -> VertexPoint {
-        (*self.center.as_array(), *self.common_properties.size.as_array(),
-            *self.common_properties.color.as_array(), self.common_properties.rotation,
+        (*self.center.to_array(), *self.common_properties.size.to_array(),
+            *self.common_properties.color.to_array(), self.common_properties.rotation,
             self.shape as u32, self.selection_angle, self.start_radius)
     }
 
@@ -76,8 +76,8 @@ impl PointMark {
         self
     }
 
-    pub fn get_position(&self) -> Position {
-        self.center
+    pub fn get_position(&self) -> &Position {
+        &self.center
     }
 
     pub fn set_shape(&mut self, shape : Shape) -> &mut Self {

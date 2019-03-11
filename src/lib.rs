@@ -22,8 +22,8 @@ pub trait MarkMacro
     /// Returns the rotation of a mark.
     fn get_rotation(&self) -> f32;
 
-    /// Returns the layer whose mark is bound to.
-    fn get_layer(&self) -> usize;
+    /// Returns the layer index whose mark is bound to.
+    fn get_layer_index(&self) -> usize;
 
     /// Set the size of a mark. You can pass as argument a tuple of 2 floats (width and height) or
     /// a Size directly.
