@@ -1,4 +1,5 @@
 use properties::markid::MarkId;
+use crate::MarkMacro;
 use crate::marks::mark::Mark;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
@@ -12,7 +13,8 @@ use crate::layer::Layer;
 /// which allows for adding and removal of marks in O(1).
 pub struct Contrast {
     layers : Vec<Layer>,
-    total_marks : usize
+    total_marks : usize,
+    valid_marks : usize
 }
 
 impl Contrast {
@@ -21,7 +23,8 @@ impl Contrast {
     pub fn new() -> Self {
         let mut contrast = Contrast {
             layers : Vec::<Layer>::new(),
-            total_marks : 0
+            total_marks : 0,
+            valid_marks : 0
         };
 
         contrast.layers.push(Layer::new(0));
@@ -59,13 +62,13 @@ impl Contrast {
     /// Returns a reference wrapped into an Option of the mark at the index "id". 
     /// If there is no mark having this id, returns None.
     pub fn get_mark(&mut self, markid : &MarkId) -> Option<&Mark> {
-        self.layers.get(markid.layer).unwrap().get_mark(markid)
+        self.layers.get(markid.layer_index).unwrap().get_mark(markid)
     }
 
     /// Returns a mutable reference wrapped into an Option of the mark at the index "id". 
     /// If there is no mark having this id, returns None.
     pub fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
-        self.layers.get_mut(markid.layer).unwrap().get_mark_mut(&*markid)
+        self.layers.get_mut(markid.layer_index).unwrap().get_mark_mut(markid)
     }
 
     /// Remove the mark with the id mark. We will call this mark the target.
@@ -76,56 +79,52 @@ impl Contrast {
     /// of the target. This explains why we can always use "self.marks.len()" when we
     /// want to give a unique id to a new mark. Furthermore, this allows us to remove
     /// an element in O(1).
-    pub fn remove_mark(&mut self, markid : &MarkId) {
-        let layer = self.layers.get_mut(markid.layer).unwrap();
-
-        if !layer.has_no_mark() {
-            layer.get_last_mark_mut().set_id(*markid);
-        }
-
-        if layer.get_marks_nb() > markid.id { 
-            layer.swap_remove_mark(&*markid);
-            self.total_marks -= 1;
-        }
+    pub fn remove_mark(&mut self, markid : &mut MarkId) {
+        self.layers.get_mut(markid.layer_index).unwrap().invalidate_mark(markid);
     }
 
-    pub(crate) fn remove_and_get_mark(&mut self, markid : &MarkId) -> Option<Mark> {
-        let layer : &mut Layer = self.layers.get_mut(markid.layer).unwrap();
-
-        if !layer.has_no_mark() { 
-            layer.get_last_mark_mut().set_id(*markid);
-        }
-
-        if layer.get_marks_nb() > markid.id { 
-            Some(layer.swap_remove_mark(markid))
-        }
-        else {
-            None
-        }
-    }
-
-    /// Add a new layer into contrast.
+    /// Add a new layer into contrast.  //TODO: add layers automatically
     pub fn add_layer(&mut self) {
         self.layers.push(Layer::new(self.layers.len()));
     }
 
-    /// Assign a new layer to a mark.
-    /// DOES NOT WORK
-    pub fn set_mark_layer(&mut self, markid : &MarkId, layer : usize) {
-        let mark = self.remove_and_get_mark(markid).unwrap();
-        self.layers.get_mut(layer).unwrap().add_mark(mark);
+    /// Assign a new layer to a mark.   //TODO: move it into Mark
+    pub fn set_mark_layer(&mut self, markid : &mut MarkId, layer_index : usize) {
+
+        // If already in the layer, returns
+        if layer_index == markid.layer_index { return; }
+
+        let current_layer_size = self.layers.get(markid.layer_index).unwrap().get_marks_nb();
+        let wanted_layer_size = self.layers.get(layer_index).unwrap().get_marks_nb();
+
+        // Retrieve a copy of the mark in his current layer
+        let mut mark = self.layers.get_mut(markid.layer_index).unwrap().invalidate_and_get_mark(markid);
+
+        // Update the mark according to his new layer
+        mark.set_mark_index(wanted_layer_size); 
+        mark.set_layer_index(layer_index);
+        mark.set_valid(true);
+
+        // Update the markid passed as parameter so it stays coherent
+        markid.mark_index = wanted_layer_size;
+        markid.layer_index = layer_index;
+        markid.valid = true;
+            
+        // Add the mark of the wanted layer
+        self.layers.get_mut(layer_index).unwrap().add_mark(mark); 
     }
 
     /// Returns a reference wrapped into an Option of the Layer 
     /// at the index <layer>.
-    pub fn get_layer(&self, layer : usize) -> Option<&Layer> {
-        self.layers.get(layer)
+    /// should it be public ?
+    pub fn get_layer(&self, layer_index : usize) -> Option<&Layer> {
+        self.layers.get(layer_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the Layer 
     /// at the index <layer>.
-    pub fn get_layer_mut(&mut self, layer : usize) -> Option<&mut Layer> {
-        self.layers.get_mut(layer)
+    pub fn get_layer_mut(&mut self, layer_index : usize) -> Option<&mut Layer> {
+        self.layers.get_mut(layer_index)
     }
 
     /// Returns the number of marks in total.
@@ -135,12 +134,14 @@ impl Contrast {
 
     /// Convert the MarkPoints contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
-    pub fn get_pointmarks_properties(self) -> Vec<VertexPoint> {
+    pub fn get_pointmarks_properties(&self) -> Vec<VertexPoint> {
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Point(p) = mark {
-                    properties.push(p.as_vertex());
+                    if mark.is_valid() {
+                        properties.push(p.as_vertex());
+                    }
                 }
             }
         }
@@ -149,12 +150,14 @@ impl Contrast {
 
 	/// Convert the LineMarks contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
-    pub fn get_linemarks_properties(self) -> Vec<VertexLine> {
+    pub fn get_linemarks_properties(&self) -> Vec<VertexLine> {
         let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Line(l) = mark {
-                    properties.append(&mut l.as_vertex());
+                    if mark.is_valid() {
+                        properties.append(&mut l.as_vertex());
+                    }
                 }
             }
         }
@@ -184,16 +187,12 @@ mod tests {
 
         let m1 = c.add_point_mark().get_id();
 
-        assert_eq!(c.marks.len(), 1);
-        assert_eq!(m1, 0);
+        assert_eq!(c.get_marks_nb(), 1);
 
         let m2 = c.add_point_mark().get_id();
         let m3 = c.add_point_mark().get_id();
 
-        assert_eq!(c.marks.len(), 3);
-        assert_eq!(m1, 0);
-        assert_eq!(m2, 1);
-        assert_eq!(m3, 2);
+        assert_eq!(c.get_marks_nb(), 3);
     }
 
     #[test]
@@ -201,19 +200,12 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        let m1 = c.add_point_mark().set_rotation(45.0).get_id();
-        let m2 = c.add_point_mark().set_rotation(90.0).get_id();
+        let mut m1 = c.add_point_mark().get_id();
+        let mut m2 = c.add_point_mark().get_id();
 
-        assert_eq!(m1.id, 0);
-        assert_eq!(m2.id, 1);
-        assert_eq!(m1.layer, 0);
-        assert_eq!(m2.layer, 0);
-
-        c.remove_mark(&m1);
-        let m2 = &c.layers.get_mut(0).unwrap().get_last_mark_mut().get_id();
+        c.remove_mark(&mut m1);
 
         assert_eq!(c.get_marks_nb(), 1);
-        assert_eq!(m2.id, 0);
     }
 
     #[test]
@@ -241,16 +233,12 @@ mod tests {
 
         let m1 = c.add_line_mark().get_id();
 
-        assert_eq!(c.marks.len(), 1);
-        assert_eq!(m1, 0);
+        assert_eq!(c.get_marks_nb(), 1);
 
         let m2 = c.add_line_mark().get_id();
         let m3 = c.add_line_mark().get_id();
 
-        assert_eq!(c.marks.len(), 3);
-        assert_eq!(m1, 0);
-        assert_eq!(m2, 1);
-        assert_eq!(m3, 2);
+        assert_eq!(c.get_marks_nb(), 3);
     }
 
     #[test]
@@ -258,16 +246,42 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        let m1 = c.add_line_mark().get_id();
-        let m2 = c.add_line_mark().get_id();
+        let mut m1 = c.add_line_mark().get_id();
+        let mut m2 = c.add_line_mark().get_id();
 
-        assert_eq!(m1, 0);
-        assert_eq!(m2, 1);
+        c.remove_mark(&mut m1);
 
-        c.remove_mark(m1);
+        assert_eq!(c.get_marks_nb(), 1);
+    }
 
-        assert_eq!(c.marks.len(), 1);
-        assert_eq!(c.marks.get(0).unwrap().get_id(), 0);
+    #[test]
+    fn set_mark_layer()
+    {
+        let mut c = Contrast::new();
+        c.add_layer();
+        c.add_layer();
+
+        let mut m1 = c.add_point_mark().set_position((100.0, 150.0, 0.0)).get_id();
+        let mut m2 = c.add_point_mark().set_position((200.0, 250.0, 1.0)).get_id();
+        let mut m3 = c.add_point_mark().set_position((300.0, 350.0, 2.0)).get_id();
+
+        for i in 0..3 {
+            for j in 0..3 {
+                for k in 0..3 {
+                    c.set_mark_layer(&mut m1, i);
+                    c.set_mark_layer(&mut m2, j);
+                    c.set_mark_layer(&mut m3, k);
+
+                    let marks_properties = c.get_pointmarks_properties();
+
+                    if (i != j && j != k && i != k) {
+                        assert_eq!(marks_properties[i], ([100.0, 150.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                        assert_eq!(marks_properties[j], ([200.0, 250.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                        assert_eq!(marks_properties[k], ([300.0, 350.0, 2.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                    }
+                }
+            }
+        }
     }
 
     #[test]
@@ -275,14 +289,14 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        c.add_point_mark();
-        c.add_point_mark();
+        let m1 = c.add_line_mark().get_id();
+        let m2 = c.add_line_mark().get_id();
 
-        let m0 = c.get_mark_mut(0).unwrap().get_id();
-        let m1 = c.get_mark_mut(1).unwrap().get_id();
+        let expected_m1_id = MarkId { mark_index : 0, layer_index : 0, valid : true };
+        let expected_m2_id = MarkId { mark_index : 1, layer_index : 0, valid : true };
 
-        assert_eq!(m0, 0);
-        assert_eq!(m1, 1);
+        assert_eq!(m1, expected_m1_id);
+        assert_eq!(m2, expected_m2_id);
     }
 
     #[test]
@@ -290,17 +304,11 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        c.add_point_mark();
-        c.add_point_mark();
+        let m1 = c.add_line_mark().set_size((10.0, 20.0)).get_id();
+        let m2 = c.add_line_mark().set_size((30.0, 40.0)).get_id();
 
-        let m0 = c.get_mark_mut(0).unwrap().get_id();
-        let m1 = c.get_mark_mut(1).unwrap().get_id();
-
-        c.get_mark_mut(m0).unwrap().set_size((10.0, 20.0));
-        c.get_mark_mut(m1).unwrap().set_size((30.0, 40.0));
-
-        assert_eq!(c.get_mark_mut(m0).unwrap().get_size(), Size { width : 10.0, height : 20.0 });
-        assert_eq!(c.get_mark_mut(m1).unwrap().get_size(), Size { width : 30.0, height : 40.0 });
+        assert_eq!(c.get_mark_mut(&m1).unwrap().get_size(), Size { width : 10.0, height : 20.0 });
+        assert_eq!(c.get_mark_mut(&m2).unwrap().get_size(), Size { width : 30.0, height : 40.0 });
     }
 
     #[test]
@@ -308,17 +316,11 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        c.add_line_mark();
-        c.add_line_mark();
+        let m1 = c.add_line_mark().set_color((0.1, 0.2, 0.3, 0.4)).get_id();
+        let m2 = c.add_line_mark().set_color((0.5, 0.6, 0.7, 0.8)).get_id();
 
-        let m0 = c.get_mark_mut(0).unwrap().get_id();
-        let m1 = c.get_mark_mut(1).unwrap().get_id();
-
-        c.get_mark_mut(m0).unwrap().set_color((0.1, 0.2, 0.3, 0.4));
-        c.get_mark_mut(m1).unwrap().set_color((0.5, 0.6, 0.7, 0.8));
-
-        assert_eq!(c.get_mark_mut(m0).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 });
-        assert_eq!(c.get_mark_mut(m1).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 });
+        assert_eq!(c.get_mark_mut(&m1).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 });
+        assert_eq!(c.get_mark_mut(&m2).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 });
     }
 
     #[test]
@@ -326,16 +328,10 @@ mod tests {
     {
         let mut c = Contrast::new();
 
-        c.add_line_mark();
-        c.add_line_mark();
+        let m1 = c.add_line_mark().set_rotation(90.0).get_id();
+        let m2 = c.add_line_mark().set_rotation(180.0).get_id();
 
-        let m0 = c.get_mark_mut(0).unwrap().get_id();
-        let m1 = c.get_mark_mut(1).unwrap().get_id();
-
-        c.get_mark_mut(m0).unwrap().set_rotation(90.0);
-        c.get_mark_mut(m1).unwrap().set_rotation(180.0);
-
-        assert_eq!(c.get_mark_mut(m0).unwrap().get_rotation(), 90.0);
-        assert_eq!(c.get_mark_mut(m1).unwrap().get_rotation(), 180.0);
+        assert_eq!(c.get_mark_mut(&m1).unwrap().get_rotation(), 90.0);
+        assert_eq!(c.get_mark_mut(&m2).unwrap().get_rotation(), 180.0);
     }
 }

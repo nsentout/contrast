@@ -39,7 +39,7 @@ pub enum Shape {
 /// attribute common_properties.
 /// Point marks also have a position, a shape and a selection angle
 /// and start radius for some specific shapes.
-#[derive(MarkMacro, Debug)]
+#[derive(MarkMacro, Clone, Debug)]
 pub struct PointMark {
     pub(crate) common_properties : MarkProperties,
     center : Position,

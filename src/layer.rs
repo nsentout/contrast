@@ -39,14 +39,23 @@ impl Layer {
         self.marks.len()
     }
 
-    /// Indicate whether or not the layer contains marks
-    pub fn has_no_mark(&self) -> bool {
-        self.marks.is_empty()
-    }
-
     /// Add a mark into the layer.
     pub(crate) fn add_mark(&mut self, mark : Mark) {
         self.marks.push(mark);
+    }
+
+    /// Invalidate the mark represented by markid, making it invisible
+    pub(crate) fn invalidate_mark(&mut self, markid : &mut MarkId) {
+        if self.contains(markid) {
+            markid.valid = false;
+            self.get_mark_mut(markid).unwrap().set_valid(false);
+        }
+    }
+
+    /// Invalidate the mark represented by markid, making it invisible, and returns a clone of it.
+    pub(crate) fn invalidate_and_get_mark(&mut self, markid : &mut MarkId) -> Mark {
+        self.get_mark_mut(markid).unwrap().set_valid(false);
+        self.get_mark_mut(markid).unwrap().clone()
     }
 
     /// Returns the depth at which is the layer.
@@ -56,28 +65,30 @@ impl Layer {
 
     /// Returns a reference wrapped into an Option of the mark
     /// with the id <mark>
-    pub(crate) fn get_mark(&self, mark : &MarkId) -> Option<&Mark> {
-        self.marks.get(mark.id)
+    pub(crate) fn get_mark(&self, markid : &MarkId) -> Option<&Mark> {
+        self.marks.get(markid.mark_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the mark
     /// with the id <mark>
-    pub(crate) fn get_mark_mut(&mut self, mark : &MarkId) -> Option<&mut Mark> {
-        self.marks.get_mut(mark.id)
+    pub(crate) fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
+        self.marks.get_mut(markid.mark_index)
     }
 
     /// Returns a reference of the vector containing all the marks
     pub(crate) fn get_all_marks(&self) -> &Vec<Mark> {
         &self.marks
     }
-
-    // Simply calls swap_remove on the marks vector
-    pub(crate) fn swap_remove_mark(&mut self, mark : &MarkId) -> Mark {
-        self.marks.swap_remove(mark.id)
-    }
  
     /// Returns a mutable reference of the last added mark.
     pub(crate) fn get_last_mark_mut(&mut self) -> &mut Mark {
         self.marks.last_mut().unwrap()
+    }
+
+    pub(self) fn contains(&self, markid : &MarkId) -> bool {
+        if let None = self.marks.get(markid.layer_index) {
+            return false;
+        }
+        true
     }
 }

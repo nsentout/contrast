@@ -11,7 +11,6 @@ use luminance::context::GraphicsContext;
 use luminance::linear::M44;
 
 use contrast::markscontainer::Contrast;
-use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::camera::Camera;
@@ -63,55 +62,55 @@ fn main()
     let pos = Position { x : 150.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
     let size = Size { width : 200.0, height : 200.0 };
 
-    let mark_triangle = contrast.add_point_mark().set_position(pos)
+    let mut mark_triangle = contrast.add_point_mark().set_position(pos)
         .set_size(size)
         .set_color((1.0, 0.0, 0.0, 1.0))
         .set_shape(Shape::Triangle)
         .get_id();
 
-    let mark_infinity = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y, pos.z))
+    let mut mark_infinity = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y, pos.z))
         .set_size(size)
         .set_color((0.0, 1.0, 0.0, 1.0))
         .set_shape(Shape::Infinity)
         .get_id();
 
-    let mark_point = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y, pos.z))
+    let mut mark_point = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y, pos.z))
         .set_size(size)
         .set_color((0.0, 0.0, 1.0, 1.0))
         .set_shape(Shape::Point)
         .get_id();
 
-    let mark_spade = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y+250.0, pos.z))
+    let mut mark_spade = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y+250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 0.0, 1.0, 1.0))
         .set_shape(Shape::Spade)
         .get_id();
 
-    let mark_clover = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y+250.0, pos.z))
+    let mut mark_clover = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y+250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 1.0, 1.0, 1.0))
         .set_shape(Shape::Clover)
         .get_id();
 
-    let mark_ring = contrast.add_point_mark().set_position((pos.x , pos.y+250.0, pos.z))
+    let mut mark_ring = contrast.add_point_mark().set_position((pos.x , pos.y+250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 1.0, 0.0, 1.0))
         .set_shape(Shape::Ring)
         .get_id();
 
-    let mark_tag = contrast.add_point_mark().set_position((pos.x, pos.y -250.0, pos.z))
+    let mut mark_tag = contrast.add_point_mark().set_position((pos.x, pos.y -250.0, pos.z))
         .set_size(size)
         .set_color((1.0, 0.5, 0.0, 1.0))
         .set_shape(Shape::Tag)
         .get_id();
 
-    let mark_cross = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y -250.0, pos.z))
+    let mut mark_cross = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y -250.0, pos.z))
         .set_size(size)
         .set_color((0.0, 1.0, 1.0, 1.0))
         .set_shape(Shape::Cross)
         .get_id();
 
-    let mark_asterisk = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y -250.0, pos.z))
+    let mut mark_asterisk = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y -250.0, pos.z))
         .set_size(size)
         .set_color((0.0, 0.5, 1.0, 1.0))
         .set_shape(Shape::Asterisk)
@@ -121,39 +120,37 @@ fn main()
     contrast.add_layer();
     contrast.add_layer();
 
-    let m1 = contrast.add_point_mark().set_position((pos.x + 230.0, pos.y, pos.z))
+    let mut m1 = contrast.add_point_mark().set_position((pos.x + 230.0, pos.y, pos.z + 1.0))
         .set_size((100.0, 100.0))
         .set_color((1.0, 0.0, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
-    let m2 = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y + 10.0, pos.z))
+    let mut m2 = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y + 10.0, pos.z + 1.0))
         .set_size((100.0, 100.0))
         .set_color((1.0, 0.5, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
-    let m3 = contrast.add_point_mark().set_position((pos.x + 280.0, pos.y + 20.0, pos.z))
+    let mut m3 = contrast.add_point_mark().set_position((pos.x + 270.0, pos.y + 20.0, pos.z + 1.0))
         .set_size((100.0, 100.0))
         .set_color((1.0, 1.0, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
-    contrast.set_mark_layer(&m1, 0);
-    contrast.set_mark_layer(&m2, 1);
-    //contrast.set_mark_layer(&m3, 2);    // TODO: m3 est invalide, corriger
+    contrast.set_mark_layer(&mut m1, 2);
+    contrast.set_mark_layer(&mut m2, 1);
+    contrast.set_mark_layer(&mut m3, 0);
 
     println!("Building finished!");
     println!("Rendering ...");
 
-    dbg!(&contrast.get_mark_mut(&mark_infinity).unwrap());
-    contrast.remove_mark(&mark_infinity);
-    dbg!(&contrast.get_mark_mut(&mark_infinity).unwrap());      // TODO: devrait renvoyer None
+    //dbg!(&contrast.get_mark_mut(&mark_infinity).unwrap());
+    //contrast.remove_mark(&mark_infinity);
+    //dbg!(&contrast.get_mark_mut(&mark_infinity).unwrap());      // TODO: devrait renvoyer None
 
-    let layer_0 = contrast.get_layer_mut(0).unwrap();
-    layer_0.set_position((50.0, 0.0, 0.0));
-
-    let mark_ring_ptr : *mut Mark = contrast.get_mark_mut(&mark_ring).unwrap();
+    //let layer_0 = contrast.get_layer_mut(0).unwrap();
+    //layer_0.set_position((50.0, 0.0, 0.0));
 
     // Create a new surface to render to and get events from
     let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "contrast playground", WindowOpt::default()).expect("GLFW surface creation");
@@ -182,13 +179,12 @@ fn main()
 
                 WindowEvent::Key(Key::Space, _, Action::Release, _) =>
                 {
-                    unsafe {
-                        // Change the color of the rectangle mark   //TODO: update la fenetre avec la nouvelle couleur
-                        //dbg!(&(*mark_ring_ptr));
-                        (*mark_ring_ptr).set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
-                        let color = (*mark_ring_ptr).get_color();
-                        println!("Mark ring color : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a);
-                    }
+                    /*let mark = contrast.get_mark_mut(&m1).unwrap();
+                    let mut color = mark.get_color();
+                    println!("Mark color before : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a);
+                    mark.set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
+                    color = mark.get_color();
+                    println!("Mark color after : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a)*/
                 }
 
                 // Handle window resizing

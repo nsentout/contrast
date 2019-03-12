@@ -7,7 +7,7 @@ use crate::marks::pointmark::PointMark;
 use crate::marks::linemark::LineMark;
 
 /// Union of every type of mark.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Mark {
 	Point(PointMark),
 	Line(LineMark),
@@ -62,13 +62,37 @@ impl Mark {
         }
     }
 
-    pub(crate) fn set_id(&mut self, mark : MarkId) -> &mut Self {
-        match self {    // cannot use the macro because set_id is not a method of MarkMacro
-            Mark::Point(p) => p.common_properties.markid.id = mark.id,
-            Mark::Line(l) => l.common_properties.markid.id = mark.id
+    pub(crate) fn set_mark_index(&mut self, mark_index : usize) -> &mut Self {
+        match self {
+            Mark::Point(p) => p.common_properties.markid.mark_index = mark_index,
+            Mark::Line(l) => l.common_properties.markid.mark_index = mark_index
         }
         self
     }
+
+    pub(crate) fn set_valid(&mut self, valid : bool) -> &mut Self {
+        match self {
+            Mark::Point(p) => p.common_properties.markid.valid = valid,
+            Mark::Line(l) => l.common_properties.markid.valid = valid
+        }
+        self
+    }
+
+    pub(crate) fn set_id(&mut self, markid : MarkId) -> &mut Self {
+        match self {
+            Mark::Point(p) => p.common_properties.markid.mark_index = markid.mark_index,
+            Mark::Line(l) => l.common_properties.markid.mark_index = markid.mark_index
+        }
+        self
+    }
+
+    pub(crate) fn is_valid(&self) -> bool {
+        match self {
+            Mark::Point(p) => p.common_properties.markid.valid,
+            Mark::Line(l) => l.common_properties.markid.valid
+        }
+    }
+
 }
 
 impl MarkMacro for Mark  {
@@ -104,7 +128,7 @@ impl MarkMacro for Mark  {
         mark_set!(self, set_rotation, rotation)
     }
 
-    fn set_layer(&mut self, layer : usize) -> &mut Self {
-        mark_set!(self, set_layer, layer)
+    fn set_layer_index(&mut self, layer_index : usize) -> &mut Self {
+        mark_set!(self, set_layer_index, layer_index)
     }
 }

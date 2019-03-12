@@ -5,7 +5,7 @@ use properties::color::Color;
 /// Structure representing the properties shared
 /// by every type of marks, that is an id,
 /// a size, a color and a rotation.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct MarkProperties {
     pub markid : MarkId,
     pub size : Size,

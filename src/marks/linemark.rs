@@ -24,7 +24,7 @@ pub enum LineMode {
 /// attribute common_properties.
 /// Line marks also have a vector of positions representing its points,
 /// a thickness and a mode to draw them differently.
-#[derive(MarkMacro, Debug)]
+#[derive(MarkMacro, Clone, Debug)]
 pub struct LineMark {
     pub(crate) common_properties : MarkProperties,
     points : Vec<Position>,

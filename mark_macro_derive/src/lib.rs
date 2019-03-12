@@ -47,7 +47,7 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
 
             fn get_layer_index(&self) -> usize
             {
-                self.common_properties.markid.layer
+                self.common_properties.markid.layer_index
             }
 
             fn set_size<S : Into <properties::size::Size>>(&mut self, size : S) -> &mut #name
@@ -68,9 +68,9 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
                 self
             }
 
-            fn set_layer(&mut self, layer : usize) -> &mut #name
+            fn set_layer_index(&mut self, layer_index : usize) -> &mut #name
             {
-                self.common_properties.markid.layer = layer;
+                self.common_properties.markid.layer_index = layer_index;
                 self
             }
         }
