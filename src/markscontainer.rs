@@ -12,9 +12,9 @@ use crate::layer::Layer;
 /// as he wishes. The id of each mark represents their index in the vector,
 /// which allows for adding and removal of marks in O(1).
 pub struct Contrast {
-    layers : Vec<Layer>,
-    total_marks : usize,
-    valid_marks : usize
+    pub(crate) layers : Vec<Layer>,
+    pub(crate) total_marks : usize,
+    pub(crate) valid_marks : usize
 }
 
 impl Contrast {
@@ -27,7 +27,8 @@ impl Contrast {
             valid_marks : 0
         };
 
-        contrast.layers.push(Layer::new(0));
+        let layer_0 = Layer::new(0, &mut contrast);
+        contrast.layers.push(layer_0);
         contrast
     }
 
@@ -38,7 +39,7 @@ impl Contrast {
     /// similar to this : add_point_mark.set_rotation(90.0).
     pub fn add_point_mark(&mut self) -> &mut PointMark {
         let point = Mark::Point(PointMark::new(self.total_marks));
-        self.layers.get_mut(0).unwrap().add_mark(point);
+        self.layers.get_mut(0).unwrap().force_add_mark(point);
         self.total_marks += 1;
 
         match self.layers.get_mut(0).unwrap().get_last_mark_mut() {
@@ -50,7 +51,7 @@ impl Contrast {
     /// Same behavior than add_point_mark but it adds a mark of type "line".
     pub fn add_line_mark(&mut self) -> &mut LineMark {
         let line = Mark::Line(LineMark::new(self.total_marks));
-        self.layers.get_mut(0).unwrap().add_mark(line);
+        self.layers.get_mut(0).unwrap().force_add_mark(line);
         self.total_marks += 1;
 
         match self.layers.get_mut(0).unwrap().get_last_mark_mut() {
@@ -86,38 +87,16 @@ impl Contrast {
         self.layers.get_mut(markid.layer_index).unwrap().invalidate_mark(markid);
     }
 
-    /// Assign a new layer to a mark.   //TODO: move it into Mark   //TODO: z axis of 0 should not put the mark on first plan
-    pub fn set_mark_layer(&mut self, markid : &mut MarkId, layer_index : usize) {
-        // If the mark is already in the layer, returns
-        if layer_index == markid.layer_index { return; }
-
-        // Add layers if necessary
-        for i in (self.layers.len() - 1)..layer_index {
-            self.layers.push(Layer::new(i));
+    /// Add a new layer into contrast.  //TODO: add layers automatically
+    pub fn add_layers(&mut self, nb : u32) {
+        for _ in 0..nb {
+            let new_layer = Layer::new(self.layers.len(), self);
+            self.layers.push(new_layer);
         }
-
-        let wanted_layer_size = self.layers.get(layer_index).unwrap().get_marks_nb();
-
-        // Retrieve a copy of the mark in his current layer
-        let mut mark = self.layers.get_mut(markid.layer_index).unwrap().invalidate_and_get_mark(markid);
-
-        // Update the mark according to his new layer
-        mark.set_mark_index(wanted_layer_size); 
-        mark.set_layer_index(layer_index);
-        mark.set_valid(true);
-
-        // Update the markid passed as parameter so it stays coherent
-        markid.mark_index = wanted_layer_size;
-        markid.layer_index = layer_index;
-        markid.valid = true;
-            
-        // Add the mark of the wanted layer
-        self.layers.get_mut(layer_index).unwrap().add_mark(mark);
     }
 
     /// Returns a reference wrapped into an Option of the Layer 
     /// at the index <layer>.
-    /// should it be public ?
     pub fn get_layer(&self, layer_index : usize) -> Option<&Layer> {
         self.layers.get(layer_index)
     }
@@ -259,6 +238,7 @@ mod tests {
     fn set_mark_layer()
     {
         let mut c = Contrast::new();
+        c.add_layers(2);
 
         let mut m1 = c.add_point_mark().set_position((100.0, 150.0, 0.0)).get_id();
         let mut m2 = c.add_point_mark().set_position((200.0, 250.0, 1.0)).get_id();
@@ -267,9 +247,9 @@ mod tests {
         for i in 0..3 {
             for j in 0..3 {
                 for k in 0..3 {
-                    c.set_mark_layer(&mut m1, i);
-                    c.set_mark_layer(&mut m2, j);
-                    c.set_mark_layer(&mut m3, k);
+                    c.get_layer_mut(i).unwrap().add_mark(&mut m1);
+                    c.get_layer_mut(j).unwrap().add_mark(&mut m2);
+                    c.get_layer_mut(k).unwrap().add_mark(&mut m3);
 
                     let marks_properties = c.get_pointmarks_properties();
 
