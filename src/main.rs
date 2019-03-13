@@ -116,23 +116,19 @@ fn main()
         .set_shape(Shape::Asterisk)
         .get_id();
 
-
-    contrast.add_layer();
-    contrast.add_layer();
-
-    let mut m1 = contrast.add_point_mark().set_position((pos.x + 230.0, pos.y, pos.z + 1.0))
+    let mut m1 = contrast.add_point_mark().set_position((pos.x + 230.0, pos.y, 0.0))
         .set_size((100.0, 100.0))
         .set_color((1.0, 0.0, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
-    let mut m2 = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y + 10.0, pos.z + 1.0))
+    let mut m2 = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y + 10.0, 0.0))
         .set_size((100.0, 100.0))
         .set_color((1.0, 0.5, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
         .get_id();
 
-    let mut m3 = contrast.add_point_mark().set_position((pos.x + 270.0, pos.y + 20.0, pos.z + 1.0))
+    let mut m3 = contrast.add_point_mark().set_position((pos.x + 270.0, pos.y + 20.0, 0.0))
         .set_size((100.0, 100.0))
         .set_color((1.0, 1.0, 0.0, 1.0))
         .set_shape(Shape::Rectangle)
@@ -144,10 +140,6 @@ fn main()
 
     println!("Building finished!");
     println!("Rendering ...");
-
-    //dbg!(&contrast.get_mark_mut(&mark_infinity).unwrap());
-    //contrast.remove_mark(&mark_infinity);
-    //dbg!(&contrast.get_mark_mut(&mark_infinity).unwrap());      // TODO: devrait renvoyer None
 
     //let layer_0 = contrast.get_layer_mut(0).unwrap();
     //layer_0.set_position((50.0, 0.0, 0.0));

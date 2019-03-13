@@ -13,9 +13,9 @@ use mark_macro_derive::MarkMacro;
 #[derive(MarkMacro, Debug)]
 pub struct PolygonMark {
     pub(crate) common_properties : MarkProperties,
-    points : Vec<Position>,
-    stroke_width : f32,
-    fill : bool
+    pub(crate) points : Vec<Position>,
+    pub(crate) stroke_width : f32,
+    pub(crate) fill : bool
 }
 
 impl PolygonMark {

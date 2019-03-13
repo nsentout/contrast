@@ -58,11 +58,6 @@ impl Layer {
         self.get_mark_mut(markid).unwrap().clone()
     }
 
-    /// Returns the depth at which is the layer.
-    pub(crate) fn get_depth(&self) -> usize {
-        self.depth
-    }
-
     /// Returns a reference wrapped into an Option of the mark
     /// with the id <mark>
     pub(crate) fn get_mark(&self, markid : &MarkId) -> Option<&Mark> {

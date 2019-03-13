@@ -27,9 +27,9 @@ pub enum LineMode {
 #[derive(MarkMacro, Clone, Debug)]
 pub struct LineMark {
     pub(crate) common_properties : MarkProperties,
-    points : Vec<Position>,
-    thickness : f32,
-    mode : LineMode
+    pub(crate) points : Vec<Position>,
+    pub(crate) thickness : f32,
+    pub(crate) mode : LineMode
 }
 
 impl LineMark {

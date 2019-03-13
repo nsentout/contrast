@@ -68,7 +68,10 @@ impl Contrast {
     /// Returns a mutable reference wrapped into an Option of the mark at the index "id". 
     /// If there is no mark having this id, returns None.
     pub fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
-        self.layers.get_mut(markid.layer_index).unwrap().get_mark_mut(markid)
+        if markid.valid {
+            return self.layers.get_mut(markid.layer_index).unwrap().get_mark_mut(markid);
+        }
+        None
     }
 
     /// Remove the mark with the id mark. We will call this mark the target.
@@ -83,18 +86,16 @@ impl Contrast {
         self.layers.get_mut(markid.layer_index).unwrap().invalidate_mark(markid);
     }
 
-    /// Add a new layer into contrast.  //TODO: add layers automatically
-    pub fn add_layer(&mut self) {
-        self.layers.push(Layer::new(self.layers.len()));
-    }
-
-    /// Assign a new layer to a mark.   //TODO: move it into Mark
+    /// Assign a new layer to a mark.   //TODO: move it into Mark   //TODO: z axis of 0 should not put the mark on first plan
     pub fn set_mark_layer(&mut self, markid : &mut MarkId, layer_index : usize) {
-
-        // If already in the layer, returns
+        // If the mark is already in the layer, returns
         if layer_index == markid.layer_index { return; }
 
-        let current_layer_size = self.layers.get(markid.layer_index).unwrap().get_marks_nb();
+        // Add layers if necessary
+        for i in (self.layers.len() - 1)..layer_index {
+            self.layers.push(Layer::new(i));
+        }
+
         let wanted_layer_size = self.layers.get(layer_index).unwrap().get_marks_nb();
 
         // Retrieve a copy of the mark in his current layer
@@ -111,7 +112,7 @@ impl Contrast {
         markid.valid = true;
             
         // Add the mark of the wanted layer
-        self.layers.get_mut(layer_index).unwrap().add_mark(mark); 
+        self.layers.get_mut(layer_index).unwrap().add_mark(mark);
     }
 
     /// Returns a reference wrapped into an Option of the Layer 
@@ -258,8 +259,6 @@ mod tests {
     fn set_mark_layer()
     {
         let mut c = Contrast::new();
-        c.add_layer();
-        c.add_layer();
 
         let mut m1 = c.add_point_mark().set_position((100.0, 150.0, 0.0)).get_id();
         let mut m2 = c.add_point_mark().set_position((200.0, 250.0, 1.0)).get_id();

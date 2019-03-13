@@ -42,10 +42,10 @@ pub enum Shape {
 #[derive(MarkMacro, Clone, Debug)]
 pub struct PointMark {
     pub(crate) common_properties : MarkProperties,
-    center : Position,
-    shape : Shape,
-    selection_angle : f32,
-    start_radius : f32,
+    pub(crate) center : Position,
+    pub(crate) shape : Shape,
+    pub(crate) selection_angle : f32,
+    pub(crate) start_radius : f32,
 }
 
 impl PointMark {
@@ -78,6 +78,33 @@ impl PointMark {
 
     pub fn get_position(&self) -> &Position {
         &self.center
+    }
+
+    pub fn set_x(&mut self, x : f32) -> &mut Self {
+        self.center.x = x;
+        self
+    }
+
+    pub fn set_y(&mut self, y : f32) -> &mut Self {
+        self.center.y = y;
+        self
+    }
+
+    pub fn set_z(&mut self, z : f32) -> &mut Self {
+        self.center.z = z;
+        self
+    }
+
+    pub fn get_x(&self) -> f32 {
+        self.center.x
+    }
+
+    pub fn get_y(&self) -> f32 {
+        self.center.y
+    }
+
+    pub fn get_z(&self) -> f32 {
+        self.center.z
     }
 
     pub fn set_shape(&mut self, shape : Shape) -> &mut Self {
