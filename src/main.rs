@@ -19,6 +19,7 @@ use properties::position::Position;
 use properties::size::Size;
 
 use rand::Rng;
+use std::time::Instant;
 
 // Path to the shaders
 const VSPOINT: &'static str = include_str!("shaders/point.vert");
@@ -52,13 +53,13 @@ fn main()
     let mut rng = rand::thread_rng();
 
     println!("Building marks ...");
-    /*for _ in 0..100_000 {
+    for _ in 0..100_000 {
         contrast.add_point_mark().set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0))
             .set_size((8.0, 8.0))
             .set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0))
             .set_shape(Shape::Triangle);
-    }*/
-
+    }
+/*
     let pos = Position { x : 150.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
     let size = Size { width : 200.0, height : 200.0 };
 
@@ -141,8 +142,7 @@ fn main()
     println!("Building finished!");
     println!("Rendering ...");
 
-    //let layer_0 = contrast.get_layer_mut(0).unwrap();
-    //layer_0.set_position((50.0, 0.0, 0.0));
+*/
 
     // Create a new surface to render to and get events from
     let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "contrast playground", WindowOpt::default()).expect("GLFW surface creation");
@@ -155,6 +155,11 @@ fn main()
 
     // The back buffer, which we will make our render into (we make it mutable so that we can change it whenever the window dimensions change)
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
+
+    // Initialize timer
+    let mut time = Instant::now();
+    let mut frames = 0;
+    let mut elapsed;
 
     'app: loop
     {
@@ -192,6 +197,15 @@ fn main()
 
                 _ => ()
             }
+        }
+
+        elapsed = time.elapsed();
+        frames += 1;
+
+        if elapsed.as_secs() >= 1 {
+            println!("FPS : {}", frames);
+            time = Instant::now();
+            frames = 0;
         }
 
         // Create a new dynamic pipeline that will render to the back buffer and must clear it with
