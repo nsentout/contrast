@@ -20,10 +20,10 @@ pub struct PolygonMark {
 
 impl PolygonMark {
     /// Simply returns a new instance of PolygonMark, initializing
-    /// all attributes to their default value, except the id.
-    pub fn new(id : usize) -> Self {
+    /// all attributes to their default value.
+    pub fn new() -> Self {
         PolygonMark {
-            common_properties : MarkProperties::new(id),
+            common_properties : MarkProperties::new(),
             points : Vec::<Position>::new(),
             stroke_width : 0.0,
             fill : false

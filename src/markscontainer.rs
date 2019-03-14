@@ -7,42 +7,44 @@ use crate::marks::linemark::VertexLine;
 use crate::marks::linemark::LineMark;
 use crate::layer::Layer;
 
-/// This is the main structure of the library. It contains all the marks
-/// displayed on screen. The user can add, get, remove and modify marks
-/// as he wishes. The id of each mark represents their index in the vector,
-/// which allows for adding and removal of marks in O(1).
+
+/// This is the main structure of the library. It contains all the layers
+/// added by the user, as well as the current layer.
+/// The current layer is the layer to which contrast will add marks by
+/// default. It is by default the layer 0, on first plan. 
+/// The user can add, get, remove and modify marks as he wishes, as well
+/// as get the layers to apply some functions on its marks.
 pub struct Contrast {
     pub(crate) layers : Vec<Layer>,
-    pub(crate) total_marks : usize,
-    pub(crate) valid_marks : usize
+    pub(crate) current_layer_index : usize
 }
 
 impl Contrast {
     /// Simply returns a new instance of Contrast, initializing
-    /// the vector containing all the marks.
+    /// the vector containing all the layers.
     pub fn new() -> Self {
-        let mut contrast = Contrast {
+        Contrast {
             layers : Vec::<Layer>::new(),
-            total_marks : 0,
-            valid_marks : 0
-        };
-
-        let layer_0 = Layer::new(0, &mut contrast);
-        contrast.layers.push(layer_0);
-        contrast
+            current_layer_index : 0
+        }
     }
 
-    /// Create a mark of type "point" with default values and add it into the main
-    /// vector, then returns a mutable reference of this newly created mark,
+    // Initialize contrast. At the moment, all this does is add a first layer to Contrast.
+    pub fn init(&mut self) {
+        let layer_0 = Layer::new(0, self);
+        self.layers.push(layer_0);
+    }
+
+    /// Create a mark of type "point" with default values and add it into current
+    /// layer, then returns a mutable reference of this newly created mark,
     /// all of this in O(1). We return a mutable reference because we want
     /// to be able to modify it just after calling add_point_mark in a way
     /// similar to this : add_point_mark.set_rotation(90.0).
     pub fn add_point_mark(&mut self) -> &mut PointMark {
-        let point = Mark::Point(PointMark::new(self.total_marks));
-        self.layers.get_mut(0).unwrap().force_add_mark(point);
-        self.total_marks += 1;
+        let point = Mark::Point(PointMark::new());
+        self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(point);
 
-        match self.layers.get_mut(0).unwrap().get_last_mark_mut() {
+        match self.layers.get_mut(self.current_layer_index).unwrap().get_last_mark_mut() {
             Mark::Point(p) => p,
             _ => panic!("A problem occured when adding a new point mark!")
         }
@@ -50,12 +52,11 @@ impl Contrast {
 
     /// Same behavior than add_point_mark but it adds a mark of type "line".
     pub fn add_line_mark(&mut self) -> &mut LineMark {
-        let line = Mark::Line(LineMark::new(self.total_marks));
-        self.layers.get_mut(0).unwrap().force_add_mark(line);
-        self.total_marks += 1;
+        let line = Mark::Line(LineMark::new());
+        self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(line);
 
-        match self.layers.get_mut(0).unwrap().get_last_mark_mut() {
-            Mark::Line(p) => p,
+        match self.layers.get_mut(self.current_layer_index).unwrap().get_last_mark_mut() {
+            Mark::Line(l) => l,
             _ => panic!("A problem occured when adding a new line mark!")
         }
     }
@@ -75,20 +76,25 @@ impl Contrast {
         None
     }
 
-    /// Remove the mark with the id mark. We will call this mark the target.
-    /// We first set the id of the last element of the vector containing all the marks
-    /// to the target's id (mark).
-    /// We then swap the target with the last element. We can now safely remove the target.
-    /// This way, the mark that was the last element before the removal holds now the id
-    /// of the target. This explains why we can always use "self.marks.len()" when we
-    /// want to give a unique id to a new mark. Furthermore, this allows us to remove
-    /// an element in O(1).
+    /// Remove the mark with the id mark. This function asks the layer to invalidate the mark,
+    /// implying this mark won't be displayed.
     pub fn remove_mark(&mut self, markid : &mut MarkId) {
         self.layers.get_mut(markid.layer_index).unwrap().invalidate_mark(markid);
     }
 
-    /// Add a new layer into contrast.  //TODO: add layers automatically
-    pub fn add_layers(&mut self, nb : u32) {
+    /// Set the current layer. The current layer is the layer where contrast will push
+    /// all marks by default.
+    pub fn set_current_layer(&mut self, layer_index : usize) {
+        // Add layers if necessary
+        if layer_index > self.layers.len() {
+            self.add_layers(layer_index - self.layers.len());
+        }
+
+        self.current_layer_index = layer_index;
+    }
+
+    /// Add new layers into contrast.
+    pub fn add_layers(&mut self, nb : usize) {
         for _ in 0..nb {
             let new_layer = Layer::new(self.layers.len(), self);
             self.layers.push(new_layer);
@@ -96,20 +102,15 @@ impl Contrast {
     }
 
     /// Returns a reference wrapped into an Option of the Layer 
-    /// at the index <layer>.
+    /// at the index <layer_index>.
     pub fn get_layer(&self, layer_index : usize) -> Option<&Layer> {
         self.layers.get(layer_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the Layer 
-    /// at the index <layer>.
+    /// at the index <layer_index>.
     pub fn get_layer_mut(&mut self, layer_index : usize) -> Option<&mut Layer> {
         self.layers.get_mut(layer_index)
-    }
-
-    /// Returns the number of marks in total.
-    pub fn get_marks_nb(&self) -> usize {
-        self.total_marks
     }
 
     /// Convert the MarkPoints contained in the main vector into a vector
@@ -164,34 +165,37 @@ mod tests {
     fn add_point_mark()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let m1 = c.add_point_mark().get_id();
 
-        assert_eq!(c.get_marks_nb(), 1);
+        assert_eq!(c.get_pointmarks_properties().len(), 1);
 
         let m2 = c.add_point_mark().get_id();
         let m3 = c.add_point_mark().get_id();
 
-        assert_eq!(c.get_marks_nb(), 3);
+        assert_eq!(c.get_pointmarks_properties().len(), 3);
     }
 
     #[test]
     fn remove_point_mark()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let mut m1 = c.add_point_mark().get_id();
         let mut m2 = c.add_point_mark().get_id();
 
         c.remove_mark(&mut m1);
 
-        assert_eq!(c.get_marks_nb(), 1);
+        assert_eq!(c.get_pointmarks_properties().len(), 1);
     }
 
     #[test]
     fn get_pointmarks_properties()
     {
         let mut c = Contrast::new();
+        c.init();
 
         c.add_point_mark().set_position((1.0, 5.0, 9.0));
         c.add_point_mark().set_shape(Shape::Rectangle);
@@ -210,34 +214,37 @@ mod tests {
     fn add_line_mark()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let m1 = c.add_line_mark().get_id();
 
-        assert_eq!(c.get_marks_nb(), 1);
+        assert_eq!(c.get_linemarks_properties().len(), 1);
 
         let m2 = c.add_line_mark().get_id();
         let m3 = c.add_line_mark().get_id();
 
-        assert_eq!(c.get_marks_nb(), 3);
+        assert_eq!(c.get_linemarks_properties().len(), 3);
     }
 
     #[test]
     fn remove_line_mark()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let mut m1 = c.add_line_mark().get_id();
         let mut m2 = c.add_line_mark().get_id();
 
         c.remove_mark(&mut m1);
 
-        assert_eq!(c.get_marks_nb(), 1);
+        assert_eq!(c.get_linemarks_properties().len(), 1);
     }
 
     #[test]
-    fn set_mark_layer()
+    fn add_mark_into_layer()
     {
         let mut c = Contrast::new();
+        c.init();
         c.add_layers(2);
 
         let mut m1 = c.add_point_mark().set_position((100.0, 150.0, 0.0)).get_id();
@@ -267,6 +274,7 @@ mod tests {
     fn get_id()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let m1 = c.add_line_mark().get_id();
         let m2 = c.add_line_mark().get_id();
@@ -282,6 +290,7 @@ mod tests {
     fn get_and_set_size()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let m1 = c.add_line_mark().set_size((10.0, 20.0)).get_id();
         let m2 = c.add_line_mark().set_size((30.0, 40.0)).get_id();
@@ -294,6 +303,7 @@ mod tests {
     fn get_and_set_color()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let m1 = c.add_line_mark().set_color((0.1, 0.2, 0.3, 0.4)).get_id();
         let m2 = c.add_line_mark().set_color((0.5, 0.6, 0.7, 0.8)).get_id();
@@ -306,6 +316,7 @@ mod tests {
     fn get_and_set_rotation()
     {
         let mut c = Contrast::new();
+        c.init();
 
         let m1 = c.add_line_mark().set_rotation(90.0).get_id();
         let m2 = c.add_line_mark().set_rotation(180.0).get_id();

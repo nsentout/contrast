@@ -54,6 +54,7 @@ fn main()
 {
     // Initialize contrast
     let mut contrast = Contrast::new();
+    contrast.init();
 
     // Initialize the camera
     let mut cam = Camera::init(WINDOW_WIDTH, WINDOW_HEIGHT);

@@ -50,10 +50,10 @@ pub struct PointMark {
 
 impl PointMark {
     /// Simply returns a new instance of PointMark, initializing
-    /// all attributes to their default values, except the id.
-    pub fn new(id : usize) -> Self {
+    /// all attributes to their default values.
+    pub fn new() -> Self {
         PointMark {
-            common_properties : MarkProperties::new(id),
+            common_properties : MarkProperties::new(),
             center : Position::default(),
             shape : Shape::None,
             selection_angle : 0.0,

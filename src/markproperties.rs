@@ -15,11 +15,11 @@ pub(crate) struct MarkProperties {
 
 impl MarkProperties {
     /// Simply returns a new instance of MarkProperties, initializing
-    /// all attributes to their default values, except the id.
-    pub(crate) fn new(id : usize) -> Self
+    /// all attributes to their default values.
+    pub(crate) fn new() -> Self
     {
         MarkProperties {
-            markid : MarkId::new(id),
+            markid : MarkId::new(),
             size : Size::default(),
             color: Color::default(),
             rotation : 0.0,

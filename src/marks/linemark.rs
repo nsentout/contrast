@@ -34,10 +34,10 @@ pub struct LineMark {
 
 impl LineMark {
     /// Simply returns a new instance of LineMark, initializing
-    /// all attributes to their default value, except the id.
-    pub fn new(id : usize) -> Self {
+    /// all attributes to their default value.
+    pub fn new() -> Self {
         LineMark {
-            common_properties : MarkProperties::new(id),
+            common_properties : MarkProperties::new(),
             points : Vec::<Position>::new(),
             thickness : 0.0,
             mode : LineMode::Linear

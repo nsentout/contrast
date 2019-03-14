@@ -1,3 +1,4 @@
+use std::collections::BinaryHeap;
 use properties::markid::MarkId;
 use properties::position::Position;
 use crate::MarkMacro;
@@ -5,13 +6,15 @@ use crate::marks::mark::Mark;
 use crate::markscontainer::Contrast;
 
 /// Structure representing a layer.
-/// A Layer has a vector containing his marks
-/// and a depth, 0 means it will be displayed
-/// on first plan.
+/// A Layer has a vector containing his marks and a depth, 0 means 
+/// it will be displayed on first plan.
+/// A Layer keeps track of indexes where marks have been removed 
+/// to replace them later.
 #[derive(Debug)]
 pub struct Layer {
     pub(crate) marks : Vec<Mark>,
-    pub(crate) depth : usize,   //TODO: ajouter pile d'index non valide
+    pub(crate) depth : usize,
+    pub(crate) invalid_indexes : BinaryHeap<usize>,
     pub(crate) contrast : *mut Contrast
 }
 
@@ -22,6 +25,7 @@ impl Layer {
         Layer {
             marks : Vec::<Mark>::new(),
             depth,
+            invalid_indexes : BinaryHeap::new(),
             contrast
         }
     }
@@ -31,6 +35,36 @@ impl Layer {
         for mut mark in &mut self.marks {
             f(&mut mark);
         }
+    }
+
+    /// Add a mark into the layer.
+    pub fn add_mark(&mut self, markid : &mut MarkId) {
+        // If the mark is already in the layer, returns
+        if markid.layer_index == self.depth { return; }
+
+        // Retrieve a copy of the mark in his current layer.
+        let mut mark;
+        unsafe {
+            mark = (*self.contrast).layers.get_mut(markid.layer_index).unwrap().invalidate_and_get_mark(markid);
+        }
+
+        // Update the mark according to his new layer
+        if self.invalid_indexes.is_empty() {
+            mark.set_mark_index(self.marks.len());
+        }
+        else {
+            mark.set_mark_index(self.invalid_indexes.pop().unwrap());
+        }
+        mark.set_layer_index(self.depth);
+        mark.set_valid(true);
+
+        // Update the markid passed as parameter so it stays coherent
+        markid.mark_index = self.marks.len();
+        markid.layer_index = self.depth;
+        markid.valid = true;
+            
+        // Add the mark to the layer
+        self.marks.push(mark);
     }
 
     /// Move every mark of the Layer.
@@ -45,39 +79,25 @@ impl Layer {
         self
     }
 
-    /// Returns the number of marks in the layer.
+    /// Returns the number of valid marks in the layer.
     pub fn get_marks_nb(&self) -> usize {
-        self.marks.len()
+        self.marks.len() - self.invalid_indexes.len()
     }
 
-    /// Add a mark into the layer.  //TODO: z axis of 0 should not put the mark on first plan
-    pub fn add_mark(&mut self, markid : &mut MarkId) {
-        // If the mark is already in the layer, returns
-        if markid.layer_index == self.depth { return; }
-
-        // Retrieve a copy of the mark in his current layer.
-        let mut mark;
-        unsafe {
-            mark = (*self.contrast).layers.get_mut(markid.layer_index).unwrap().invalidate_and_get_mark(markid);
+    /// Add a mark which was just created and is not in any layer.
+    pub(crate) fn force_add_mark(&mut self, mut mark : Mark) {
+        // If there is no invalid indexes, just push the mark
+         if self.invalid_indexes.is_empty() {
+            mark.set_mark_index(self.get_marks_nb());
+            self.marks.push(mark);
         }
-
-        // Update the mark according to his new layer
-        mark.set_mark_index(self.marks.len());  //TODO: remplacer self.marks.len()
-        mark.set_layer_index(self.depth);
-        mark.set_valid(true);
-
-        // Update the markid passed as parameter so it stays coherent
-        markid.mark_index = self.marks.len();
-        markid.layer_index = self.depth;
-        markid.valid = true;
-            
-        // Add the mark to the layer
-        self.marks.push(mark);
-    }
-
-    /// Add a mark without updating its MarkId 
-    pub(crate) fn force_add_mark(&mut self, mark : Mark) {
-        self.marks.push(mark);
+        // Else, replace the invalid mark with the new mark
+        else {
+            let first_invalid_index = self.invalid_indexes.pop().unwrap();
+            mark.set_mark_index(first_invalid_index);
+            let mut invalid_mark = self.marks.get_mut(first_invalid_index).unwrap();
+            invalid_mark = &mut mark;
+        }
     }
 
     /// Invalidate the mark represented by markid, making it invisible.
@@ -85,12 +105,14 @@ impl Layer {
         if self.contains(markid) {
             markid.valid = false;
             self.get_mark_mut(markid).unwrap().set_valid(false);
+            self.invalid_indexes.push(markid.mark_index);
         }
     }
 
     /// Invalidate the mark represented by markid, making it invisible, and returns a clone of it.
     pub(crate) fn invalidate_and_get_mark(&mut self, markid : &mut MarkId) -> Mark {
         self.get_mark_mut(markid).unwrap().set_valid(false);
+        self.invalid_indexes.push(markid.mark_index);
         self.get_mark_mut(markid).unwrap().clone()
     }
 
@@ -117,8 +139,8 @@ impl Layer {
     }
 
     /// Indicate whether or not the layer contains this mark.
-    pub(self) fn contains(&self, markid : &MarkId) -> bool {
-        if let None = self.marks.get(markid.layer_index) {
+    pub(crate) fn contains(&self, markid : &MarkId) -> bool {
+        if let None = self.marks.get(markid.mark_index) {
             return false;
         }
         true
