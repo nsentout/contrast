@@ -3,7 +3,7 @@ use crate::MarkMacro;
 use crate::marks::mark::Mark;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
-use crate::marks::linemark::VertexLine;
+use crate::marks::linemark::SubLine;
 use crate::marks::linemark::LineMark;
 use crate::layer::Layer;
 
@@ -11,7 +11,7 @@ use crate::layer::Layer;
 /// This is the main structure of the library. It contains all the layers
 /// added by the user, as well as the current layer.
 /// The current layer is the layer to which contrast will add marks by
-/// default. It is by default the layer 0, on first plan. 
+/// default. It is by default the layer 0, on first plan.
 /// The user can add, get, remove and modify marks as he wishes, as well
 /// as get the layers to apply some functions on its marks.
 pub struct Contrast {
@@ -61,13 +61,13 @@ impl Contrast {
         }
     }
 
-    /// Returns a reference wrapped into an Option of the mark at the index "id". 
+    /// Returns a reference wrapped into an Option of the mark at the index "id".
     /// If there is no mark having this id, returns None.
     pub fn get_mark(&mut self, markid : &MarkId) -> Option<&Mark> {
         self.layers.get(markid.layer_index).unwrap().get_mark(markid)
     }
 
-    /// Returns a mutable reference wrapped into an Option of the mark at the index "id". 
+    /// Returns a mutable reference wrapped into an Option of the mark at the index "id".
     /// If there is no mark having this id, returns None.
     pub fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
         if markid.valid {
@@ -101,13 +101,13 @@ impl Contrast {
         }
     }
 
-    /// Returns a reference wrapped into an Option of the Layer 
+    /// Returns a reference wrapped into an Option of the Layer
     /// at the index <layer_index>.
     pub fn get_layer(&self, layer_index : usize) -> Option<&Layer> {
         self.layers.get(layer_index)
     }
 
-    /// Returns a mutable reference wrapped into an Option of the Layer 
+    /// Returns a mutable reference wrapped into an Option of the Layer
     /// at the index <layer_index>.
     pub fn get_layer_mut(&mut self, layer_index : usize) -> Option<&mut Layer> {
         self.layers.get_mut(layer_index)
@@ -129,16 +129,14 @@ impl Contrast {
         properties
     }
 
-	/// Convert the LineMarks contained in the main vector into a vector
-    /// of vertices understandable by the renderer, then returns it.
-    pub fn get_linemarks_properties(&self) -> Vec<VertexLine> {
-        let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
+    /// Convert the LineMarks contained in the main vector into a vector
+    /// of sub-line understandable by the renderer, then returns it.
+    pub fn get_linemarks_properties(self) -> Vec<SubLine> {
+        let mut properties : Vec<SubLine> = Vec::<SubLine>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Line(l) = mark {
-                    if mark.is_valid() {
-                        properties.append(&mut l.as_vertex());
-                    }
+                    properties.append(&mut l.to_subline());
                 }
             }
         }
