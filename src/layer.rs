@@ -23,7 +23,6 @@ impl Ord for Layer
 {
     fn cmp(&self, other: &Layer) -> Ordering
     {
-        //other.depth.cmp(&self.depth)
         self.depth.cmp(&other.depth)
     }
 }

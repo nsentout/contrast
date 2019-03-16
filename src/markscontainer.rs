@@ -48,7 +48,7 @@ impl Contrast {
                 match m
                 {
                     Mark::Point(_) => self.update.insert(MarkTy::Point),
-                    Mark::Line(_) => self.update.insert(MarkTy::Point)
+                    Mark::Line(_) => self.update.insert(MarkTy::Line)
                 }
             },
             None => panic!("Invalid MarkId")
@@ -150,10 +150,9 @@ impl Contrast {
     /// Convert the MarkPoints contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
     pub fn get_pointmarks_properties(&mut self) -> Vec<VertexPoint> {
-        //self.layers.sort();
+        self.layers.sort();
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
         for layer in &self.layers {
-            //println!("{}", layer.depth);
             for mark in layer.get_all_marks() {
                 if let Mark::Point(p) = mark {
                     if mark.is_valid() {
@@ -167,7 +166,8 @@ impl Contrast {
 
     /// Convert the LineMarks contained in the main vector into a vector
     /// of sub-line understandable by the renderer, then returns it.
-    pub fn get_linemarks_properties(self) -> Vec<SubLine> {
+    pub fn get_linemarks_properties(&mut self) -> Vec<SubLine> {
+        self.layers.sort();
         let mut properties : Vec<SubLine> = Vec::<SubLine>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
