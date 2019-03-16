@@ -13,6 +13,14 @@ pub enum Mark {
 	Line(LineMark),
 }
 
+/// Pure enum to distinguish the type of marks.
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
+pub enum MarkTy
+{
+    Point,
+    Line
+}
+
 /// Macro calling the getter $get of the MarkMacro trait on the mark $mark.
 /// Example : mark_get!(mark_point_1, get_color) calls the get_color method
 /// implemented in the procedural macro "mark_macro_derive" that returns

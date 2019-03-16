@@ -1,6 +1,8 @@
+use std::collections::HashSet;
 use properties::markid::MarkId;
 use crate::MarkMacro;
 use crate::marks::mark::Mark;
+use crate::marks::mark::MarkTy;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::VertexLine;
@@ -16,7 +18,8 @@ use crate::layer::Layer;
 /// as get the layers to apply some functions on its marks.
 pub struct Contrast {
     pub(crate) layers : Vec<Layer>,
-    pub(crate) current_layer_index : usize
+    pub(crate) current_layer_index : usize,
+    pub(crate) update: HashSet<MarkTy>
 }
 
 impl Contrast {
@@ -25,14 +28,39 @@ impl Contrast {
     pub fn new() -> Self {
         Contrast {
             layers : Vec::<Layer>::new(),
-            current_layer_index : 0
+            current_layer_index : 0,
+            update: HashSet::new()
         }
     }
 
-    // Initialize contrast. At the moment, all this does is add a first layer to Contrast.
+    /// Initialize contrast. At the moment, all this does is add a first layer to Contrast.
     pub fn init(&mut self) {
         let layer_0 = Layer::new(0, self);
         self.layers.push(layer_0);
+    }
+
+    /// Append a mark container dirty.
+    pub fn mark_dirty(&mut self, id: MarkId)
+    {
+        match self.get_mark(&id)
+        {
+            Some(m) => {
+                match m
+                {
+                    Mark::Point(_) => self.update.insert(MarkTy::Point),
+                    Mark::Line(_) => self.update.insert(MarkTy::Point)
+                }
+            },
+            None => panic!("Invalid MarkId")
+        };
+    }
+
+    /// Fetch Updated mark and reset.
+    pub fn fetch_update(&mut self) -> HashSet<MarkTy>
+    {
+        let update = self.update.clone();
+        self.update.clear();
+        update
     }
 
     /// Create a mark of type "point" with default values and add it into current
@@ -115,9 +143,11 @@ impl Contrast {
 
     /// Convert the MarkPoints contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
-    pub fn get_pointmarks_properties(&self) -> Vec<VertexPoint> {
+    pub fn get_pointmarks_properties(&mut self) -> Vec<VertexPoint> {
+        //self.layers.sort();
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
         for layer in &self.layers {
+            //println!("{}", layer.depth);
             for mark in layer.get_all_marks() {
                 if let Mark::Point(p) = mark {
                     if mark.is_valid() {

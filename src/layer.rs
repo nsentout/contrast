@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use properties::markid::MarkId;
 use properties::position::Position;
@@ -17,6 +18,33 @@ pub struct Layer {
     pub(crate) invalid_indexes : BinaryHeap<usize>,
     pub(crate) contrast : *mut Contrast
 }
+
+impl Ord for Layer
+{
+    fn cmp(&self, other: &Layer) -> Ordering
+    {
+        //other.depth.cmp(&self.depth)
+        self.depth.cmp(&other.depth)
+    }
+}
+
+impl PartialOrd for Layer
+{
+    fn partial_cmp(&self, other: &Layer) -> Option<Ordering>
+    {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Layer
+{
+    fn eq(&self, other: &Layer) -> bool
+    {
+        self.depth == other.depth
+    }
+}
+
+impl Eq for Layer {}
 
 impl Layer {
     /// Simply returns a new instance of Layer, initializing
