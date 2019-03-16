@@ -14,6 +14,8 @@ use contrast::markscontainer::Contrast;
 use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
 use contrast::marks::pointmark::VertexPoint;
+use contrast::marks::linemark::LineMode;
+use contrast::marks::linemark::SubLine;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
 use properties::position::Position;
@@ -26,6 +28,10 @@ use std::time::Instant;
 const VSPOINT: &'static str = include_str!("shaders/point.vert");
 const FSPOINT: &'static str = include_str!("shaders/point.frag");
 const GSPOINT: &'static str = include_str!("shaders/point.geom");
+
+const VSLINE: &'static str = include_str!("shaders/line.vert");
+const FSLINE: &'static str = include_str!("shaders/line.frag");
+const GSLINE: &'static str = include_str!("shaders/line.geom");
 
 // Window dimensions
 const WINDOW_WIDTH : u32 = 800;
@@ -73,6 +79,28 @@ fn main()
     */
     let pos = Position { x : 150.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
     let size = Size { width : 200.0, height : 200.0 };
+
+
+    let mark_line = contrast.add_line_mark().add_point(pos)
+        .add_point((pos.x+100.0, pos.y, pos.z))
+        .add_point((pos.x +100.0, pos.y + 100.0, pos.z))
+        .add_point((pos.x, pos.y, pos.z))
+        //.add_point((pos.x+10.0, pos.y, pos.z))
+        //.add_point((pos.x+100.0, pos.y+300.0, pos.z))
+        //.add_point((pos.x+100.0, pos.y+100.0, pos.z))
+        //.add_point((pos.x-100.0, pos.y-100.0, pos.z))
+        //.add_point((pos.x+100.0, pos.y+50.0, pos.z))
+        .set_thickness(20.0)
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_mode(LineMode::Linear)
+        .get_id();
+
+
+    let mut _mark_triangle = contrast.add_point_mark().set_position(pos)
+        .set_size(size)
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_shape(Shape::Triangle)
+        .get_id();
 
     let mut _mark_triangle = contrast.add_point_mark().set_position(pos)
         .set_size(size)
@@ -171,10 +199,11 @@ fn main()
 
     // We need a program to “shade” our triangles and to tell luminance which is the input vertex type
     let (program, _) = Program::<VertexPoint, (), ShaderInterface>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
+    let (programLine, _) = Program::<SubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
 
     // Create tessellation for direct geometry; that is, tessellation that will render vertices by taking one after another in the provided slice
     let tess = Tess::new(&mut surface, Mode::Point, &contrast.get_pointmarks_properties()[..], None);
-
+    let tessLine = Tess::new(&mut surface, Mode::Point, &contrast.get_linemarks_properties()[..], None);
     // The back buffer, which we will make our render into (we make it mutable so that we can change it whenever the window dimensions change)
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
 
@@ -245,7 +274,20 @@ fn main()
                     // Render the tessellation to the surface
                     tess_gate.render(&mut surface, tess.into());
                 });
+
             });
+            shd_gate.shade(&programLine, |rdr_gate, iface|
+            {
+                iface.projection.update(cam.data());
+                // Start rendering things with the default render state provided by luminance
+                rdr_gate.render(RenderState::default(), |tess_gate|
+                {
+                    let tessLine = &tessLine;
+                    // Render the tessellation to the surface
+                    tess_gate.render(&mut surface, tessLine.into());
+                });
+            });
+
         });
 
         // Finally, swap the backbuffer with the frontbuffer in order to render our marks onto the screen

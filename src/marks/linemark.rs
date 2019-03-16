@@ -5,8 +5,8 @@ use mark_macro_derive::MarkMacro;
 
 /// This is the type that will receive our shaders when we will want to render our line marks.
 /// We could describe it this way to be more clear :
-/// type VertexLine = (size, color, rotation, points, thickness, line_mode).
-pub type VertexLine = ([f32; 2], [f32; 4], f32, Position, f32, u32);
+/// type SubLine = (size, color, rotation, origin, target, previous, thickness, line_mode).
+pub type SubLine = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], f32, u32);
 
 
 /// Those are the different ways we shoud be able to
@@ -44,18 +44,25 @@ impl LineMark {
         }
     }
 
-    /// Converts a LineMark into a VertexLine, which is a type
+    /// Converts a LineMark into a SubLine, which is a type
     /// understandable by the renderer.
-    pub fn as_vertex(&self) -> Vec<VertexLine> {
-        let mut properties : Vec<VertexLine> = Vec::<VertexLine>::new();
+    pub fn to_subline(&self) -> Vec<SubLine> {
+        let mut sublines : Vec<SubLine> = Vec::<SubLine>::new();
         let mode = &self.mode;
-        for p in self.points.clone() {
-            let vl : VertexLine = (*self.common_properties.size.to_array(),
+        let mut previous = self.points[0];
+        let mut origin = self.points[0];
+        for target in self.points.clone() {
+            let vl : SubLine = (*self.common_properties.size.to_array(),
             *self.common_properties.color.to_array(), self.common_properties.rotation,
-            p, self.thickness, *mode as u32);
-            properties.push(vl);
+            *origin.to_array(), *target.to_array(), *previous.to_array(),self.thickness, *mode as u32);
+            sublines.push(vl);
+            previous = origin;
+            origin = target;
         }
-        properties
+        if sublines.len() > 0 {
+            sublines.remove(0);
+        }
+        sublines
     }
 
     /// Add a point to a line. You can pass as argument a tuple of 3 floats or
