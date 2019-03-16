@@ -39,7 +39,7 @@ impl Contrast {
         self.layers.push(layer_0);
     }
 
-    /// Append a mark container dirty.
+    /// Append one dirty mark container.
     pub fn mark_dirty(&mut self, id: MarkId)
     {
         match self.get_mark(&id)
@@ -55,7 +55,13 @@ impl Contrast {
         };
     }
 
-    /// Fetch Updated mark and reset.
+    // Append all dirty mark containers.
+    pub fn mark_dirty_all(&mut self)
+    {
+        for mark in MarkTy::values() { self.update.insert(mark.clone()); }
+    }
+
+    /// Fetch updated mark and reset.
     pub fn fetch_update(&mut self) -> HashSet<MarkTy>
     {
         let update = self.update.clone();

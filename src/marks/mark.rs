@@ -5,6 +5,9 @@ use properties::size::Size;
 use properties::position::Position;
 use crate::marks::pointmark::PointMark;
 use crate::marks::linemark::LineMark;
+use self::MarkTy::*;
+use std::slice::Iter;
+
 
 /// Union of every type of mark.
 #[derive(Clone, Debug)]
@@ -18,7 +21,17 @@ pub enum Mark {
 pub enum MarkTy
 {
     Point,
-    Line
+    Line,
+    Text
+}
+
+impl MarkTy
+{
+    pub fn values() -> Iter<'static, MarkTy>
+    {
+        static MARKS: [MarkTy;  3] = [Point, Line, Text];
+        MARKS.into_iter()
+    }
 }
 
 /// Macro calling the getter $get of the MarkMacro trait on the mark $mark.
