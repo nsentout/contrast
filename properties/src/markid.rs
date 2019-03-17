@@ -27,6 +27,7 @@ impl MarkId {
 impl PartialEq for MarkId {
     fn eq(&self, other: &MarkId) -> bool {
         self.mark_index == other.mark_index 
-            && self.layer_index == other.layer_index 
+            && self.layer_index == other.layer_index
+            && self.valid == other.valid
     }
 }
