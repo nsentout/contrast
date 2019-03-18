@@ -35,7 +35,4 @@ pub trait MarkMacro
 
     /// Set the rotation of a mark.
     fn set_rotation(&mut self, rotation : f32) -> &mut Self;
-
-    /// Set the layer index of a mark.
-    fn set_layer_index(&mut self, layer_index : usize) -> &mut Self; 
 }

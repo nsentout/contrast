@@ -76,10 +76,6 @@ impl PointMark {
         self
     }
 
-    pub fn get_position(&self) -> &Position {
-        &self.center
-    }
-
     pub fn set_x(&mut self, x : f32) -> &mut Self {
         self.center.x = x;
         self
@@ -95,18 +91,6 @@ impl PointMark {
         self
     }
 
-    pub fn get_x(&self) -> f32 {
-        self.center.x
-    }
-
-    pub fn get_y(&self) -> f32 {
-        self.center.y
-    }
-
-    pub fn get_z(&self) -> f32 {
-        self.center.z
-    }
-
     pub fn set_shape(&mut self, shape : Shape) -> &mut Self {
         self.shape = shape;
         self
@@ -120,5 +104,33 @@ impl PointMark {
     pub fn set_start_radius(&mut self, start_radius : f32) -> &mut Self {
         self.start_radius = start_radius;
         self
+    }
+
+    pub fn get_position(&self) -> &Position {
+        &self.center
+    }
+
+    pub fn get_x(&self) -> f32 {
+        self.center.x
+    }
+
+    pub fn get_y(&self) -> f32 {
+        self.center.y
+    }
+
+    pub fn get_z(&self) -> f32 {
+        self.center.z
+    }
+
+    pub fn get_shape(&self) -> &Shape {
+        &self.shape
+    }
+
+    pub fn get_selection_angle(&self) -> f32 {
+        self.selection_angle
+    }
+
+    pub fn get_start_radius(&self) -> f32 {
+        self.start_radius
     }
 }

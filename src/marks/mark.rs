@@ -1,5 +1,4 @@
 use crate::MarkMacro;
-use properties::markid::MarkId;
 use properties::color::Color;
 use properties::size::Size;
 use properties::position::Position;
@@ -63,7 +62,92 @@ macro_rules! mark_set {
     }
 }
 
+/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// that returns a reference of it wrapped into an Option.
+macro_rules! cast {
+    ($mark:ident, $type:ident) => (
+        if let Mark::$type(t) = $mark {
+            Some(t)
+        }
+        else {
+            None
+        }
+    )
+}
+
+/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// that returns a mutable reference of it wrapped into an Option.
+macro_rules! cast_mut {
+    ($mark:ident, $type:ident) => (
+        if let Mark::$type(ref mut t) = $mark {
+            Some(t)
+        }
+        else {
+            None
+        }
+    )
+}
+
+/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// that either returns a reference of it if the Mark is the good type, or panic.
+macro_rules! cast_unchecked {
+    ($mark:ident, $type:ident) => (
+        if let Mark::$type(t) = $mark {
+            t
+        }
+        else {
+            panic!("Mark type incorrect!")
+        }
+    )
+}
+
+/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// that either returns a mutable reference of it if the Mark is the good type, or panic.
+macro_rules! cast_mut_unchecked {
+    ($mark:ident, $type:ident) => (
+        if let Mark::$type(ref mut t) = $mark {
+            t
+        }
+        else {
+            panic!("Mark type incorrect!")
+        }
+    )
+}
+
+
 impl Mark {
+    pub fn as_point_mark(&self) -> Option<&PointMark> {
+        cast!(self, Point)
+    }
+
+    pub fn as_point_mark_mut(&mut self) -> Option<&mut PointMark> {
+        cast_mut!(self, Point)
+    }
+
+    pub fn as_point_mark_unchecked(&self) -> &PointMark {
+        cast_unchecked!(self, Point)
+    }
+
+    pub fn as_point_mark_mut_unchecked(&mut self) -> &mut PointMark {
+        cast_mut_unchecked!(self, Point)
+    }
+
+    pub fn as_line_mark(&self) -> Option<&LineMark> {
+        cast!(self, Line)
+    }
+
+    pub fn as_line_mark_mut(&mut self) -> Option<&mut LineMark> {
+        cast_mut!(self, Line)
+    }
+
+    pub fn as_line_mark_unchecked(&self) -> &LineMark {
+        cast_unchecked!(self, Line)
+    }
+
+    pub fn as_line_mark_mut_unchecked(&mut self) -> &mut LineMark {
+        cast_mut_unchecked!(self, Line)
+    }
+
     /// Move the mark according to the <position>. Used by Layer to move
     /// all his marks.
     /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark 
@@ -91,18 +175,18 @@ impl Mark {
         self
     }
 
-    pub(crate) fn set_valid(&mut self, valid : bool) -> &mut Self {
-        match self {
-            Mark::Point(p) => p.common_properties.markid.valid = valid,
-            Mark::Line(l) => l.common_properties.markid.valid = valid
+    pub(crate) fn set_layer_index(&mut self, layer_index : usize) -> &mut Self {
+         match self {
+            Mark::Point(p) => p.common_properties.markid.layer_index = layer_index,
+            Mark::Line(l) => l.common_properties.markid.layer_index = layer_index
         }
         self
     }
 
-    pub(crate) fn set_id(&mut self, markid : MarkId) -> &mut Self {
+    pub(crate) fn set_valid(&mut self, valid : bool) -> &mut Self {
         match self {
-            Mark::Point(p) => p.common_properties.markid.mark_index = markid.mark_index,
-            Mark::Line(l) => l.common_properties.markid.mark_index = markid.mark_index
+            Mark::Point(p) => p.common_properties.markid.valid = valid,
+            Mark::Line(l) => l.common_properties.markid.valid = valid
         }
         self
     }
@@ -148,8 +232,67 @@ impl MarkMacro for Mark  {
     fn set_rotation(&mut self, rotation : f32) -> &mut Self {
         mark_set!(self, set_rotation, rotation)
     }
+}
 
-    fn set_layer_index(&mut self, layer_index : usize) -> &mut Self {
-        mark_set!(self, set_layer_index, layer_index)
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::marks::pointmark::Shape;
+    use crate::MarkMacro;
+
+    #[test]
+    fn as_point_mark() {
+        let mark = Mark::Point(PointMark::new());
+        assert!(mark.as_point_mark().is_some());
+        mark.as_point_mark().unwrap().get_shape();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_point_mark_panic() {
+        let mark = Mark::Line(LineMark::new());
+        assert!(mark.as_point_mark().is_none());
+        mark.as_point_mark().unwrap().get_shape();
+    }
+
+    #[test]
+    fn as_point_mark_mut() {
+        let mut mark = Mark::Point(PointMark::new());
+        assert!(mark.as_point_mark_mut().is_some());
+        mark.as_point_mark_mut().unwrap().set_shape(Shape::Triangle);
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_point_mark_mut_panic() {
+        let mut mark = Mark::Line(LineMark::new());
+        assert!(mark.as_point_mark_mut().is_none());
+        mark.as_point_mark_mut().unwrap().set_shape(Shape::Triangle);
+    }
+
+    #[test]
+    fn as_point_mark_unchecked() {
+        let mark = Mark::Point(PointMark::new());
+        mark.as_point_mark_unchecked().get_shape();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_point_mark_unchecked_panic() {
+        let mark = Mark::Line(LineMark::new());
+        mark.as_point_mark_unchecked().get_shape();
+    }
+
+    #[test]
+    fn as_point_mark_mut_unchecked() {
+        let mut mark = Mark::Point(PointMark::new());
+        mark.as_point_mark_mut_unchecked().set_shape(Shape::Triangle);
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_point_mark_mut_unchecked_panic() {
+        let mut mark = Mark::Line(LineMark::new());
+        mark.as_point_mark_mut_unchecked().set_shape(Shape::Triangle);
     }
 }

@@ -231,12 +231,13 @@ fn main()
 
                 WindowEvent::Key(Key::Space, _, Action::Release, _) =>
                 {
-                    /*let mark = contrast.get_mark_mut(&m1).unwrap();
-                    let mut color = mark.get_color();
-                    println!("Mark color before : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a);
+                    let mark = contrast.get_mark_mut(&m1).unwrap();
                     mark.set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
-                    color = mark.get_color();
-                    println!("Mark color after : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a)*/
+                    let color = mark.get_color();
+                    println!("New mark color : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a);
+
+                    mark.as_point_mark_mut_unchecked().set_shape(Shape::Arrow);
+                    println!("New mark shape : {}", *mark.as_point_mark_unchecked().get_shape() as u32);
                 }
 
                 // Handle window resizing

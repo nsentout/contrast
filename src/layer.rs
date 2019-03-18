@@ -3,7 +3,6 @@ use std::collections::BinaryHeap;
 use std::mem;
 use properties::markid::MarkId;
 use properties::position::Position;
-use crate::MarkMacro;
 use crate::marks::mark::Mark;
 use crate::markscontainer::Contrast;
 
