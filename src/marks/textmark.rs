@@ -133,3 +133,18 @@ impl FaceCache
         vertices
     }
 }
+
+pub struct TextMark
+{
+    pub(crate) common_properties: MarkProperties,
+    pub(crate) face: FaceCache,
+    pub(crate) text: String
+}
+
+impl TextMark
+{
+    pub fn new(face: FaceCache) -> TextMark
+    {
+        TextMark{common_properties: MarkProperties::new(), face, text: String::from("")}
+    }
+}

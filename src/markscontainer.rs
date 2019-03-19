@@ -6,6 +6,7 @@ use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::SubLine;
 use crate::marks::linemark::LineMark;
+use crate::marks::textmark::FontCache;
 use crate::layer::Layer;
 
 
@@ -18,7 +19,8 @@ use crate::layer::Layer;
 pub struct Contrast {
     pub(crate) layers : Vec<Layer>,
     pub(crate) current_layer_index : usize,
-    pub(crate) update: HashSet<MarkTy>
+    pub(crate) update: HashSet<MarkTy>,
+    pub(crate) fonts: FontCache
 }
 
 impl Contrast {
@@ -28,7 +30,8 @@ impl Contrast {
         Contrast {
             layers : Vec::<Layer>::new(),
             current_layer_index : 0,
-            update: HashSet::new()
+            update: HashSet::new(),
+            fonts: FontCache::new()
         }
     }
 
@@ -36,6 +39,12 @@ impl Contrast {
     pub fn init(&mut self) {
         let layer_0 = Layer::new(0, self);
         self.layers.push(layer_0);
+    }
+
+    /// Register font & police with one key name.
+    pub fn registerFont(&mut self, name: &str, font: &str, police: u32)
+    {
+        self.fonts.create_face(name, font, police);
     }
 
     /// Append one dirty mark container.
