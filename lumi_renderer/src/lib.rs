@@ -20,6 +20,7 @@ use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::SubLine;
 use contrast::marks::textmark::VertexText;
 use contrast::marks::mark::MarkTy;
+use std::collections::HashMap;
 use std::iter;
 
 const VSPOINT: &'static str = include_str!("../../src/shaders/point.vert");
@@ -98,7 +99,7 @@ pub type RLine = RenderPass<SubLine, ShaderInterface>;
 pub type RText = RenderPass<VertexText, ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat, Dim2, (), ()>;
 
-pub struct LumiRenderer
+pub struct LumiRenderer<'a>
 {
     contrast: Contrast,
     surface: GlfwSurface,
@@ -106,10 +107,11 @@ pub struct LumiRenderer
     point: RPoint,
     line: RLine,
     text: RText,
-    cam: Camera
+    cam: Camera,
+    actions : HashMap<Key, Box<FnMut() + 'a>>
 }
 
-impl LumiRenderer
+impl<'a> LumiRenderer<'a>
 {
     pub fn init(w: u32, h: u32, title: &str) -> LumiRenderer
     {
@@ -132,13 +134,18 @@ impl LumiRenderer
         contrast.init();
 
         let cam = Camera::init(w, h);
+        let actions = HashMap::new();
 
-        LumiRenderer{contrast, surface, frame, point, line, text, cam}
+        LumiRenderer{contrast, surface, frame, point, line, text, cam, actions}
     }
 
     pub fn get_contrast_mut(&mut self) -> &mut Contrast
     {
         &mut self.contrast
+    }
+
+    pub fn add_listener<F: FnMut() + 'a>(&mut self, key : Key, f: F) {
+        self.actions.insert(key, Box::new(f));
     }
 
     pub fn run(&mut self)
@@ -158,6 +165,15 @@ impl LumiRenderer
                     {
                         self.frame = Framebuffer::back_buffer([width as u32, height as u32]);
                         self.cam.resize(width, height);
+                    }
+
+                    WindowEvent::Key(k, _, Action::Release, _) =>
+                    {
+                        for (key, action) in self.actions.iter_mut() {
+                            if *key == k {
+                                action();
+                            }
+                        }
                     }
 
                     _ => ()

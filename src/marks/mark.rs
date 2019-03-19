@@ -152,7 +152,7 @@ impl Mark {
     /// all his marks.
     /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark 
     /// will move 50 pixels to the right.
-    pub(crate) fn move_of<P : Into <Position>>(&mut self, position : P) {
+    pub fn move_of<P : Into <Position>>(&mut self, position : P) {
         let position : Position = position.into();
 
         match self {
