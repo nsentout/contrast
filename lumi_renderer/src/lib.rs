@@ -8,14 +8,17 @@ use luminance::context::GraphicsContext;
 use luminance::render_state::RenderState;
 use luminance::framebuffer::Framebuffer;
 use luminance::shader::program::Program;
+use luminance::pipeline::BoundTexture;
 use luminance::texture::{Dim2, Flat};
 use luminance::vertex::Vertex;
 use luminance::linear::M44;
+use luminance::pixel::R32F;
 
 use contrast::camera::Camera;
 use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::SubLine;
+use contrast::marks::textmark::VertexText;
 use contrast::marks::mark::MarkTy;
 use std::iter;
 
@@ -27,6 +30,9 @@ const VSLINE: &'static str = include_str!("../../src/shaders/line.vert");
 const FSLINE: &'static str = include_str!("../../src/shaders/line.frag");
 const GSLINE: &'static str = include_str!("../../src/shaders/line.geom");
 
+const VSTEXT: &'static str = include_str!("../../src/shaders/text.vert");
+const FSTEXT: &'static str = include_str!("../../src/shaders/text.frag");
+
 uniform_interface!
 {
     pub struct ShaderInterface
@@ -35,8 +41,18 @@ uniform_interface!
     }
 }
 
+uniform_interface!
+{
+    pub struct ShaderTextInterface
+    {
+        atlas: &'static BoundTexture<'static, Flat, Dim2, R32F>,
+        projection: M44
+    }
+}
+
 const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0u32, 0.0, 0.0);
 const DUMMY_LINE: &'static SubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
+const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0, 0.0]);
 
 pub struct TessPool<V>
 {
@@ -53,6 +69,8 @@ impl<V> TessPool<V> where V: Vertex, V: std::marker::Copy
     }
 
     pub fn data(&self) -> TessSlice<V> { TessSlice::one_sub(&self.tess, self.size) }
+
+    pub fn range(&self, from: usize, to: usize) -> TessSlice<V> { TessSlice::one_slice(&self.tess, from, to) }
 
     pub fn update(&mut self, vertices: Vec<V>)
     {
@@ -77,6 +95,7 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
 
 pub type RPoint = RenderPass<VertexPoint, ShaderInterface>;
 pub type RLine = RenderPass<SubLine, ShaderInterface>;
+pub type RText = RenderPass<VertexText, ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat, Dim2, (), ()>;
 
 pub struct LumiRenderer
@@ -86,6 +105,7 @@ pub struct LumiRenderer
     frame: Frame,
     point: RPoint,
     line: RLine,
+    text: RText,
     cam: Camera
 }
 
@@ -104,12 +124,16 @@ impl LumiRenderer
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_LINE.clone());
         let line = RLine{pool: tss, program: shd.0};
 
+        let shd = Program::<VertexText, (), ShaderTextInterface>::from_strings(None, VSTEXT, None, FSTEXT).expect("program creation");
+        let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_TEXT.clone());
+        let text = RText{pool: tss, program: shd.0};
+
         let mut contrast = Contrast::new();
         contrast.init();
 
         let cam = Camera::init(w, h);
 
-        LumiRenderer{contrast, surface, frame, point, line, cam}
+        LumiRenderer{contrast, surface, frame, point, line, text, cam}
     }
 
     pub fn get_contrast_mut(&mut self) -> &mut Contrast

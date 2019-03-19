@@ -8,6 +8,8 @@ edition = "2018"
 luminance = "0.30.1"
 luminance-glfw = "0.5.4"
 luminance-windowing = "0.2.4"
+freetype-rs = "0.19.1"
+rect_packer = "0.2.1"
 nalgebra = "0.17"
 rand = "0.4"
 mark_macro_derive = { path = "mark_macro_derive" }
