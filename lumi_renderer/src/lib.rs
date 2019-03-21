@@ -20,6 +20,7 @@ use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::SubLine;
 use contrast::marks::textmark::VertexText;
 use contrast::marks::mark::MarkTy;
+use properties::markid::MarkId;
 use std::collections::HashMap;
 use std::iter;
 
@@ -99,6 +100,13 @@ pub type RLine = RenderPass<SubLine, ShaderInterface>;
 pub type RText = RenderPass<VertexText, ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat, Dim2, (), ()>;
 
+
+enum Callback<'a> {
+    NoArgument(fn()),
+    ArgumentMark(fn(&mut Contrast, markid : &'a MarkId), &'a MarkId),
+    ArgumentMarkList(fn(&mut Contrast, markids : &'a Vec<MarkId>), &'a Vec<MarkId>)
+}
+
 pub struct LumiRenderer<'a>
 {
     contrast: Contrast,
@@ -108,7 +116,7 @@ pub struct LumiRenderer<'a>
     line: RLine,
     text: RText,
     cam: Camera,
-    actions : HashMap<Key, Box<FnMut() + 'a>>
+    callbacks : HashMap<Key, Callback<'a>>
 }
 
 impl<'a> LumiRenderer<'a>
@@ -134,9 +142,9 @@ impl<'a> LumiRenderer<'a>
         contrast.init();
 
         let cam = Camera::init(w, h);
-        let actions = HashMap::new();
+        let callbacks = HashMap::new();
 
-        LumiRenderer{contrast, surface, frame, point, line, text, cam, actions}
+        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks }
     }
 
     pub fn get_contrast_mut(&mut self) -> &mut Contrast
@@ -144,8 +152,16 @@ impl<'a> LumiRenderer<'a>
         &mut self.contrast
     }
 
-    pub fn add_listener<F: FnMut() + 'a>(&mut self, key : Key, f: F) {
-        self.actions.insert(key, Box::new(f));
+    pub fn add_action_on_press(&mut self, key : Key, f: fn()) {
+        self.callbacks.insert(key, Callback::NoArgument(f));
+    }
+
+    pub fn add_mark_action_on_press(&mut self, key : Key, f: fn(&mut Contrast, &'a MarkId), markid : &'a MarkId) {
+        self.callbacks.insert(key, Callback::ArgumentMark(f, markid));
+    }
+
+    pub fn add_mark_list_action_on_press(&mut self, key : Key, f: fn(&mut Contrast, &'a Vec<MarkId>), markids : &'a Vec<MarkId>) {
+        self.callbacks.insert(key, Callback::ArgumentMarkList(f, markids));
     }
 
     pub fn run(&mut self)
@@ -167,15 +183,20 @@ impl<'a> LumiRenderer<'a>
                         self.cam.resize(width, height);
                     }
 
-                    WindowEvent::Key(k, _, Action::Release, _) =>
+                    WindowEvent::Key(k, _, action, _) if action == Action::Press || action == Action::Repeat =>
                     {
-                        for (key, action) in self.actions.iter_mut() {
+                        for (key, callback) in self.callbacks.iter_mut() {
                             if *key == k {
-                                action();
+                                match &callback {
+                                    Callback::NoArgument(f) => { f() }
+                                    Callback::ArgumentMark(f, markid) => { f(&mut self.contrast, *markid) }
+                                    Callback::ArgumentMarkList(f, markids) => { f(&mut self.contrast, markids) }
+                                }
                             }
                         }
-                    }
 
+                    }
+                    
                     _ => ()
                 }
             }

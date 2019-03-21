@@ -1,11 +1,11 @@
 use lumi_renderer::LumiRenderer;
-
 use contrast::MarkMacro;
 use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
 use contrast::marks::linemark::LineMode;
+use contrast::markscontainer::Contrast;
 use properties::position::Position;
-//use properties::markid::MarkId;
+use properties::markid::MarkId;
 use properties::size::Size;
 use luminance_glfw::event::Key;
 
@@ -25,10 +25,62 @@ fn enlarge_marks(mark : &mut Mark) {
     mark.set_size((size.width * 1.5, size.height * 1.5));
 }
 
+fn move_mark_up(contrast : &mut Contrast, markid : &MarkId) {
+    contrast.get_mark_mut(&markid).unwrap().move_of((0.0, -10.0, 0.0));
+    contrast.mark_dirty(*markid);
+}
+
+fn move_mark_down(contrast : &mut Contrast, markid : &MarkId) {
+    contrast.get_mark_mut(&markid).unwrap().move_of((0.0, 10.0, 0.0));
+    contrast.mark_dirty(*markid);
+}
+
+fn move_mark_left(contrast : &mut Contrast, markid : &MarkId) {
+    contrast.get_mark_mut(&markid).unwrap().move_of((-10.0, 0.0, 0.0));
+    contrast.mark_dirty(*markid);
+}
+
+fn move_mark_right(contrast : &mut Contrast, markid : &MarkId) {
+    contrast.get_mark_mut(&markid).unwrap().move_of((10.0, 0.0, 0.0));
+    contrast.mark_dirty(*markid);
+}
+
+fn move_marks_up(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    for m in markids {
+        contrast.get_mark_mut(&m).unwrap().move_of((0.0, -10.0, 0.0));
+        contrast.mark_dirty(*m);
+    }
+}
+
+fn move_marks_down(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    for m in markids {
+        contrast.get_mark_mut(&m).unwrap().move_of((0.0, 10.0, 0.0));
+        contrast.mark_dirty(*m);
+    }
+}
+
+fn move_marks_left(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    for m in markids {
+        contrast.get_mark_mut(&m).unwrap().move_of((-10.0, 0.0, 0.0));
+        contrast.mark_dirty(*m);
+    }
+}
+
+fn move_marks_right(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    for m in markids {
+        contrast.get_mark_mut(&m).unwrap().move_of((10.0, 0.0, 0.0));
+        contrast.mark_dirty(*m);
+    }
+}
+
+fn sleep() {
+    println!("ZZZZZzzzzzzzz");
+}
+
+
 fn main()
 {
     let mut luminance = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
-
     let contrast = luminance.get_contrast_mut();
 
     let pos = Position { x : 150.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
@@ -77,22 +129,18 @@ fn main()
 
     contrast.mark_dirty_all();
 
-    luminance.add_listener(Key::Up, || {
-        println!("UP");
-        //&contrast.get_mark_mut(&mut _mark_ring).unwrap().move_of((10.0, 0.0, 0.0));
-    });
+    luminance.add_action_on_press(Key::W, sleep);
 
-    luminance.add_listener(Key::Left, || {
-        println!("LEFT");
-    });
+    luminance.add_mark_action_on_press(Key::Up, move_mark_up, &_mark_ring);
+    luminance.add_mark_action_on_press(Key::Down, move_mark_down, &_mark_ring);
+    luminance.add_mark_action_on_press(Key::Left, move_mark_left, &_mark_ring);
+    luminance.add_mark_action_on_press(Key::Right, move_mark_right, &_mark_ring);
 
-    luminance.add_listener(Key::Down, || {
-        println!("DOWN");
-    });
-
-    luminance.add_listener(Key::Right, || {
-        println!("RIGHT");
-    });
+    let marks = vec!(_mark_spade, _mark_clover, _mark_line);
+    luminance.add_mark_list_action_on_press(Key::W, move_marks_up, &marks);
+    luminance.add_mark_list_action_on_press(Key::S, move_marks_down, &marks);
+    luminance.add_mark_list_action_on_press(Key::A, move_marks_left, &marks);
+    luminance.add_mark_list_action_on_press(Key::D, move_marks_right, &marks);
 
     luminance.run();
 }
