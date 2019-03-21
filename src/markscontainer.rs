@@ -6,6 +6,7 @@ use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::SubLine;
 use crate::marks::linemark::LineMark;
+use crate::marks::textmark::TextMark;
 use crate::marks::textmark::FontCache;
 use crate::layer::Layer;
 
@@ -56,7 +57,8 @@ impl Contrast {
                 match m
                 {
                     Mark::Point(_) => self.update.insert(MarkTy::Point),
-                    Mark::Line(_) => self.update.insert(MarkTy::Line)
+                    Mark::Line(_) => self.update.insert(MarkTy::Line),
+                    Mark::Text(_) => self.update.insert(MarkTy::Text)
                 }
             },
             None => panic!("Invalid MarkId")

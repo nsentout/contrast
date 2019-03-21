@@ -4,15 +4,17 @@ use properties::size::Size;
 use properties::position::Position;
 use crate::marks::pointmark::PointMark;
 use crate::marks::linemark::LineMark;
+use crate::marks::textmark::TextMark;
 use self::MarkTy::*;
 use std::slice::Iter;
 
 
 /// Union of every type of mark.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Mark {
 	Point(PointMark),
 	Line(LineMark),
+    Text(TextMark)
 }
 
 /// Pure enum to distinguish the type of marks.
@@ -41,7 +43,8 @@ macro_rules! mark_get {
     ($mark:ident, $get:ident) => (
         match $mark {
             Mark::Point(p) => p.$get(),
-            Mark::Line(l)  => l.$get()
+            Mark::Line(l)  => l.$get(),
+            Mark::Text(t)  => t.$get()
         }
     )
 }
@@ -55,7 +58,8 @@ macro_rules! mark_set {
         {
             match $mark {
                 Mark::Point(p) => { p.$set($param); } ,
-                Mark::Line(l)  => { l.$set($param); }
+                Mark::Line(l)  => { l.$set($param); },
+                Mark::Text(t)  => { t.$set($param); }
             }
             $mark
         }
@@ -163,14 +167,16 @@ impl Mark {
                 for pt in l.get_points_mut() {
                     *pt += position.into();
                 }
-            }
+            },
+            _ => ()
         }
     }
 
     pub(crate) fn set_mark_index(&mut self, mark_index : usize) -> &mut Self {
         match self {
             Mark::Point(p) => p.common_properties.markid.mark_index = mark_index,
-            Mark::Line(l) => l.common_properties.markid.mark_index = mark_index
+            Mark::Line(l) => l.common_properties.markid.mark_index = mark_index,
+            Mark::Text(t) => t.common_properties.markid.mark_index = mark_index
         }
         self
     }
@@ -178,7 +184,8 @@ impl Mark {
     pub(crate) fn set_layer_index(&mut self, layer_index : usize) -> &mut Self {
          match self {
             Mark::Point(p) => p.common_properties.markid.layer_index = layer_index,
-            Mark::Line(l) => l.common_properties.markid.layer_index = layer_index
+            Mark::Line(l) => l.common_properties.markid.layer_index = layer_index,
+            Mark::Text(t) => t.common_properties.markid.layer_index = layer_index
         }
         self
     }
@@ -186,7 +193,8 @@ impl Mark {
     pub(crate) fn set_valid(&mut self, valid : bool) -> &mut Self {
         match self {
             Mark::Point(p) => p.common_properties.markid.valid = valid,
-            Mark::Line(l) => l.common_properties.markid.valid = valid
+            Mark::Line(l) => l.common_properties.markid.valid = valid,
+            Mark::Text(t) => t.common_properties.markid.valid = valid
         }
         self
     }
@@ -194,7 +202,8 @@ impl Mark {
     pub(crate) fn is_valid(&self) -> bool {
         match self {
             Mark::Point(p) => p.common_properties.markid.valid,
-            Mark::Line(l) => l.common_properties.markid.valid
+            Mark::Line(l) => l.common_properties.markid.valid,
+            Mark::Text(t) => t.common_properties.markid.valid
         }
     }
 

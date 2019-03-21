@@ -19,6 +19,7 @@ pub struct FontCache
     pub(crate) cached: HashMap<String,FaceCache>
 }
 
+#[derive(Clone)]
 pub struct Glyph
 {
     bitmap: Vec<f32>,
@@ -28,6 +29,7 @@ pub struct Glyph
     by: i32
 }
 
+#[derive(Clone)]
 pub struct FaceCache
 {
     pub(crate) face: freetype::Face,
@@ -134,6 +136,7 @@ impl FaceCache
     }
 }
 
+#[derive(MarkMacro, Clone)]
 pub struct TextMark
 {
     pub(crate) common_properties: MarkProperties,
