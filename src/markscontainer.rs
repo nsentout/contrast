@@ -1,3 +1,4 @@
+use std::collections::LinkedList;
 use std::collections::HashSet;
 use properties::markid::MarkId;
 use crate::marks::mark::Mark;
@@ -8,6 +9,9 @@ use crate::marks::linemark::SubLine;
 use crate::marks::linemark::LineMark;
 use crate::marks::textmark::TextMark;
 use crate::marks::textmark::FontCache;
+use crate::marks::textmark::FaceCache;
+use crate::marks::textmark::VertexText;
+use crate::marks::textmark::Glyph;
 use crate::layer::Layer;
 
 
@@ -43,9 +47,14 @@ impl Contrast {
     }
 
     /// Register font & police with one key name.
-    pub fn registerFont(&mut self, name: &str, font: &str, police: u32)
+    pub fn register_font(&mut self, name: &str, font: &str, police: u32)
     {
         self.fonts.create_face(name, font, police);
+    }
+
+    pub fn contains_font(&self, name: &str) -> bool
+    {
+        self.fonts.contains(name)
     }
 
     /// Append one dirty mark container.
@@ -102,6 +111,17 @@ impl Contrast {
         match self.layers.get_mut(self.current_layer_index).unwrap().get_last_mark_mut() {
             Mark::Line(l) => l,
             _ => panic!("A problem occured when adding a new line mark!")
+        }
+    }
+
+    pub fn add_text_mark(&mut self) -> &mut TextMark
+    {
+        let text = Mark::Text(TextMark::new());
+        self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(text);
+
+        match self.layers.get_mut(self.current_layer_index).unwrap().get_last_mark_mut() {
+            Mark::Text(t) => t,
+            _ => panic!("A problem occured when adding a new text mark!")
         }
     }
 
@@ -187,6 +207,25 @@ impl Contrast {
             }
         }
         properties
+    }
+
+    pub fn get_textmarks_properties(&mut self) -> (Vec<VertexText>,LinkedList<Glyph>) {
+        let mut chars = LinkedList::new();
+        let mut properties = Vec::new();
+        for layer in &self.layers {
+            for mark in layer.get_all_marks() {
+                if let Mark::Text(t) = mark {
+                    if self.contains_font(t.get_font())
+                    {
+                        let face = self.fonts.get_face(t.get_font()).unwrap();
+                        face.prepare_string(t.get_text());
+                        properties.extend(face.drawing_commands(t.get_x(), t.get_y(), t.get_text()));
+                        chars.extend(face.get_writable());
+                    }
+                }
+            }
+        }
+        (properties,chars)
     }
 
 }

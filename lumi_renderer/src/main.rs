@@ -113,6 +113,13 @@ fn main()
         .set_shape(Shape::Ring)
         .get_id();
 
+    contrast.register_font("helvetica", "uhvr8a.pfb", 32);
+    let mut _mark_text = contrast.add_text_mark()
+        .set_position(80, 100)
+        .set_font("helvetica")
+        .set_text("Manger au moins 5 fruits et légumes par jour!")
+        .get_id();
+
     contrast.add_layers(2);
 
     let layer_0 = contrast.get_layer_mut(0).unwrap();

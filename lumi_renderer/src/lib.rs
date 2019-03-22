@@ -9,7 +9,8 @@ use luminance::render_state::RenderState;
 use luminance::framebuffer::Framebuffer;
 use luminance::shader::program::Program;
 use luminance::pipeline::BoundTexture;
-use luminance::texture::{Dim2, Flat};
+use luminance::texture::{Dim2, Flat, Sampler, Texture};
+use luminance::blending::{Equation, Factor};
 use luminance::vertex::Vertex;
 use luminance::linear::M44;
 use luminance::pixel::R32F;
@@ -19,8 +20,10 @@ use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::SubLine;
 use contrast::marks::textmark::VertexText;
+use contrast::marks::textmark::Glyph;
 use contrast::marks::mark::MarkTy;
 use properties::markid::MarkId;
+use std::collections::LinkedList;
 use std::collections::HashMap;
 use std::iter;
 
@@ -95,11 +98,11 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
     pub fn vertices(&self) -> TessSlice<V> { self.pool.data() }
 }
 
-pub type RPoint = RenderPass<VertexPoint, ShaderInterface>;
-pub type RLine = RenderPass<SubLine, ShaderInterface>;
-pub type RText = RenderPass<VertexText, ShaderTextInterface>;
-pub type Frame = Framebuffer<Flat, Dim2, (), ()>;
-
+pub type RPoint = RenderPass<VertexPoint,ShaderInterface>;
+pub type RLine = RenderPass<SubLine,ShaderInterface>;
+pub type RText = RenderPass<VertexText,ShaderTextInterface>;
+pub type Frame = Framebuffer<Flat,Dim2,(),()>;
+pub type Atlas = Texture<Flat,Dim2,R32F>;
 
 enum Callback<'a> {
     NoArgument(fn()),
@@ -116,7 +119,8 @@ pub struct LumiRenderer<'a>
     line: RLine,
     text: RText,
     cam: Camera,
-    callbacks : HashMap<Key, Callback<'a>>
+    callbacks : HashMap<Key, Callback<'a>>,
+    font_atlas: HashMap<String,Atlas>
 }
 
 impl<'a> LumiRenderer<'a>
@@ -143,8 +147,30 @@ impl<'a> LumiRenderer<'a>
 
         let cam = Camera::init(w, h);
         let callbacks = HashMap::new();
+        let font_atlas = HashMap::new();
 
-        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks }
+        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks, font_atlas}
+    }
+
+    fn update_font_atlas(&mut self, glyphs: LinkedList<Glyph>)
+    {
+        for glyph in glyphs
+        {
+            if !self.font_atlas.contains_key(&glyph.name)
+            {
+                let tex = Texture::new(&mut self.surface, [1024, 1024], 0, &Sampler::default()).expect("luminance texture creation");
+                self.font_atlas.insert(glyph.name.clone(), tex);
+            }
+
+            let atlas = self.font_atlas.get_mut(&glyph.name).unwrap();
+
+            let x = glyph.rect.x as u32;
+            let y = glyph.rect.y as u32;
+            let w = glyph.rect.width as u32;
+            let h = glyph.rect.height as u32;
+
+            atlas.upload_part(false, [x, y], [w, h], glyph.bitmap.as_slice());
+        }
     }
 
     pub fn get_contrast_mut(&mut self) -> &mut Contrast
@@ -207,18 +233,27 @@ impl<'a> LumiRenderer<'a>
                 {
                     MarkTy::Point => self.point.pool.update(self.contrast.get_pointmarks_properties()),
                     MarkTy::Line => self.line.pool.update(self.contrast.get_linemarks_properties()),
-                    _ => println!("TessPool not implemented yet")
+                    MarkTy::Text =>
+                    {
+                        let texts = self.contrast.get_textmarks_properties();
+                        self.text.pool.update(texts.0);
+                        self.update_font_atlas(texts.1);
+                    }
                 }
             }
 
             let p = &self.point;
             let l = &self.line;
+            let t = &self.text;
 
             let mat = self.cam.data();
             let ctx = &mut self.surface;
             let back_buffer = &self.frame;
 
-            ctx.pipeline_builder().pipeline(back_buffer, [0., 0., 0., 0.], |_, shd_gate|
+            let test = self.font_atlas.get("helvetica").unwrap();
+            let blending = Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement));
+
+            ctx.pipeline_builder().pipeline(back_buffer, [0., 0., 0., 0.], |pipeline, shd_gate|
             {
                 shd_gate.shade(p.shader(), |rdr_gate, iface|
                 {
@@ -234,6 +269,16 @@ impl<'a> LumiRenderer<'a>
                     rdr_gate.render(RenderState::default(), |tess_gate|
                     {
                         tess_gate.render(ctx, l.vertices());
+                    });
+                });
+                let bound_tex = pipeline.bind_texture(test);
+                shd_gate.shade(t.shader(), |rdr_gate, iface|
+                {
+                    iface.projection.update(mat);
+                    iface.atlas.update(&bound_tex);
+                    rdr_gate.render(RenderState::default().set_blending(blending), |tess_gate|
+                    {
+                        tess_gate.render(ctx, t.vertices());
                     });
                 });
             });
