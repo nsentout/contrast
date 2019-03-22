@@ -67,12 +67,6 @@ fn impl_mark_macro(ast: &syn::DeriveInput) -> TokenStream {
                 self.common_properties.rotation = rotation;
                 self
             }
-
-            fn set_layer_index(&mut self, layer_index : usize) -> &mut #name
-            {
-                self.common_properties.markid.layer_index = layer_index;
-                self
-            }
         }
     };
 

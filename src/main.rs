@@ -49,11 +49,16 @@ uniform_interface!
 }
 
 fn rotate_marks(mark : &mut Mark) {
-    mark.set_rotation(45.0);
+    mark.set_rotation(mark.get_rotation() + 45.0);
 }
 
 fn color_marks(mark : &mut Mark) {
     mark.set_color((1.0, 0.5, 0.5, 1.0));
+}
+
+fn enlarge_marks(mark : &mut Mark) {
+    let size = mark.get_size();
+    mark.set_size((size.width * 1.5, size.height * 1.5));
 }
 
 fn main()
@@ -61,6 +66,9 @@ fn main()
     // Initialize contrast
     let mut contrast = Contrast::new();
     contrast.init();
+
+    // Set the current layer in which marks will be added by default 
+    contrast.set_current_layer(1);
 
     // Initialize the camera
     let mut cam = Camera::init(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -93,13 +101,6 @@ fn main()
         .set_thickness(20.0)
         .set_color((1.0, 0.0, 0.0, 1.0))
         .set_mode(LineMode::Linear)
-        .get_id();
-
-
-    let mut _mark_triangle = contrast.add_point_mark().set_position(pos)
-        .set_size(size)
-        .set_color((1.0, 0.0, 0.0, 1.0))
-        .set_shape(Shape::Triangle)
         .get_id();
 
     let mut _mark_triangle = contrast.add_point_mark().set_position(pos)
@@ -178,17 +179,20 @@ fn main()
 
     contrast.add_layers(2);
 
-    let layer_1 = contrast.get_layer_mut(1).unwrap();
-    layer_1.add_mark(&mut m2);
-    layer_1.apply_to_marks(color_marks);
+    let layer_0 = contrast.get_layer_mut(0).unwrap();
+    layer_0.add_mark(&mut m1);
+    layer_0.add_mark(&mut _mark_triangle);
+    layer_0.add_mark(&mut _mark_clover);
+    layer_0.apply_to_marks(rotate_marks);
 
     let layer_2 = contrast.get_layer_mut(2).unwrap();
     layer_2.add_mark(&mut m3);
-    layer_2.apply_to_marks(color_marks);
+    layer_2.add_mark(&mut _mark_cross);
+    layer_2.apply_to_marks(enlarge_marks);
 
-    let layer_0 = contrast.get_layer_mut(0).unwrap();
-    layer_0.add_mark(&mut m1);
-    layer_0.apply_to_marks(rotate_marks);
+    let layer_1 = contrast.get_layer_mut(1).unwrap();
+    layer_1.add_mark(&mut m2);
+    layer_1.apply_to_marks(color_marks);
 
 
     println!("Building finished!");
@@ -227,12 +231,13 @@ fn main()
 
                 WindowEvent::Key(Key::Space, _, Action::Release, _) =>
                 {
-                    /*let mark = contrast.get_mark_mut(&m1).unwrap();
-                    let mut color = mark.get_color();
-                    println!("Mark color before : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a);
+                    let mark = contrast.get_mark_mut(&m1).unwrap();
                     mark.set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
-                    color = mark.get_color();
-                    println!("Mark color after : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a)*/
+                    let color = mark.get_color();
+                    println!("New mark color : ({:.2}, {:.2}, {:.2}, {:.2})", color.r, color.g, color.b, color.a);
+
+                    mark.as_point_mark_mut_unchecked().set_shape(Shape::Arrow);
+                    println!("New mark shape : {}", *mark.as_point_mark_unchecked().get_shape() as u32);
                 }
 
                 // Handle window resizing

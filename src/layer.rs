@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
+use std::mem;
 use properties::markid::MarkId;
 use properties::position::Position;
-use crate::MarkMacro;
 use crate::marks::mark::Mark;
 use crate::markscontainer::Contrast;
 
@@ -10,8 +10,7 @@ use crate::markscontainer::Contrast;
 /// A Layer has a vector containing his marks and a depth, 0 means 
 /// it will be displayed on first plan.
 /// A Layer keeps track of indexes where marks have been removed 
-/// to replace them later.
-#[derive(Debug)]
+/// to replace them later.]
 pub struct Layer {
     pub(crate) marks : Vec<Mark>,
     pub(crate) depth : usize,
@@ -23,7 +22,6 @@ impl Ord for Layer
 {
     fn cmp(&self, other: &Layer) -> Ordering
     {
-        //other.depth.cmp(&self.depth)
         self.depth.cmp(&other.depth)
     }
 }
@@ -77,22 +75,33 @@ impl Layer {
         }
 
         // Update the mark according to his new layer
+        let new_mark_index;
+        let mut dirty_layer = false;
         if self.invalid_indexes.is_empty() {
-            mark.set_mark_index(self.marks.len());
+            new_mark_index = self.marks.len();
         }
         else {
-            mark.set_mark_index(self.invalid_indexes.pop().unwrap());
+            dirty_layer = true;
+            new_mark_index = self.invalid_indexes.pop().unwrap();
         }
+
+        mark.set_mark_index(new_mark_index);
         mark.set_layer_index(self.depth);
         mark.set_valid(true);
 
         // Update the markid passed as parameter so it stays coherent
-        markid.mark_index = self.marks.len();
+        markid.mark_index = new_mark_index;
         markid.layer_index = self.depth;
         markid.valid = true;
             
         // Add the mark to the layer
-        self.marks.push(mark);
+        if !dirty_layer {
+            self.marks.push(mark);
+        }
+        else {
+            let invalid_mark = self.marks.get_mut(new_mark_index).unwrap();
+            mem::replace(invalid_mark, mark);
+        }
     }
 
     /// Move every mark of the Layer.
@@ -114,17 +123,18 @@ impl Layer {
 
     /// Add a mark which was just created and is not in any layer.
     pub(crate) fn force_add_mark(&mut self, mut mark : Mark) {
+        mark.set_layer_index(self.depth);
         // If there is no invalid indexes, just push the mark
-         if self.invalid_indexes.is_empty() {
-            mark.set_mark_index(self.get_marks_nb());
+        if self.invalid_indexes.is_empty() {
+            mark.set_mark_index(self.marks.len());
             self.marks.push(mark);
         }
         // Else, replace the invalid mark with the new mark
         else {
             let first_invalid_index = self.invalid_indexes.pop().unwrap();
             mark.set_mark_index(first_invalid_index);
-            let mut invalid_mark = self.marks.get_mut(first_invalid_index).unwrap();
-            invalid_mark = &mut mark;
+            let invalid_mark = self.marks.get_mut(first_invalid_index).unwrap();
+            mem::replace(invalid_mark, mark);
         }
     }
 
@@ -172,5 +182,45 @@ impl Layer {
             return false;
         }
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::MarkMacro;
+
+    #[test]
+    fn add_mark()
+    {
+        let mut c = Contrast::new();
+        c.init();
+        c.add_layers(2);
+
+        let mut m1 = c.add_point_mark().set_position((100.0, 150.0, 0.0)).get_id();
+        let mut m2 = c.add_point_mark().set_position((200.0, 250.0, 1.0)).get_id();
+        let mut m3 = c.add_point_mark().set_position((300.0, 350.0, 2.0)).get_id();
+
+        for i in 0..3 {
+            for j in 0..3 {
+                for k in 0..3 {
+                    c.get_layer_mut(i).unwrap().add_mark(&mut m1);
+                    c.get_layer_mut(j).unwrap().add_mark(&mut m2);
+                    c.get_layer_mut(k).unwrap().add_mark(&mut m3);
+
+                    let marks_properties = c.get_pointmarks_properties();
+                    assert_eq!(marks_properties.len(), 3);
+                    assert_eq!(c.get_mark(&m1).unwrap().get_id(), m1);
+                    assert_eq!(c.get_mark(&m2).unwrap().get_id(), m2);
+                    assert_eq!(c.get_mark(&m3).unwrap().get_id(), m3);
+
+                    if i != j && j != k && i != k {
+                        assert_eq!(marks_properties[i], ([100.0, 150.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                        assert_eq!(marks_properties[j], ([200.0, 250.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                        assert_eq!(marks_properties[k], ([300.0, 350.0, 2.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                    }
+                }
+            }
+        }
     }
 }

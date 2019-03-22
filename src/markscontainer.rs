@@ -1,12 +1,13 @@
 use std::collections::HashSet;
 use properties::markid::MarkId;
-use crate::MarkMacro;
 use crate::marks::mark::Mark;
 use crate::marks::mark::MarkTy;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::SubLine;
 use crate::marks::linemark::LineMark;
+use crate::marks::textmark::TextMark;
+use crate::marks::textmark::FontCache;
 use crate::layer::Layer;
 
 
@@ -19,7 +20,8 @@ use crate::layer::Layer;
 pub struct Contrast {
     pub(crate) layers : Vec<Layer>,
     pub(crate) current_layer_index : usize,
-    pub(crate) update: HashSet<MarkTy>
+    pub(crate) update: HashSet<MarkTy>,
+    pub(crate) fonts: FontCache
 }
 
 impl Contrast {
@@ -29,7 +31,8 @@ impl Contrast {
         Contrast {
             layers : Vec::<Layer>::new(),
             current_layer_index : 0,
-            update: HashSet::new()
+            update: HashSet::new(),
+            fonts: FontCache::new()
         }
     }
 
@@ -37,6 +40,12 @@ impl Contrast {
     pub fn init(&mut self) {
         let layer_0 = Layer::new(0, self);
         self.layers.push(layer_0);
+    }
+
+    /// Register font & police with one key name.
+    pub fn registerFont(&mut self, name: &str, font: &str, police: u32)
+    {
+        self.fonts.create_face(name, font, police);
     }
 
     /// Append one dirty mark container.
@@ -48,7 +57,8 @@ impl Contrast {
                 match m
                 {
                     Mark::Point(_) => self.update.insert(MarkTy::Point),
-                    Mark::Line(_) => self.update.insert(MarkTy::Point)
+                    Mark::Line(_) => self.update.insert(MarkTy::Line),
+                    Mark::Text(_) => self.update.insert(MarkTy::Text)
                 }
             },
             None => panic!("Invalid MarkId")
@@ -119,9 +129,9 @@ impl Contrast {
     /// Set the current layer. The current layer is the layer where contrast will push
     /// all marks by default.
     pub fn set_current_layer(&mut self, layer_index : usize) {
-        // Add layers if necessary
-        if layer_index > self.layers.len() {
-            self.add_layers(layer_index - self.layers.len());
+       // Add layers if necessary
+        if layer_index >= self.layers.len() {
+            self.add_layers(layer_index + 1 - self.layers.len());
         }
 
         self.current_layer_index = layer_index;
@@ -150,10 +160,9 @@ impl Contrast {
     /// Convert the MarkPoints contained in the main vector into a vector
     /// of vertices understandable by the renderer, then returns it.
     pub fn get_pointmarks_properties(&mut self) -> Vec<VertexPoint> {
-        //self.layers.sort();
+        self.layers.sort();
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
         for layer in &self.layers {
-            //println!("{}", layer.depth);
             for mark in layer.get_all_marks() {
                 if let Mark::Point(p) = mark {
                     if mark.is_valid() {
@@ -167,7 +176,8 @@ impl Contrast {
 
     /// Convert the LineMarks contained in the main vector into a vector
     /// of sub-line understandable by the renderer, then returns it.
-    pub fn get_linemarks_properties(self) -> Vec<SubLine> {
+    pub fn get_linemarks_properties(&mut self) -> Vec<SubLine> {
+        self.layers.sort();
         let mut properties : Vec<SubLine> = Vec::<SubLine>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
@@ -275,33 +285,34 @@ mod tests {
     }
 
     #[test]
-    fn add_mark_into_layer()
+    fn set_current_layer()
     {
         let mut c = Contrast::new();
         c.init();
-        c.add_layers(2);
+        c.add_layers(1);
 
-        let mut m1 = c.add_point_mark().set_position((100.0, 150.0, 0.0)).get_id();
-        let mut m2 = c.add_point_mark().set_position((200.0, 250.0, 1.0)).get_id();
-        let mut m3 = c.add_point_mark().set_position((300.0, 350.0, 2.0)).get_id();
+        let mut m1 = c.add_point_mark().get_id();
+        let mut m2 = c.add_point_mark().get_id();
 
-        for i in 0..3 {
-            for j in 0..3 {
-                for k in 0..3 {
-                    c.get_layer_mut(i).unwrap().add_mark(&mut m1);
-                    c.get_layer_mut(j).unwrap().add_mark(&mut m2);
-                    c.get_layer_mut(k).unwrap().add_mark(&mut m3);
+        assert_eq!(m1, c.get_layer(0).unwrap().marks.get(0).unwrap().get_id());
+        assert_eq!(m2, c.get_layer(0).unwrap().marks.get(1).unwrap().get_id());
+        assert!(c.get_layer(0).unwrap().invalid_indexes.is_empty());
+        assert!(c.get_layer(1).unwrap().marks.is_empty());
+        assert!(c.get_layer(1).unwrap().invalid_indexes.is_empty());
 
-                    let marks_properties = c.get_pointmarks_properties();
+        c.set_current_layer(1);
 
-                    if (i != j && j != k && i != k) {
-                        assert_eq!(marks_properties[i], ([100.0, 150.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-                        assert_eq!(marks_properties[j], ([200.0, 250.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-                        assert_eq!(marks_properties[k], ([300.0, 350.0, 2.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-                    }
-                }
-            }
-        }
+        let m3 = c.add_point_mark().get_id();
+        assert_eq!(m3, c.get_layer(1).unwrap().marks.get(0).unwrap().get_id());
+        
+        c.get_layer_mut(1).unwrap().add_mark(&mut m1);
+
+        assert!(!c.get_layer(0).unwrap().invalid_indexes.is_empty());
+        assert!(c.get_layer(1).unwrap().invalid_indexes.is_empty());
+        assert_eq!(m2, c.get_layer(0).unwrap().marks.get(1).unwrap().get_id());
+        assert_eq!(m1, c.get_layer(1).unwrap().marks.get(1).unwrap().get_id());
+        assert_eq!(c.get_layer(0).unwrap().get_marks_nb(), 1);
+        assert_eq!(c.get_layer(1).unwrap().get_marks_nb(), 2);
     }
 
     #[test]

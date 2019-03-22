@@ -1,0 +1,12 @@
+[package]
+name = "lumi_renderer"
+version = "0.1.0"
+authors = ["lcorbel <lorian.corbel@etu.u-bordeaux.fr>"]
+edition = "2018"
+
+[dependencies]
+luminance = "0.30.1"
+luminance-glfw = "0.5.4"
+luminance-windowing = "0.2.4"
+contrast = { path = ".." }
+properties = { path = "../properties" }
