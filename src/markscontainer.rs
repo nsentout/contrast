@@ -4,7 +4,7 @@ use crate::marks::mark::Mark;
 use crate::marks::mark::MarkTy;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
-use crate::marks::linemark::SubLine;
+use crate::marks::linemark::VertexSubLine;
 use crate::marks::linemark::LineMark;
 use crate::marks::textmark::TextMark;
 use crate::marks::textmark::FontCache;
@@ -176,9 +176,9 @@ impl Contrast {
 
     /// Convert the LineMarks contained in the main vector into a vector
     /// of sub-line understandable by the renderer, then returns it.
-    pub fn get_linemarks_properties(&mut self) -> Vec<SubLine> {
+    pub fn get_linemarks_properties(&mut self) -> Vec<VertexSubLine> {
         self.layers.sort();
-        let mut properties : Vec<SubLine> = Vec::<SubLine>::new();
+        let mut properties : Vec<VertexSubLine> = Vec::<VertexSubLine>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Line(l) = mark {
@@ -304,7 +304,7 @@ mod tests {
 
         let m3 = c.add_point_mark().get_id();
         assert_eq!(m3, c.get_layer(1).unwrap().marks.get(0).unwrap().get_id());
-        
+
         c.get_layer_mut(1).unwrap().add_mark(&mut m1);
 
         assert!(!c.get_layer(0).unwrap().invalid_indexes.is_empty());

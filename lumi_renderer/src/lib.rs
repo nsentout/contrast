@@ -17,7 +17,7 @@ use luminance::pixel::R32F;
 use contrast::camera::Camera;
 use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
-use contrast::marks::linemark::SubLine;
+use contrast::marks::linemark::VertexSubLine;
 use contrast::marks::textmark::VertexText;
 use contrast::marks::mark::MarkTy;
 use properties::markid::MarkId;
@@ -53,7 +53,7 @@ uniform_interface!
 }
 
 const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0u32, 0.0, 0.0);
-const DUMMY_LINE: &'static SubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
+const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0, 0.0]);
 
 pub struct TessPool<V>
@@ -96,7 +96,7 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
 }
 
 pub type RPoint = RenderPass<VertexPoint, ShaderInterface>;
-pub type RLine = RenderPass<SubLine, ShaderInterface>;
+pub type RLine = RenderPass<VertexSubLine, ShaderInterface>;
 pub type RText = RenderPass<VertexText, ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat, Dim2, (), ()>;
 
@@ -130,7 +130,7 @@ impl<'a> LumiRenderer<'a>
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_POINT.clone());
         let point = RPoint{pool: tss, program: shd.0};
 
-        let shd = Program::<SubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
+        let shd = Program::<VertexSubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_LINE.clone());
         let line = RLine{pool: tss, program: shd.0};
 
@@ -196,7 +196,7 @@ impl<'a> LumiRenderer<'a>
                         }
 
                     }
-                    
+
                     _ => ()
                 }
             }
