@@ -5,14 +5,15 @@ use crate::marks::mark::Mark;
 use crate::marks::mark::MarkTy;
 use crate::marks::pointmark::PointMark;
 use crate::marks::pointmark::VertexPoint;
-use crate::marks::linemark::SubLine;
+use crate::marks::linemark::VertexSubLine;
 use crate::marks::linemark::LineMark;
 use crate::marks::textmark::TextMark;
 use crate::marks::textmark::FontCache;
-use crate::marks::textmark::FaceCache;
 use crate::marks::textmark::VertexText;
+use crate::marks::textmark::TextMarkCmd;
 use crate::marks::textmark::Glyph;
 use crate::layer::Layer;
+use crate::MarkMacro;
 
 
 /// This is the main structure of the library. It contains all the layers
@@ -196,9 +197,9 @@ impl Contrast {
 
     /// Convert the LineMarks contained in the main vector into a vector
     /// of sub-line understandable by the renderer, then returns it.
-    pub fn get_linemarks_properties(&mut self) -> Vec<SubLine> {
+    pub fn get_linemarks_properties(&mut self) -> Vec<VertexSubLine> {
         self.layers.sort();
-        let mut properties : Vec<SubLine> = Vec::<SubLine>::new();
+        let mut properties : Vec<VertexSubLine> = Vec::<VertexSubLine>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Line(l) = mark {
@@ -209,9 +210,12 @@ impl Contrast {
         properties
     }
 
-    pub fn get_textmarks_properties(&mut self) -> (Vec<VertexText>,LinkedList<Glyph>) {
+    /// Convert the MarkTexts contained in the main vector into a vector of a lot of things...
+    pub fn get_textmarks_properties(&mut self) -> (Vec<VertexText>,LinkedList<TextMarkCmd>,LinkedList<Glyph>) {
         let mut chars = LinkedList::new();
+        let mut commands = LinkedList::new();
         let mut properties = Vec::new();
+        let mut cur: usize = 0;
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Text(t) = mark {
@@ -219,13 +223,17 @@ impl Contrast {
                     {
                         let face = self.fonts.get_face(t.get_font()).unwrap();
                         face.prepare_string(t.get_text());
-                        properties.extend(face.drawing_commands(t.get_x(), t.get_y(), t.get_text()));
+                        let vtx = face.drawing_commands(t.get_x(), t.get_y(), t.get_text());
+                        let color = mark.get_color().clone();
+                        commands.push_front(TextMarkCmd::new(t.get_font(), color, cur, cur+vtx.len()));
                         chars.extend(face.get_writable());
+                        cur+= vtx.len();
+                        properties.extend(vtx);
                     }
                 }
             }
         }
-        (properties,chars)
+        (properties,commands,chars)
     }
 
 }
@@ -343,7 +351,7 @@ mod tests {
 
         let m3 = c.add_point_mark().get_id();
         assert_eq!(m3, c.get_layer(1).unwrap().marks.get(0).unwrap().get_id());
-        
+
         c.get_layer_mut(1).unwrap().add_mark(&mut m1);
 
         assert!(!c.get_layer(0).unwrap().invalid_indexes.is_empty());

@@ -15,7 +15,7 @@ use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::LineMode;
-use contrast::marks::linemark::SubLine;
+use contrast::marks::linemark::VertexSubLine;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
 use properties::position::Position;
@@ -67,7 +67,7 @@ fn main()
     let mut contrast = Contrast::new();
     contrast.init();
 
-    // Set the current layer in which marks will be added by default 
+    // Set the current layer in which marks will be added by default
     contrast.set_current_layer(1);
 
     // Initialize the camera
@@ -203,7 +203,7 @@ fn main()
 
     // We need a program to “shade” our triangles and to tell luminance which is the input vertex type
     let (program, _) = Program::<VertexPoint, (), ShaderInterface>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
-    let (programLine, _) = Program::<SubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
+    let (programLine, _) = Program::<VertexSubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
 
     // Create tessellation for direct geometry; that is, tessellation that will render vertices by taking one after another in the provided slice
     let tess = Tess::new(&mut surface, Mode::Point, &contrast.get_pointmarks_properties()[..], None);

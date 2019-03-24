@@ -18,8 +18,9 @@ use luminance::pixel::R32F;
 use contrast::camera::Camera;
 use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
-use contrast::marks::linemark::SubLine;
+use contrast::marks::linemark::VertexSubLine;
 use contrast::marks::textmark::VertexText;
+use contrast::marks::textmark::TextMarkCmd;
 use contrast::marks::textmark::Glyph;
 use contrast::marks::mark::MarkTy;
 use properties::markid::MarkId;
@@ -51,12 +52,13 @@ uniform_interface!
     pub struct ShaderTextInterface
     {
         atlas: &'static BoundTexture<'static, Flat, Dim2, R32F>,
-        projection: M44
+        projection: M44,
+        color: [f32; 4]
     }
 }
 
 const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0u32, 0.0, 0.0);
-const DUMMY_LINE: &'static SubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
+const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0, 0.0]);
 
 pub struct TessPool<V>
@@ -96,10 +98,11 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
 {
     pub fn shader(&self) -> &Program<V, (), U> { &self.program }
     pub fn vertices(&self) -> TessSlice<V> { self.pool.data() }
+    pub fn vertices_range(&self, from: usize, to: usize) -> TessSlice<V> { self.pool.range(from, to) }
 }
 
 pub type RPoint = RenderPass<VertexPoint,ShaderInterface>;
-pub type RLine = RenderPass<SubLine,ShaderInterface>;
+pub type RLine = RenderPass<VertexSubLine,ShaderInterface>;
 pub type RText = RenderPass<VertexText,ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat,Dim2,(),()>;
 pub type Atlas = Texture<Flat,Dim2,R32F>;
@@ -120,7 +123,8 @@ pub struct LumiRenderer<'a>
     text: RText,
     cam: Camera,
     callbacks : HashMap<Key, Callback<'a>>,
-    font_atlas: HashMap<String,Atlas>
+    font_atlas: HashMap<String,Atlas>,
+    font_cmmds: LinkedList<TextMarkCmd>
 }
 
 impl<'a> LumiRenderer<'a>
@@ -134,7 +138,7 @@ impl<'a> LumiRenderer<'a>
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_POINT.clone());
         let point = RPoint{pool: tss, program: shd.0};
 
-        let shd = Program::<SubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
+        let shd = Program::<VertexSubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_LINE.clone());
         let line = RLine{pool: tss, program: shd.0};
 
@@ -148,8 +152,9 @@ impl<'a> LumiRenderer<'a>
         let cam = Camera::init(w, h);
         let callbacks = HashMap::new();
         let font_atlas = HashMap::new();
+        let font_cmmds = LinkedList::new();
 
-        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks, font_atlas}
+        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks, font_atlas, font_cmmds}
     }
 
     fn update_font_atlas(&mut self, glyphs: LinkedList<Glyph>)
@@ -171,6 +176,14 @@ impl<'a> LumiRenderer<'a>
 
             atlas.upload_part(false, [x, y], [w, h], glyph.bitmap.as_slice());
         }
+    }
+
+    fn build_text_marks(&mut self, bundle: (Vec<VertexText>,LinkedList<TextMarkCmd>,LinkedList<Glyph>))
+    {
+        self.text.pool.update(bundle.0);
+        self.font_cmmds.clear();
+        self.font_cmmds.extend(bundle.1);
+        self.update_font_atlas(bundle.2);
     }
 
     pub fn get_contrast_mut(&mut self) -> &mut Contrast
@@ -222,7 +235,7 @@ impl<'a> LumiRenderer<'a>
                         }
 
                     }
-                    
+
                     _ => ()
                 }
             }
@@ -233,12 +246,7 @@ impl<'a> LumiRenderer<'a>
                 {
                     MarkTy::Point => self.point.pool.update(self.contrast.get_pointmarks_properties()),
                     MarkTy::Line => self.line.pool.update(self.contrast.get_linemarks_properties()),
-                    MarkTy::Text =>
-                    {
-                        let texts = self.contrast.get_textmarks_properties();
-                        self.text.pool.update(texts.0);
-                        self.update_font_atlas(texts.1);
-                    }
+                    MarkTy::Text => { let b = self.contrast.get_textmarks_properties(); self.build_text_marks(b); }
                 }
             }
 
@@ -250,7 +258,8 @@ impl<'a> LumiRenderer<'a>
             let ctx = &mut self.surface;
             let back_buffer = &self.frame;
 
-            let test = self.font_atlas.get("helvetica").unwrap();
+            let commands = &self.font_cmmds;
+            let textures = &self.font_atlas;
             let blending = Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement));
 
             ctx.pipeline_builder().pipeline(back_buffer, [0., 0., 0., 0.], |pipeline, shd_gate|
@@ -271,16 +280,21 @@ impl<'a> LumiRenderer<'a>
                         tess_gate.render(ctx, l.vertices());
                     });
                 });
-                let bound_tex = pipeline.bind_texture(test);
-                shd_gate.shade(t.shader(), |rdr_gate, iface|
+                for cmd in commands
                 {
-                    iface.projection.update(mat);
-                    iface.atlas.update(&bound_tex);
-                    rdr_gate.render(RenderState::default().set_blending(blending), |tess_gate|
+                    let tex = textures.get(&cmd.name).unwrap();
+                    let bound_tex = pipeline.bind_texture(tex);
+                    shd_gate.shade(t.shader(), |rdr_gate, iface|
                     {
-                        tess_gate.render(ctx, t.vertices());
+                        iface.projection.update(mat);
+                        iface.atlas.update(&bound_tex);
+                        iface.color.update(cmd.color.to_array().clone());
+                        rdr_gate.render(RenderState::default().set_blending(blending), |tess_gate|
+                        {
+                            tess_gate.render(ctx, t.vertices_range(cmd.start, cmd.end));
+                        });
                     });
-                });
+                }                
             });
 
             self.surface.swap_buffers();

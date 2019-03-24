@@ -5,8 +5,8 @@ use mark_macro_derive::MarkMacro;
 
 /// This is the type that will receive our shaders when we will want to render our line marks.
 /// We could describe it this way to be more clear :
-/// type SubLine = (size, color, rotation, origin, target, previous, thickness, line_mode).
-pub type SubLine = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], f32, u32);
+/// type VertexSubLine = (size, color, rotation, origin, target, previous, next, thickness, line_mode).
+pub type VertexSubLine = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, u32);
 
 
 /// Those are the different ways we shoud be able to
@@ -44,23 +44,33 @@ impl LineMark {
         }
     }
 
-    /// Converts a LineMark into a SubLine, which is a type
+    /// Converts a LineMark into a VertexSubLine, which is a type
     /// understandable by the renderer.
-    pub fn to_subline(&self) -> Vec<SubLine> {
-        let mut sublines : Vec<SubLine> = Vec::<SubLine>::new();
-        let mode = &self.mode;
-        let mut previous = self.points[0];
-        let mut origin = self.points[0];
-        for target in self.points.clone() {
-            let vl : SubLine = (*self.common_properties.size.to_array(),
+    pub fn to_subline(&self) -> Vec<VertexSubLine> {
+        let mut sublines : Vec<VertexSubLine> = Vec::<VertexSubLine>::new();
+        if self.points.len()>0 {
+            let mode = &self.mode;
+            let mut previous = self.points[0];
+            let mut origin = self.points[0];
+            let mut target = self.points[0];
+            let mut n = self.points[0];
+            for next in self.points.clone() {
+                let vl : VertexSubLine = (*self.common_properties.size.to_array(),
+                *self.common_properties.color.to_array(), self.common_properties.rotation,
+                *origin.to_array(), *target.to_array(), *previous.to_array(), *next.to_array(),self.thickness, *mode as u32);
+                sublines.push(vl);
+                previous = origin;
+                origin = target;
+                target = next;
+                n = next;
+            }
+            let vl : VertexSubLine = (*self.common_properties.size.to_array(),
             *self.common_properties.color.to_array(), self.common_properties.rotation,
-            *origin.to_array(), *target.to_array(), *previous.to_array(),self.thickness, *mode as u32);
+            *origin.to_array(), *target.to_array(), *previous.to_array(), *n.to_array(),self.thickness, *mode as u32);
             sublines.push(vl);
-            previous = origin;
-            origin = target;
-        }
-        if sublines.len() > 0 {
-            sublines.remove(0);
+            if sublines.len() > 0 {
+                sublines.remove(0);
+            }
         }
         sublines
     }

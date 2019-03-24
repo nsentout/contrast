@@ -114,10 +114,20 @@ fn main()
         .get_id();
 
     contrast.register_font("helvetica", "uhvr8a.pfb", 32);
+    contrast.register_font("fatty", "crimson-b.ttf", 72);
+
     let mut _mark_text = contrast.add_text_mark()
         .set_position(80, 100)
         .set_font("helvetica")
         .set_text("Manger au moins 5 fruits et légumes par jour!")
+        .set_color((0.0, 1.0, 0.0, 1.0))
+        .get_id();
+
+    let mut _mark_text = contrast.add_text_mark()
+        .set_position(250, 300)
+        .set_font("fatty")
+        .set_text("I love RUST !")
+        .set_color((1.0, 0.0, 0.0, 1.0))
         .get_id();
 
     contrast.add_layers(2);

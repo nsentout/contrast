@@ -1,6 +1,6 @@
 use crate::MarkMacro;
 use crate::markproperties::MarkProperties;
-use properties::position::Position;
+use properties::color::Color;
 use mark_macro_derive::MarkMacro;
 
 use std::collections::HashMap;
@@ -121,7 +121,6 @@ impl FaceCache
 
         for c in text.chars()
         {
-            println!("draw:{}", c);
             let glyph = self.chars.get(&c).unwrap();
 
             let xpos = (x + glyph.bx) as f32;
@@ -155,6 +154,22 @@ impl FaceCache
         let mut list = LinkedList::new();
         list.append(&mut self.writable);
         list
+    }
+}
+
+pub struct TextMarkCmd
+{
+    pub name: String,
+    pub color: Color,
+    pub start: usize,
+    pub end: usize
+}
+
+impl TextMarkCmd
+{
+    pub fn new(name: &str, color: Color, start: usize, end: usize) -> TextMarkCmd
+    {
+        TextMarkCmd{name: name.to_string(), color, start, end}
     }
 }
 
