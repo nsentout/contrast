@@ -16,44 +16,44 @@ uniform mat4 projection;
 
 void build_simple_shape(vec4 position)
 {
-vec4 nodeCenter = gl_in[0].gl_Position;
+	vec4 nodeCenter = gl_in[0].gl_Position;
 
-float mid_width=v_size[0].x/2.0f;
-float mid_height=v_size[0].y/2.0f;
+	float mid_width=v_size[0].x/2.0f;
+	float mid_height=v_size[0].y/2.0f;
 
-float cos_rotation = cos(v_rotation[0]);
-float sin_rotation = sin(v_rotation[0]);
+	float cos_rotation = cos(v_rotation[0]);
+	float sin_rotation = sin(v_rotation[0]);
 
-    f_color = v_color[0];
-    f_size = v_size[0];
-    f_pos = position.xyz;
-    f_shape=v_shape[0];
-
-
-
-        vec2 deltas[6] = vec2[6](
-        				vec2( mid_width, -mid_height),
-        				vec2( mid_width,  mid_height),
-        				vec2(-mid_width,  mid_height),
-        				vec2( mid_width, -mid_height),
-        				vec2(-mid_width, -mid_height),
-        				vec2(-mid_width,  mid_height)
-        );
-
-        for(int i=0 ; i<6; ++i){
-        			// point in object space (not rotated)
-        			g_uv = deltas[i]  / (f_size.xy/2.0);
-
-        			// point in screen space (rotated)
-        			float x = (deltas[i].x)*cos_rotation - (deltas[i].y)*sin_rotation;
-        			float y = sin_rotation*(deltas[i].x) + cos_rotation*(deltas[i].y);
-        			vec4 rotated_delta = vec4(x ,y, 0, 0);
-        			gl_Position = projection* (nodeCenter + rotated_delta);
-        			EmitVertex();
-        		}
+	f_color = v_color[0];
+	f_size = v_size[0];
+	f_pos = position.xyz;
+	f_shape=v_shape[0];
 
 
-        EndPrimitive();
+
+	vec2 deltas[6] = vec2[6](
+	vec2( mid_width, -mid_height),
+	vec2( mid_width,  mid_height),
+	vec2(-mid_width,  mid_height),
+	vec2( mid_width, -mid_height),
+	vec2(-mid_width, -mid_height),
+	vec2(-mid_width,  mid_height)
+	);
+
+	for(int i=0 ; i<6; ++i){
+		// point in object space (not rotated)
+		g_uv = deltas[i]  / (f_size.xy/2.0);
+
+		// point in screen space (rotated)
+		float x = (deltas[i].x)*cos_rotation - (deltas[i].y)*sin_rotation;
+		float y = sin_rotation*(deltas[i].x) + cos_rotation*(deltas[i].y);
+		vec4 rotated_delta = vec4(x ,y, 0, 0);
+		gl_Position = projection* (nodeCenter + rotated_delta);
+		EmitVertex();
+	}
+
+
+	EndPrimitive();
 
 
 
@@ -62,5 +62,5 @@ float sin_rotation = sin(v_rotation[0]);
 
 void main()
 {
-    build_simple_shape(gl_in[0].gl_Position);
+	build_simple_shape(gl_in[0].gl_Position);
 }
