@@ -21,7 +21,7 @@ use crate::MarkMacro;
 /// The current layer is the layer to which contrast will add marks by
 /// default. It is by default the layer 0, on first plan.
 /// The user can add, get, remove and modify marks as he wishes, as well
-/// as get the layers to apply some functions on its marks.
+/// as to retrieve the layers to apply some functions on its marks.
 pub struct Contrast {
     pub(crate) layers : Vec<Layer>,
     pub(crate) current_layer_index : usize,
@@ -41,7 +41,7 @@ impl Contrast {
         }
     }
 
-    /// Initialize contrast. At the moment, all this does is add a first layer to Contrast.
+    /// Initialize contrast. All this does is add a first layer to Contrast.
     pub fn init(&mut self) {
         let layer_0 = Layer::new(0, self);
         self.layers.push(layer_0);
@@ -104,7 +104,7 @@ impl Contrast {
         }
     }
 
-    /// Same behavior than add_point_mark but it adds a mark of type "line".
+    /// Same behavior than add_point_mark but it adds a mark of type "Line".
     pub fn add_line_mark(&mut self) -> &mut LineMark {
         let line = Mark::Line(LineMark::new());
         self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(line);
@@ -115,6 +115,7 @@ impl Contrast {
         }
     }
 
+    /// Same behavior than add_point_mark but it adds a mark of type "Text".
     pub fn add_text_mark(&mut self) -> &mut TextMark
     {
         let text = Mark::Text(TextMark::new());
@@ -126,14 +127,17 @@ impl Contrast {
         }
     }
 
-    /// Returns a reference wrapped into an Option of the mark at the index "id".
-    /// If there is no mark having this id, returns None.
+    /// Returns a reference wrapped into an Option of the mark represented by 'markid'.
+    /// If there is no mark having this id, or if this mark is invalid, returns None.
     pub fn get_mark(&mut self, markid : &MarkId) -> Option<&Mark> {
-        self.layers.get(markid.layer_index).unwrap().get_mark(markid)
+        if markid.valid {
+            return self.layers.get(markid.layer_index).unwrap().get_mark(markid);
+        }
+        None
     }
 
-    /// Returns a mutable reference wrapped into an Option of the mark at the index "id".
-    /// If there is no mark having this id, returns None.
+    /// Returns a mutable reference wrapped into an Option of the mark represented by 'markid'.
+    /// If there is no mark having this id, or if this mark is invalid, returns None.
     pub fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
         if markid.valid {
             return self.layers.get_mut(markid.layer_index).unwrap().get_mark_mut(markid);
@@ -141,8 +145,9 @@ impl Contrast {
         None
     }
 
-    /// Remove the mark with the id mark. This function asks the layer to invalidate the mark,
-    /// implying this mark won't be displayed.
+    /// Remove the mark with the id mark. This does not actually removes the mark from the container
+    /// but it asks the layer to invalidate the mark, implying this mark won't be displayed and the
+    /// user won't be allowed to retrieve it.
     pub fn remove_mark(&mut self, markid : &mut MarkId) {
         self.layers.get_mut(markid.layer_index).unwrap().invalidate_mark(markid);
     }
@@ -167,13 +172,13 @@ impl Contrast {
     }
 
     /// Returns a reference wrapped into an Option of the Layer
-    /// at the index <layer_index>.
+    /// at the index 'layer_index'.
     pub fn get_layer(&self, layer_index : usize) -> Option<&Layer> {
         self.layers.get(layer_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the Layer
-    /// at the index <layer_index>.
+    /// at the index 'layer_index'.
     pub fn get_layer_mut(&mut self, layer_index : usize) -> Option<&mut Layer> {
         self.layers.get_mut(layer_index)
     }
@@ -186,11 +191,11 @@ impl Contrast {
         for layer in &mut self.layers {
             for mark in &mut layer.marks {
                 if let Mark::Point(ref mut p) = mark {
-                    let display = p.is_already_displayed();
+                    let display = p.is_displayed();
                     p.set_displayed(true);
                     if p.is_valid() {
-                        if !display {
-                            p.prepare_first_display();
+                        if !display {   // if first time the mark is displayed
+                            p.prevent_animation();
                             properties.push(p.as_static_vertex());
                         }
                         else {
@@ -218,7 +223,7 @@ impl Contrast {
         properties
     }
 
-    /// Convert the MarkTexts contained in the main vector into a vector of a lot of things...
+    /// Convert the MarkText contained in the main vector into a vector of a lot of things...
     pub fn get_textmarks_properties(&mut self) -> (Vec<VertexText>,LinkedList<TextMarkCmd>,LinkedList<Glyph>) {
         let mut chars = LinkedList::new();
         let mut commands = LinkedList::new();
@@ -254,7 +259,7 @@ mod tests {
     use crate::marks::pointmark::Shape;
     use crate::MarkMacro;
 
-    fn vertex_point_is_equal(v1 :VertexPoint ,v2 : VertexPoint) -> bool
+    fn vertex_point_is_equal(v1 : VertexPoint, v2 : VertexPoint) -> bool
     {
         if v1.1 == v2.1 && v1.2 == v2.2 && v1.3 == v2.3 && v1.4 == v2.4 && v1.5 == v2.5 && v1.6 == v2.6 && 
             v1.7 == v2.7 && v1.8 == v2.8 && v1.9 == v2.9 && v1.10 == v2.10 && v1.11 == v2.11 && 

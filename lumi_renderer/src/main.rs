@@ -1,12 +1,8 @@
 use lumi_renderer::LumiRenderer;
 use contrast::MarkMacro;
-use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
-use contrast::marks::linemark::LineMode;
 use contrast::markscontainer::Contrast;
-use properties::position::Position;
 use properties::markid::MarkId;
-use properties::size::Size;
 use luminance_glfw::event::Key;
 use rand::Rng;
 
@@ -59,9 +55,7 @@ fn main()
     let mut luminance = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
     let contrast = luminance.get_contrast_mut();
 
-    let mut rng = rand::thread_rng();
-
-    contrast.register_font("helvetica", "uhvr8a.pfb", 32);
+    //contrast.register_font("helvetica", "uhvr8a.pfb", 32);
     contrast.register_font("fatty", "crimson-b.ttf", 40);
 
     contrast.add_text_mark()

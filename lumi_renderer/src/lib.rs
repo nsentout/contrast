@@ -30,16 +30,16 @@ use std::collections::HashMap;
 use std::iter;
 use std::time::Instant;
 
-const VSPOINT: &'static str = include_str!("../../src/shaders/point.vert");
-const FSPOINT: &'static str = include_str!("../../src/shaders/point.frag");
-const GSPOINT: &'static str = include_str!("../../src/shaders/point.geom");
+const VSPOINT: &'static str = include_str!("../../src/shaders/point/point.vert");
+const FSPOINT: &'static str = include_str!("../../src/shaders/point/point.frag");
+const GSPOINT: &'static str = include_str!("../../src/shaders/point/point.geom");
 
-const VSLINE: &'static str = include_str!("../../src/shaders/line.vert");
-const FSLINE: &'static str = include_str!("../../src/shaders/line.frag");
-const GSLINE: &'static str = include_str!("../../src/shaders/line.geom");
+const VSLINE: &'static str = include_str!("../../src/shaders/line/line.vert");
+const FSLINE: &'static str = include_str!("../../src/shaders/line/line.frag");
+const GSLINE: &'static str = include_str!("../../src/shaders/line/line.geom");
 
-const VSTEXT: &'static str = include_str!("../../src/shaders/text.vert");
-const FSTEXT: &'static str = include_str!("../../src/shaders/text.frag");
+const VSTEXT: &'static str = include_str!("../../src/shaders/text/text.vert");
+const FSTEXT: &'static str = include_str!("../../src/shaders/text/text.frag");
 
 uniform_interface!
 {

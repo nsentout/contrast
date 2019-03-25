@@ -10,7 +10,7 @@ use crate::markscontainer::Contrast;
 /// A Layer has a vector containing his marks and a depth, 0 means 
 /// it will be displayed on first plan.
 /// A Layer keeps track of indexes where marks have been removed 
-/// to replace them later.]
+/// to replace them later.
 pub struct Layer {
     pub(crate) marks : Vec<Mark>,
     pub(crate) depth : usize,
@@ -46,7 +46,7 @@ impl Eq for Layer {}
 
 impl Layer {
     /// Simply returns a new instance of Layer, initializing
-    /// all attributes to their default values, except the depth.
+    /// all attributes to their default value, except the depth.
     pub(crate) fn new(depth : usize, contrast : *mut Contrast) -> Self {
         Layer {
             marks : Vec::<Mark>::new(),
@@ -68,7 +68,7 @@ impl Layer {
         // If the mark is already in the layer, returns
         if markid.layer_index == self.depth { return; }
 
-        // Retrieve a copy of the mark in his current layer.
+        // Retrieve a copy of the mark in his current layer
         let mut mark;
         unsafe {
             mark = (*self.contrast).layers.get_mut(markid.layer_index).unwrap().invalidate_and_get_mark(markid);
@@ -105,7 +105,7 @@ impl Layer {
     }
 
     /// Move every mark of the Layer.
-    /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark 
+    /// Example : if 'position' is (50.0, 0.0, 0.0), every point of the mark 
     /// will move 50 pixels to the right.
     pub fn move_of<P : Into <Position>>(&mut self, position : P) -> &mut Self {
         let position : Position = position.into();
@@ -155,13 +155,13 @@ impl Layer {
     }
 
     /// Returns a reference wrapped into an Option of the mark
-    /// with the id <mark>.
+    /// represented by 'markid'.
     pub(crate) fn get_mark(&self, markid : &MarkId) -> Option<&Mark> {
         self.marks.get(markid.mark_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the mark
-    /// with the id <markid>.
+    /// represented by 'markid'.
     pub(crate) fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
         self.marks.get_mut(markid.mark_index)
     }
@@ -176,7 +176,7 @@ impl Layer {
         self.marks.last_mut().unwrap()
     }
 
-    /// Indicate whether or not the layer contains this mark.
+    /// Indicate whether or not the layer contains the mark represented by 'markid'.
     pub(crate) fn contains(&self, markid : &MarkId) -> bool {
         if let None = self.marks.get(markid.mark_index) {
             return false;

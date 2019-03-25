@@ -66,7 +66,7 @@ macro_rules! mark_set {
     }
 }
 
-/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// Macro able to cast a Mark into any other type of Mark (Point, Line, Polygon, Text)
 /// that returns a reference of it wrapped into an Option.
 macro_rules! cast {
     ($mark:ident, $type:ident) => (
@@ -79,7 +79,7 @@ macro_rules! cast {
     )
 }
 
-/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// Macro able to cast a Mark into any other type of Mark (Point, Line, Polygon, Text)
 /// that returns a mutable reference of it wrapped into an Option.
 macro_rules! cast_mut {
     ($mark:ident, $type:ident) => (
@@ -92,7 +92,7 @@ macro_rules! cast_mut {
     )
 }
 
-/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// Macro able to cast a Mark into any other type of Mark (Point, Line, Polygon, Text)
 /// that either returns a reference of it if the Mark is the good type, or panic.
 macro_rules! cast_unchecked {
     ($mark:ident, $type:ident) => (
@@ -100,12 +100,12 @@ macro_rules! cast_unchecked {
             t
         }
         else {
-            panic!("Mark type incorrect!")
+            panic!("An error occured when casting a mark!! Mark type incorrect!")
         }
     )
 }
 
-/// Macro able to cast a Mark into any type of mark (Point, Line, Polygon, Area, Text)
+/// Macro able to cast a Mark into any other type of mark (Point, Line, Polygon, Text)
 /// that either returns a mutable reference of it if the Mark is the good type, or panic.
 macro_rules! cast_mut_unchecked {
     ($mark:ident, $type:ident) => (
@@ -113,7 +113,7 @@ macro_rules! cast_mut_unchecked {
             t
         }
         else {
-            panic!("Mark type incorrect!")
+            panic!("An error occured when casting a mark!! Mark type incorrect!")
         }
     )
 }
@@ -152,9 +152,25 @@ impl Mark {
         cast_mut_unchecked!(self, Line)
     }
 
-    /// Move the mark according to the <position>. Used by Layer to move
+    pub fn as_text_mark(&self) -> Option<&TextMark> {
+        cast!(self, Text)
+    }
+
+    pub fn as_text_mark_mut(&mut self) -> Option<&mut TextMark> {
+        cast_mut!(self, Text)
+    }
+
+    pub fn as_text_mark_unchecked(&self) -> &TextMark {
+        cast_unchecked!(self, Text)
+    }
+
+    pub fn as_text_mark_mut_unchecked(&mut self) -> &mut TextMark {
+        cast_mut_unchecked!(self, Text)
+    }
+
+    /// Move the mark according to the 'position'. Used by Layer to move
     /// all his marks.
-    /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark 
+    /// Example : if 'position' is (50.0, 0.0, 0.0), every point of the mark 
     /// will move 50 pixels to the right.
     pub fn move_of<P : Into <Position>>(&mut self, position : P) {
         let position : Position = position.into();
@@ -168,7 +184,9 @@ impl Mark {
                     *pt += position.into();
                 }
             },
-            _ => ()
+            Mark::Text(t) => { 
+                ()  //TODO
+            }
         }
     }
 
@@ -198,15 +216,6 @@ impl Mark {
         }
         self
     }
-
-    pub(crate) fn is_valid(&self) -> bool {
-        match self {
-            Mark::Point(p) => p.common_properties.markid.valid,
-            Mark::Line(l) => l.common_properties.markid.valid,
-            Mark::Text(t) => t.common_properties.markid.valid
-        }
-    }
-
 }
 
 impl MarkMacro for Mark  {
