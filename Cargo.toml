@@ -12,5 +12,6 @@ freetype-rs = "0.19.1"
 rect_packer = "0.2.1"
 nalgebra = "0.17"
 rand = "0.4"
+lazy_static = "1.3.0"
 mark_macro_derive = { path = "mark_macro_derive" }
 properties = { path = "properties" }

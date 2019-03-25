@@ -183,11 +183,19 @@ impl Contrast {
     pub fn get_pointmarks_properties(&mut self) -> Vec<VertexPoint> {
         self.layers.sort();
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
-        for layer in &self.layers {
-            for mark in layer.get_all_marks() {
-                if let Mark::Point(p) = mark {
-                    if mark.is_valid() {
-                        properties.push(p.as_vertex());
+        for layer in &mut self.layers {
+            for mark in &mut layer.marks {
+                if let Mark::Point(ref mut p) = mark {
+                    let display = p.is_already_displayed();
+                    p.set_displayed(true);
+                    if p.is_valid() {
+                        if !display {
+                            p.prepare_first_display();
+                            properties.push(p.as_static_vertex());
+                        }
+                        else {
+                            properties.push(p.as_anim_vertex());
+                        }
                     }
                 }
             }
@@ -246,6 +254,16 @@ mod tests {
     use crate::marks::pointmark::Shape;
     use crate::MarkMacro;
 
+    fn vertex_point_is_equal(v1 :VertexPoint ,v2 : VertexPoint) -> bool
+    {
+        if v1.1 == v2.1 && v1.2 == v2.2 && v1.3 == v2.3 && v1.4 == v2.4 && v1.5 == v2.5 && v1.6 == v2.6 && 
+            v1.7 == v2.7 && v1.8 == v2.8 && v1.9 == v2.9 && v1.10 == v2.10 && v1.11 == v2.11 && 
+            v1.12 == v2.12 && v1.13 == v2.13 && v1.14 == v2.14 {
+            return true;
+        }
+        false
+    }
+
     #[test]
     fn new()
     {
@@ -291,14 +309,15 @@ mod tests {
         c.add_point_mark().set_position((1.0, 5.0, 9.0));
         c.add_point_mark().set_shape(Shape::Rectangle);
         c.add_point_mark().set_position((3.6, 5.0, 9.2)).set_shape(Shape::Triangle)
-            .set_size((0.5, 0.3)).set_rotation(90.0).set_color((1.0, 0.0, 0.5, 1.0))
-            .set_selection_angle(120.0).set_start_radius(45.0);
+            .set_size((0.5, 0.3)).set_rotation(90.0).set_color((1.0, 0.0, 0.5, 1.0));
 
         let marks_properties = c.get_pointmarks_properties();
-
-        assert_eq!(marks_properties[0], ([1.0, 5.0, 9.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-        assert_eq!(marks_properties[1], ([0.0, 0.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 1, 0.0, 0.0));
-        assert_eq!(marks_properties[2], ([3.6, 5.0, 9.2], [0.5, 0.3], [1.0, 0.0, 0.5, 1.0], 90.0, 2, 120.0, 45.0));
+        assert!(vertex_point_is_equal(marks_properties[0], ([1.0, 5.0, 9.0], [1.0, 5.0, 9.0], 0.0, [0.0, 0.0], [0.0, 0.0], 
+            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0)));
+        assert!(vertex_point_is_equal(marks_properties[1], ([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0], [0.0, 0.0], 
+            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 1, 1, 0.0)));
+        assert!(vertex_point_is_equal(marks_properties[2], ([3.6, 5.0, 9.2], [3.6, 5.0, 9.2], 0.0, [0.5, 0.3], [0.5, 0.3], 
+            0.0, [1.0, 0.0, 0.5, 1.0], [1.0, 0.0, 0.5, 1.0], 0.0, 90.0, 90.0, 0.0, 2, 2, 0.0)));
     }
 
     #[test]
@@ -351,7 +370,7 @@ mod tests {
 
         let m3 = c.add_point_mark().get_id();
         assert_eq!(m3, c.get_layer(1).unwrap().marks.get(0).unwrap().get_id());
-
+        
         c.get_layer_mut(1).unwrap().add_mark(&mut m1);
 
         assert!(!c.get_layer(0).unwrap().invalid_indexes.is_empty());

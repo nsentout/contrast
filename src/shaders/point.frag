@@ -1,12 +1,16 @@
 const float PI = 3.14159265358979323846264;
 const float M_SQRT_2 = 1.4142135623730951;
 const float TWO_PI = 2*PI;
-in vec3 f_pos;
-in vec2 f_size;
+
 in vec4 f_color;
 flat in uint f_shape;
+flat in uint f_target_shape;
+in float f_start_shape;
+
 in vec2 g_uv;
 out vec4 frag;
+
+uniform float t;
 
 float distance_shape(uint shape)
 {
@@ -209,9 +213,14 @@ float distance_shape(uint shape)
     return length(g_uv.xy);
 }
 
+float interpolation_distance_shape() {
+    return mix(distance_shape(f_shape), distance_shape(f_target_shape), min(t - f_start_shape, 1.0));
+}
+
 void main()
 {
-    float d =  distance_shape(f_shape);
+    float d = interpolation_distance_shape();
+
     float width=fwidth(d);
     if(d>width)
     {

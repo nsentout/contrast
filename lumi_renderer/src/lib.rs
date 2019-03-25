@@ -15,6 +15,7 @@ use luminance::vertex::Vertex;
 use luminance::linear::M44;
 use luminance::pixel::R32F;
 
+use contrast::elapsed_time_float;
 use contrast::camera::Camera;
 use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
@@ -27,6 +28,7 @@ use properties::markid::MarkId;
 use std::collections::LinkedList;
 use std::collections::HashMap;
 use std::iter;
+use std::time::Instant;
 
 const VSPOINT: &'static str = include_str!("../../src/shaders/point.vert");
 const FSPOINT: &'static str = include_str!("../../src/shaders/point.frag");
@@ -49,6 +51,16 @@ uniform_interface!
 
 uniform_interface!
 {
+    pub struct ShaderPointInterface
+    {
+        #[as("t")]
+        time: f32,
+        projection: M44
+    }
+}
+
+uniform_interface!
+{
     pub struct ShaderTextInterface
     {
         atlas: &'static BoundTexture<'static, Flat, Dim2, R32F>,
@@ -57,7 +69,8 @@ uniform_interface!
     }
 }
 
-const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0u32, 0.0, 0.0);
+const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0, -10.0], 0.0, [0.0, 0.0], [0.0, 0.0], 0.0,
+                                            [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
 const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0, 0.0]);
 
@@ -101,7 +114,7 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
     pub fn vertices_range(&self, from: usize, to: usize) -> TessSlice<V> { self.pool.range(from, to) }
 }
 
-pub type RPoint = RenderPass<VertexPoint,ShaderInterface>;
+pub type RPoint = RenderPass<VertexPoint,ShaderPointInterface>;
 pub type RLine = RenderPass<VertexSubLine,ShaderInterface>;
 pub type RText = RenderPass<VertexText,ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat,Dim2,(),()>;
@@ -134,7 +147,7 @@ impl<'a> LumiRenderer<'a>
         let mut surface = GlfwSurface::new(WindowDim::Windowed(w, h), title, WindowOpt::default()).expect("GLFW ERROR");
         let frame = Framebuffer::back_buffer(surface.size());
 
-        let shd = Program::<VertexPoint, (), ShaderInterface>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
+        let shd = Program::<VertexPoint, (), ShaderPointInterface>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_POINT.clone());
         let point = RPoint{pool: tss, program: shd.0};
 
@@ -205,6 +218,10 @@ impl<'a> LumiRenderer<'a>
 
     pub fn run(&mut self)
     {
+        let mut time = Instant::now();
+        let mut frames = 0;
+        let mut elapsed;
+
         'app: loop
         {
             for event in self.surface.poll_events()
@@ -262,10 +279,20 @@ impl<'a> LumiRenderer<'a>
             let textures = &self.font_atlas;
             let blending = Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement));
 
+            elapsed = time.elapsed();
+            frames += 1;
+
+            if elapsed.as_secs() >= 1 {
+                println!("FPS : {}", frames);
+                time = Instant::now();
+                frames = 0;
+            }
+
             ctx.pipeline_builder().pipeline(back_buffer, [0., 0., 0., 0.], |pipeline, shd_gate|
             {
                 shd_gate.shade(p.shader(), |rdr_gate, iface|
                 {
+                    iface.time.update(elapsed_time_float());
                     iface.projection.update(mat);
                     rdr_gate.render(RenderState::default(), |tess_gate|
                     {
