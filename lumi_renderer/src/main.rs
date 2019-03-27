@@ -59,42 +59,42 @@ fn main()
     contrast.register_font("fatty", "crimson-b.ttf", 40);
 
     contrast.add_text_mark()
-        .set_position(30, 50)
+        .set_position((30.0, 50.0, 1.0))
         .set_font("fatty")
         .set_text("Commandes pour animer les marques :")
         .set_color((1.0, 1.0, 1.0, 1.0))
         .get_id();
 
     contrast.add_text_mark()
-        .set_position(30, 120)
+        .set_position((30.0, 120.0, 1.0))
         .set_font("fatty")
         .set_text("- <A> pour changer leur forme")
         .set_color((1.0, 1.0, 1.0, 1.0))
         .get_id();
 
     contrast.add_text_mark()
-        .set_position(30, 170)
+        .set_position((30.0, 170.0, 1.0))
         .set_font("fatty")
         .set_text("- <Z> pour les faire bouger")
         .set_color((1.0, 1.0, 1.0, 1.0))
         .get_id();
 
     contrast.add_text_mark()
-        .set_position(30, 220)
+        .set_position((30.0, 220.0, 1.0))
         .set_font("fatty")
         .set_text("- <E> pour changer leur couleur")
         .set_color((1.0, 1.0, 1.0, 1.0))
         .get_id();
 
     contrast.add_text_mark()
-        .set_position(30, 270)
+        .set_position((30.0, 270.0, 1.0))
         .set_font("fatty")
         .set_text("- <R> pour les redimensionner")
         .set_color((1.0, 1.0, 1.0, 1.0))
         .get_id();
 
     contrast.add_text_mark()
-        .set_position(30, 320)
+        .set_position((30.0, 320.0, 1.0))
         .set_font("fatty")
         .set_text("- <F> pour leur appliquer une rotation")
         .set_color((1.0, 1.0, 1.0, 1.0))

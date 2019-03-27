@@ -184,7 +184,7 @@ impl Mark {
                     *pt += position.into();
                 }
             },
-            Mark::Text(t) => { 
+            Mark::Text(_t) => { 
                 ()  //TODO
             }
         }
