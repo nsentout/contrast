@@ -116,6 +116,12 @@ impl Layer {
         self
     }
 
+    /// Returns a reference of the vector containing all the marks.
+    pub fn get_all_marks(&self) -> &Vec<Mark> {
+        &self.marks
+    }
+ 
+
     /// Returns the number of valid marks in the layer.
     pub fn get_marks_nb(&self) -> usize {
         self.marks.len() - self.invalid_indexes.len()
@@ -166,11 +172,6 @@ impl Layer {
         self.marks.get_mut(markid.mark_index)
     }
 
-    /// Returns a reference of the vector containing all the marks.
-    pub(crate) fn get_all_marks(&self) -> &Vec<Mark> {
-        &self.marks
-    }
- 
     /// Returns a mutable reference of the last added mark.
     pub(crate) fn get_last_mark_mut(&mut self) -> &mut Mark {
         self.marks.last_mut().unwrap()
