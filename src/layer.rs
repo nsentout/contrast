@@ -10,7 +10,7 @@ use crate::markscontainer::Contrast;
 /// A Layer has a vector containing his marks and a depth, 0 means 
 /// it will be displayed on first plan.
 /// A Layer keeps track of indexes where marks have been removed 
-/// to replace them later.]
+/// to replace them later.
 pub struct Layer {
     pub(crate) marks : Vec<Mark>,
     pub(crate) depth : usize,
@@ -46,7 +46,7 @@ impl Eq for Layer {}
 
 impl Layer {
     /// Simply returns a new instance of Layer, initializing
-    /// all attributes to their default values, except the depth.
+    /// all attributes to their default value, except the depth.
     pub(crate) fn new(depth : usize, contrast : *mut Contrast) -> Self {
         Layer {
             marks : Vec::<Mark>::new(),
@@ -68,7 +68,7 @@ impl Layer {
         // If the mark is already in the layer, returns
         if markid.layer_index == self.depth { return; }
 
-        // Retrieve a copy of the mark in his current layer.
+        // Retrieve a copy of the mark in his current layer
         let mut mark;
         unsafe {
             mark = (*self.contrast).layers.get_mut(markid.layer_index).unwrap().invalidate_and_get_mark(markid);
@@ -105,7 +105,7 @@ impl Layer {
     }
 
     /// Move every mark of the Layer.
-    /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark 
+    /// Example : if 'position' is (50.0, 0.0, 0.0), every point of the mark 
     /// will move 50 pixels to the right.
     pub fn move_of<P : Into <Position>>(&mut self, position : P) -> &mut Self {
         let position : Position = position.into();
@@ -155,13 +155,13 @@ impl Layer {
     }
 
     /// Returns a reference wrapped into an Option of the mark
-    /// with the id <mark>.
+    /// represented by 'markid'.
     pub(crate) fn get_mark(&self, markid : &MarkId) -> Option<&Mark> {
         self.marks.get(markid.mark_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the mark
-    /// with the id <markid>.
+    /// represented by 'markid'.
     pub(crate) fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
         self.marks.get_mut(markid.mark_index)
     }
@@ -176,7 +176,7 @@ impl Layer {
         self.marks.last_mut().unwrap()
     }
 
-    /// Indicate whether or not the layer contains this mark.
+    /// Indicate whether or not the layer contains the mark represented by 'markid'.
     pub(crate) fn contains(&self, markid : &MarkId) -> bool {
         if let None = self.marks.get(markid.mark_index) {
             return false;
@@ -189,6 +189,17 @@ impl Layer {
 mod tests {
     use super::*;
     use crate::MarkMacro;
+    use crate::marks::pointmark::VertexPoint;
+
+    fn vertex_point_is_equal(v1 :VertexPoint ,v2 : VertexPoint) -> bool
+    {
+        if v1.1 == v2.1 && v1.2 == v2.2 && v1.3 == v2.3 && v1.4 == v2.4 && v1.5 == v2.5 && v1.6 == v2.6 && 
+            v1.7 == v2.7 && v1.8 == v2.8 && v1.9 == v2.9 && v1.10 == v2.10 && v1.11 == v2.11 && 
+            v1.12 == v2.12 && v1.13 == v2.13 && v1.14 == v2.14 {
+            return true;
+        }
+        false
+    }
 
     #[test]
     fn add_mark()
@@ -215,9 +226,12 @@ mod tests {
                     assert_eq!(c.get_mark(&m3).unwrap().get_id(), m3);
 
                     if i != j && j != k && i != k {
-                        assert_eq!(marks_properties[i], ([100.0, 150.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-                        assert_eq!(marks_properties[j], ([200.0, 250.0, 1.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-                        assert_eq!(marks_properties[k], ([300.0, 350.0, 2.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
+                        assert!(vertex_point_is_equal(marks_properties[i], ([100.0, 150.0, 0.0], [100.0, 150.0, 0.0], 0.0, [0.0, 0.0], [0.0, 0.0], 
+                            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0)));
+                        assert!(vertex_point_is_equal(marks_properties[j], ([200.0, 250.0, 1.0], [200.0, 250.0, 1.0], 0.0, [0.0, 0.0], [0.0, 0.0], 
+                            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0)));
+                        assert!(vertex_point_is_equal(marks_properties[k], ([300.0, 350.0, 2.0], [300.0, 350.0, 2.0], 0.0, [0.0, 0.0], [0.0, 0.0], 
+                            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0)));
                     }
                 }
             }

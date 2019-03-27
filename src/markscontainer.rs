@@ -24,7 +24,7 @@ use crate::MarkMacro;
 /// The current layer is the layer to which contrast will add marks by
 /// default. It is by default the layer 0, on first plan.
 /// The user can add, get, remove and modify marks as he wishes, as well
-/// as get the layers to apply some functions on its marks.
+/// as to retrieve the layers to apply some functions on its marks.
 pub struct Contrast {
     pub(crate) layers : Vec<Layer>,
     pub(crate) current_layer_index : usize,
@@ -44,7 +44,7 @@ impl Contrast {
         }
     }
 
-    /// Initialize contrast. At the moment, all this does is add a first layer to Contrast.
+    /// Initialize contrast. All this does is add a first layer to Contrast.
     pub fn init(&mut self) {
         let layer_0 = Layer::new(0, self);
         self.layers.push(layer_0);
@@ -108,7 +108,7 @@ impl Contrast {
         }
     }
 
-    /// Same behavior than add_point_mark but it adds a mark of type "line".
+    /// Same behavior than add_point_mark but it adds a mark of type "Line".
     pub fn add_line_mark(&mut self) -> &mut LineMark {
         let line = Mark::Line(LineMark::new());
         self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(line);
@@ -119,6 +119,7 @@ impl Contrast {
         }
     }
 
+    /// Same behavior than add_point_mark but it adds a mark of type "Text".
     pub fn add_text_mark(&mut self) -> &mut TextMark
     {
         let text = Mark::Text(TextMark::new());
@@ -143,11 +144,14 @@ impl Contrast {
     /// Returns a reference wrapped into an Option of the mark at the index "id".
     /// If there is no mark having this id, returns None.
     pub fn get_mark(&mut self, markid : &MarkId) -> Option<&Mark> {
-        self.layers.get(markid.layer_index).unwrap().get_mark(markid)
+        if markid.valid {
+            return self.layers.get(markid.layer_index).unwrap().get_mark(markid);
+        }
+        None
     }
 
-    /// Returns a mutable reference wrapped into an Option of the mark at the index "id".
-    /// If there is no mark having this id, returns None.
+    /// Returns a mutable reference wrapped into an Option of the mark represented by 'markid'.
+    /// If there is no mark having this id, or if this mark is invalid, returns None.
     pub fn get_mark_mut(&mut self, markid : &MarkId) -> Option<&mut Mark> {
         if markid.valid {
             return self.layers.get_mut(markid.layer_index).unwrap().get_mark_mut(markid);
@@ -155,8 +159,9 @@ impl Contrast {
         None
     }
 
-    /// Remove the mark with the id mark. This function asks the layer to invalidate the mark,
-    /// implying this mark won't be displayed.
+    /// Remove the mark with the id mark. This does not actually removes the mark from the container
+    /// but it asks the layer to invalidate the mark, implying this mark won't be displayed and the
+    /// user won't be allowed to retrieve it.
     pub fn remove_mark(&mut self, markid : &mut MarkId) {
         self.layers.get_mut(markid.layer_index).unwrap().invalidate_mark(markid);
     }
@@ -181,13 +186,13 @@ impl Contrast {
     }
 
     /// Returns a reference wrapped into an Option of the Layer
-    /// at the index <layer_index>.
+    /// at the index 'layer_index'.
     pub fn get_layer(&self, layer_index : usize) -> Option<&Layer> {
         self.layers.get(layer_index)
     }
 
     /// Returns a mutable reference wrapped into an Option of the Layer
-    /// at the index <layer_index>.
+    /// at the index 'layer_index'.
     pub fn get_layer_mut(&mut self, layer_index : usize) -> Option<&mut Layer> {
         self.layers.get_mut(layer_index)
     }
@@ -197,11 +202,19 @@ impl Contrast {
     pub fn get_pointmarks_properties(&mut self) -> Vec<VertexPoint> {
         self.layers.sort();
         let mut properties : Vec<VertexPoint> = Vec::<VertexPoint>::new();
-        for layer in &self.layers {
-            for mark in layer.get_all_marks() {
-                if let Mark::Point(p) = mark {
-                    if mark.is_valid() {
-                        properties.push(p.as_vertex());
+        for layer in &mut self.layers {
+            for mark in &mut layer.marks {
+                if let Mark::Point(ref mut p) = mark {
+                    let display = p.is_displayed();
+                    p.set_displayed(true);
+                    if p.is_valid() {
+                        if !display {   // if first time the mark is displayed
+                            p.prevent_animation();
+                            properties.push(p.as_static_vertex());
+                        }
+                        else {
+                            properties.push(p.as_anim_vertex());
+                        }
                     }
                 }
             }
@@ -253,7 +266,7 @@ impl Contrast {
                     {
                         let face = self.fonts.get_face(t.get_font()).unwrap();
                         face.prepare_string(t.get_text());
-                        let vtx = face.drawing_commands(t.get_x(), t.get_y(), t.get_text());
+                        let vtx = face.drawing_commands(t.get_x(), t.get_y(), t.get_z(), t.get_text());
                         let color = mark.get_color().clone();
                         commands.push_front(TextMarkCmd::new(t.get_font(), color, cur, cur+vtx.len()));
                         chars.extend(face.get_writable());
@@ -275,6 +288,16 @@ mod tests {
     use properties::size::Size;
     use crate::marks::pointmark::Shape;
     use crate::MarkMacro;
+
+    fn vertex_point_is_equal(v1 : VertexPoint, v2 : VertexPoint) -> bool
+    {
+        if v1.1 == v2.1 && v1.2 == v2.2 && v1.3 == v2.3 && v1.4 == v2.4 && v1.5 == v2.5 && v1.6 == v2.6 &&
+            v1.7 == v2.7 && v1.8 == v2.8 && v1.9 == v2.9 && v1.10 == v2.10 && v1.11 == v2.11 &&
+            v1.12 == v2.12 && v1.13 == v2.13 && v1.14 == v2.14 {
+            return true;
+        }
+        false
+    }
 
     #[test]
     fn new()
@@ -321,14 +344,15 @@ mod tests {
         c.add_point_mark().set_position((1.0, 5.0, 9.0));
         c.add_point_mark().set_shape(Shape::Rectangle);
         c.add_point_mark().set_position((3.6, 5.0, 9.2)).set_shape(Shape::Triangle)
-            .set_size((0.5, 0.3)).set_rotation(90.0).set_color((1.0, 0.0, 0.5, 1.0))
-            .set_selection_angle(120.0).set_start_radius(45.0);
+            .set_size((0.5, 0.3)).set_rotation(90.0).set_color((1.0, 0.0, 0.5, 1.0));
 
         let marks_properties = c.get_pointmarks_properties();
-
-        assert_eq!(marks_properties[0], ([1.0, 5.0, 9.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0, 0.0, 0.0));
-        assert_eq!(marks_properties[1], ([0.0, 0.0, 0.0], [0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 1, 0.0, 0.0));
-        assert_eq!(marks_properties[2], ([3.6, 5.0, 9.2], [0.5, 0.3], [1.0, 0.0, 0.5, 1.0], 90.0, 2, 120.0, 45.0));
+        assert!(vertex_point_is_equal(marks_properties[0], ([1.0, 5.0, 9.0], [1.0, 5.0, 9.0], 0.0, [0.0, 0.0], [0.0, 0.0],
+            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0)));
+        assert!(vertex_point_is_equal(marks_properties[1], ([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0], [0.0, 0.0],
+            0.0, [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 1, 1, 0.0)));
+        assert!(vertex_point_is_equal(marks_properties[2], ([3.6, 5.0, 9.2], [3.6, 5.0, 9.2], 0.0, [0.5, 0.3], [0.5, 0.3],
+            0.0, [1.0, 0.0, 0.5, 1.0], [1.0, 0.0, 0.5, 1.0], 0.0, 90.0, 90.0, 0.0, 2, 2, 0.0)));
     }
 
     #[test]

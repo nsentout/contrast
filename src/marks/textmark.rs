@@ -1,5 +1,6 @@
 use crate::MarkMacro;
 use crate::markproperties::MarkProperties;
+use properties::position::Position;
 use properties::color::Color;
 use mark_macro_derive::MarkMacro;
 
@@ -12,7 +13,7 @@ const SIZE: &'static f32 = &1024.0;
 const ATLAS: &'static rect_packer::Config = &rect_packer::Config{width: 1024, height: 1024, border_padding: 5, rectangle_padding: 10};
 const ASCII: &'static str = &"!\"#$%&\'()*+,-./:;<=>?[]\\|{}^~_@`abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-pub type VertexText = ([f32; 4]);
+pub type VertexText = ([f32; 3],[f32; 2]);
 
 pub struct FontCache
 {
@@ -114,7 +115,7 @@ impl FaceCache
         }
     }
 
-    pub fn drawing_commands(&self, x: i32, y: i32, text: &str) -> Vec<VertexText>
+    pub fn drawing_commands(&self, x: i32, y: i32, z: f32, text: &str) -> Vec<VertexText>
     {
         let mut x = x;
         let mut vertices = Vec::new();
@@ -137,13 +138,13 @@ impl FaceCache
             let u2: f32 = ((glyph.rect.x as f32) + w) / SIZE;
             let v2: f32 = ((glyph.rect.y as f32) + h) / SIZE;
 
-            vertices.push([xpos  , ypos+h, u , v ]);
-            vertices.push([xpos  , ypos  , u , v2]);
-            vertices.push([xpos+w, ypos  , u2, v2]);
+            vertices.push(([xpos  , ypos+h, z], [u , v ]));
+            vertices.push(([xpos  , ypos  , z], [u , v2]));
+            vertices.push(([xpos+w, ypos  , z], [u2, v2]));
 
-            vertices.push([xpos  , ypos+h, u , v ]);
-            vertices.push([xpos+w, ypos  , u2, v2]);
-            vertices.push([xpos+w, ypos+h, u2, v ]);
+            vertices.push(([xpos  , ypos+h, z], [u , v ]));
+            vertices.push(([xpos+w, ypos  , z], [u2, v2]));
+            vertices.push(([xpos+w, ypos+h, z], [u2, v ]));
         }
 
         vertices
@@ -179,15 +180,14 @@ pub struct TextMark
     pub(crate) common_properties: MarkProperties,
     pub(crate) face: String,
     pub(crate) text: String,
-    pub(crate) x: i32,
-    pub(crate) y: i32
+    pub(crate) pos: Position
 }
 
 impl TextMark
 {
     pub fn new() -> TextMark
     {
-        TextMark{common_properties: MarkProperties::new(), face: String::from(""), text: String::from(""), x: 0, y: 0}
+        TextMark{common_properties: MarkProperties::new(), face: String::from(""), text: String::from(""), pos: Position{x: 0.0, y: 0.0, z:0.0}}
     }
 
     pub fn set_font(&mut self, face: &str) -> &mut Self
@@ -202,10 +202,9 @@ impl TextMark
         self
     }
 
-    pub fn set_position(&mut self, x: i32, y: i32) -> &mut Self
+    pub fn set_position<P : Into <Position>>(&mut self, position: P) -> &mut Self
     {
-        self.x = x;
-        self.y = y;
+        self.pos = position.into();
         self
     }
 
@@ -219,7 +218,9 @@ impl TextMark
         &self.text
     }
 
-    pub fn get_x(&self) -> i32 { self.x }
+    pub fn get_x(&self) -> i32 { self.pos.x as i32 }
 
-    pub fn get_y(&self) -> i32 { self.y }
+    pub fn get_y(&self) -> i32 { self.pos.y as i32 }
+
+    pub fn get_z(&self) -> f32 { self.pos.z }
 }

@@ -77,6 +77,12 @@
     description={Un programme shader écrit en GLSL qui régit le traitement des primitives (marque)}
 }
 
+\newglossaryentry{unsafe}
+{
+    name={unsafe},
+    description={Partie de code qui ne garantit pas la sécurité de mémoire promis par Rust}
+}
+
 \maketitle
 \tableofcontents
 \newpage
@@ -223,7 +229,72 @@ raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand un
 
 \subsection{Implémentation des marques texte}
 
-\subsection{Implémentation des layers}
+\subsection{Les calques}
+\subsubsection{Qu'est-ce qu'un calque ?}
+Un calque est un groupe de marques ayant en commun une profondeur. C'est-à-dire que les marques étant dans
+un calque de profondeur 0 apparaîtront devant des marques appartenant à un calque de profondeur 1.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/calque-exemple}
+  \caption{Exemple d'application des calques}
+  \label{fig:calque-ex}
+\end{figure}
+
+La figure~\ref{fig:calque-ex} représente deux captures d'écran de marques.
+Ces marques ont la même position et la même couleur dans les deux cas, mais nous avons échangé le calque 
+de la marque rouge avec celui de la marque bleue dans la deuxième capture, mettant ainsi la marque bleue
+au premier plan.
+
+\subsubsection{Implémentation}
+
+Tout d'abord, nous avons besoin d'une collection pour stocker les marques de notre calque.
+Nous avons choisi de les stocker dans un vecteur pour plusieurs raisons.
+La \href{https://doc.rust-lang.org/std/collections/index.html}{documentation} de Rust précise que le
+vecteur et la hashmap sont à utiliser dans la plupart des cas et que ces deux collections sont très
+performantes.
+De plus, nous souhaitons pouvoir être capable de récupérer une marque en O(1) et ajouter une marque en
+O(1) (bien que l'ajout n'est pas dans tous les cas en temps constant, par exemple dans le cas où le 
+vecteur a besoin d'être réalloué pour augmenter sa taille). Ces contraintes nous confortent dans notre 
+choix du vecteur.
+
+Nous n'avons pas mentionné la suppression des marques volontairement. La raison est que nous ne supprimons
+jamais de marques de nos vecteurs. La motivation derrière ce choix est que nous souhaitons une performance
+maximale, ce qui implique avoir l'ajout, la récupération et la suppression en temps constant, quitte à
+ce que la consommation mémoire soit importante.
+Ainsi, nous avons introduit un mécanisme d'"invalidation" de marques. Lorsque l'utilisateur souhaitera
+supprimer une marque et ne plus l'afficher dans sa fenêtre, \textit{contrast} invalidera la marque.
+L'invalidation d'une marque indique à \textit{contrast} qu'il faudra l'ignorer lors du prochain
+rafraichissement de l'écran, la faisant ainsi disparaître de la fenêtre.
+
+Ce mécanisme seul n'est pas très intelligent car nous pourrions très vite accumuler des marques invalides
+, qui ne servent à rien, dans notre vecteur.
+C'est pour cette raison que nous avons introduit une pile stockant les index des marques invalides.
+La pile nous permet un ajout en O(1) et c'est tout ce dont nous avons besoin pour stocker nos index.
+Désormais, lors de la suppression d'une marque, nous empilons également l'index de cette marque.
+Lors de l'ajout d'une marque, nous pouvons dépiler, si notre pile n'est pas vide, pour remplacer la
+marque invalide à cet index par une nouvelle marque valide.
+
+Ce mécanisme, bien que performant, complexifie légèrement l'ajout de nouvelle marque. Il ne suffit pas de
+push une marque dans le vecteur, il faut d'abord vérifier s'il y a des marques invalides qui peuvent être
+remplacées. 
+De plus, une marque ne pouvant pas être dans deux calques à la fois, lorsque l'on souhaite ajouter une 
+marque dans un calque et que celle-ci était déjà dans un autre calque, il faut nécessairement :
+\begin{itemize}
+\item cloner la marque de l'ancien calque
+\item invalider la marque de l'ancien calque
+\item ajouter correctement le clone de la marque dans le nouveau calque
+\end{itemize}
+Pour cloner la marque, le nouveau calque a besoin de connaître les autres calques. C'est pourquoi un 
+calque a un pointeur vers \textit{contrast}. Cela permet à un calque d'accéder aux autres calques et d'en 
+récupérer les  marques. C'est également la raison pour laquelle le code des calques contient une zone 
+\gls{unsafe}. Nous avons besoin de déréférencer le pointeur de \textit{contrast} pour accéder aux calques et à 
+leurs marques.
+
+Nous avons également ajouté deux fonctions utilitaires permettant d'appliquer des modifications à toutes
+les marques d'un calque. L'une permet de faire bouger les marques d'une certaine distance, l'autre prend 
+en paramètre une fonction définie par l'utilisateur, et applique cette fonction aux marques. L'utilisateur
+peut ainsi appliquer n'importe quelle modification à l'ensemble des marques d'un calque.
 
 \subsection{Animation des marques}
 
@@ -233,7 +304,7 @@ raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand un
 
 \subsection{Ce qui fonctionne}
 
-\subsection{Ce qui ne fonctionne pas fonctionne}
+\subsection{Ce qui ne fonctionne pas}
 
 \subsection{Tests et résultats}
 

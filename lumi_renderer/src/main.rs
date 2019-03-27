@@ -1,80 +1,52 @@
 use lumi_renderer::LumiRenderer;
 use contrast::MarkMacro;
-use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
-use contrast::marks::linemark::LineMode;
 use contrast::markscontainer::Contrast;
-use properties::position::Position;
 use properties::markid::MarkId;
-use properties::size::Size;
 use luminance_glfw::event::Key;
+use rand::Rng;
 
 const WINDOW_WIDTH : u32 = 800;
 const WINDOW_HEIGHT : u32 = 800;
 
-fn rotate_marks(mark : &mut Mark) {
-    mark.set_rotation(mark.get_rotation() + 45.0);
-}
-
-fn color_marks(mark : &mut Mark) {
-    mark.set_color((1.0, 0.5, 0.5, 1.0));
-}
-
-fn enlarge_marks(mark : &mut Mark) {
-    let size = mark.get_size();
-    mark.set_size((size.width * 1.5, size.height * 1.5));
-}
-
-fn move_mark_up(contrast : &mut Contrast, markid : &MarkId) {
-    contrast.get_mark_mut(&markid).unwrap().move_of((0.0, -10.0, 0.0));
-    contrast.mark_dirty(*markid);
-}
-
-fn move_mark_down(contrast : &mut Contrast, markid : &MarkId) {
-    contrast.get_mark_mut(&markid).unwrap().move_of((0.0, 10.0, 0.0));
-    contrast.mark_dirty(*markid);
-}
-
-fn move_mark_left(contrast : &mut Contrast, markid : &MarkId) {
-    contrast.get_mark_mut(&markid).unwrap().move_of((-10.0, 0.0, 0.0));
-    contrast.mark_dirty(*markid);
-}
-
-fn move_mark_right(contrast : &mut Contrast, markid : &MarkId) {
-    contrast.get_mark_mut(&markid).unwrap().move_of((10.0, 0.0, 0.0));
-    contrast.mark_dirty(*markid);
-}
-
-fn move_marks_up(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+fn move_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    let mut rng = rand::thread_rng();
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().move_of((0.0, -10.0, 0.0));
+        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked().set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0));
         contrast.mark_dirty(*m);
     }
 }
 
-fn move_marks_down(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+fn resize_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    let mut rng = rand::thread_rng();
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().move_of((0.0, 10.0, 0.0));
+        contrast.get_mark_mut(&m).unwrap().set_size((rng.gen_range::<f32>(100.0, 200.0), rng.gen_range::<f32>(100.0, 200.0)));
         contrast.mark_dirty(*m);
     }
 }
 
-fn move_marks_left(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+fn color_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    let mut rng = rand::thread_rng();
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().move_of((-10.0, 0.0, 0.0));
+        contrast.get_mark_mut(&m).unwrap().set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
         contrast.mark_dirty(*m);
     }
 }
 
-fn move_marks_right(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+fn rotate_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    let mut rng = rand::thread_rng();
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().move_of((10.0, 0.0, 0.0));
+        contrast.get_mark_mut(&m).unwrap().set_rotation(rng.gen_range::<f32>(3.14, 6.28));
         contrast.mark_dirty(*m);
     }
 }
 
-fn sleep() {
-    println!("ZZZZZzzzzzzzz");
+fn reshape_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
+    let mut rng = rand::thread_rng();
+    for m in markids {
+        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked().set_shape(Shape::rand(&mut rng));
+        contrast.mark_dirty(*m);
+    }
 }
 
 
@@ -83,81 +55,88 @@ fn main()
     let mut luminance = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
     let contrast = luminance.get_contrast_mut();
 
-    let pos = Position { x : 150.0, y : WINDOW_HEIGHT as f32 / 2.0, z : 0.0 };
-    let size = Size { width : 200.0, height : 200.0 };
+    //contrast.register_font("helvetica", "uhvr8a.pfb", 32);
+    contrast.register_font("fatty", "crimson-b.ttf", 40);
 
-    let _mark_line = contrast.add_line_mark().add_point(pos)
-        .add_point((pos.x+100.0, pos.y, pos.z))
-        .add_point((pos.x +100.0, pos.y + 100.0, pos.z))
-        .add_point((pos.x, pos.y, pos.z))
-        .set_thickness(20.0)
-        .set_color((1.0, 0.0, 0.0, 1.0))
-        .set_mode(LineMode::Linear)
-        .get_id();
-
-    let mut _mark_spade = contrast.add_point_mark().set_position((pos.x + 500.0, pos.y+250.0, pos.z))
-        .set_size(size)
-        .set_color((1.0, 0.0, 1.0, 1.0))
-        .set_shape(Shape::Spade)
-        .get_id();
-
-    let mut _mark_clover = contrast.add_point_mark().set_position((pos.x + 250.0, pos.y+250.0, pos.z))
-        .set_size(size)
-        .set_color((1.0, 1.0, 1.0, 1.0))
-        .set_shape(Shape::Clover)
-        .get_id();
-
-    let mut _mark_ring = contrast.add_point_mark().set_position((pos.x , pos.y+250.0, pos.z))
-        .set_size(size)
-        .set_color((1.0, 1.0, 0.0, 1.0))
-        .set_shape(Shape::Ring)
-        .get_id();
-
-    contrast.register_font("helvetica", "uhvr8a.pfb", 32);
-    contrast.register_font("fatty", "crimson-b.ttf", 72);
-
-    let mut _mark_text = contrast.add_text_mark()
-        .set_position(80, 100)
-        .set_font("helvetica")
-        .set_text("Manger au moins 5 fruits et légumes par jour!")
-        .set_color((0.0, 1.0, 0.0, 1.0))
-        .get_id();
-
-    let mut _mark_text = contrast.add_text_mark()
-        .set_position(250, 300)
+    contrast.add_text_mark()
+        .set_position((30.0, 50.0, 1.0))
         .set_font("fatty")
-        .set_text("I love RUST !")
-        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_text("Commandes pour animer les marques :")
+        .set_color((1.0, 1.0, 1.0, 1.0))
         .get_id();
 
-    contrast.add_layers(2);
+    contrast.add_text_mark()
+        .set_position((30.0, 120.0, 1.0))
+        .set_font("fatty")
+        .set_text("- <A> pour changer leur forme")
+        .set_color((1.0, 1.0, 1.0, 1.0))
+        .get_id();
 
-    let layer_0 = contrast.get_layer_mut(0).unwrap();
-    layer_0.add_mark(&mut _mark_spade);
-    layer_0.apply_to_marks(rotate_marks);
+    contrast.add_text_mark()
+        .set_position((30.0, 170.0, 1.0))
+        .set_font("fatty")
+        .set_text("- <Z> pour les faire bouger")
+        .set_color((1.0, 1.0, 1.0, 1.0))
+        .get_id();
 
-    let layer_1 = contrast.get_layer_mut(1).unwrap();
-    layer_1.add_mark(&mut _mark_clover);
-    layer_1.apply_to_marks(color_marks);
+    contrast.add_text_mark()
+        .set_position((30.0, 220.0, 1.0))
+        .set_font("fatty")
+        .set_text("- <E> pour changer leur couleur")
+        .set_color((1.0, 1.0, 1.0, 1.0))
+        .get_id();
 
-    let layer_2 = contrast.get_layer_mut(2).unwrap();
-    layer_2.add_mark(&mut _mark_ring);
-    layer_2.apply_to_marks(enlarge_marks);
+    contrast.add_text_mark()
+        .set_position((30.0, 270.0, 1.0))
+        .set_font("fatty")
+        .set_text("- <R> pour les redimensionner")
+        .set_color((1.0, 1.0, 1.0, 1.0))
+        .get_id();
 
+    contrast.add_text_mark()
+        .set_position((30.0, 320.0, 1.0))
+        .set_font("fatty")
+        .set_text("- <F> pour leur appliquer une rotation")
+        .set_color((1.0, 1.0, 1.0, 1.0))
+        .get_id();
+
+    let point1 = contrast.add_point_mark()
+        .set_position((400.0, 400.0, 0.0))
+        .set_size((200.0, 200.0))
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_shape(Shape::Triangle)
+        .get_id();
+
+    let point2 = contrast.add_point_mark()
+        .set_position((400.0, 400.0, 0.0))
+        .set_size((200.0, 200.0))
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_shape(Shape::Triangle)
+        .get_id();
+
+    let point3 = contrast.add_point_mark()
+        .set_position((400.0, 400.0, 0.0))
+        .set_size((200.0, 200.0))
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .set_shape(Shape::Triangle)
+        .get_id();
+/*
+    for _ in 0..200_000 {
+        contrast.add_point_mark().set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0))
+            .set_size((8.0, 8.0))
+            .set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0))
+            .set_shape(Shape::Triangle);
+    }
+*/
     contrast.mark_dirty_all();
 
-    luminance.add_action_on_press(Key::W, sleep);
+    let marks = vec!(point1, point2, point3);
 
-    luminance.add_mark_action_on_press(Key::Up, move_mark_up, &_mark_ring);
-    luminance.add_mark_action_on_press(Key::Down, move_mark_down, &_mark_ring);
-    luminance.add_mark_action_on_press(Key::Left, move_mark_left, &_mark_ring);
-    luminance.add_mark_action_on_press(Key::Right, move_mark_right, &_mark_ring);
-
-    let marks = vec!(_mark_spade, _mark_clover, _mark_line);
-    luminance.add_mark_list_action_on_press(Key::W, move_marks_up, &marks);
-    luminance.add_mark_list_action_on_press(Key::S, move_marks_down, &marks);
-    luminance.add_mark_list_action_on_press(Key::A, move_marks_left, &marks);
-    luminance.add_mark_list_action_on_press(Key::D, move_marks_right, &marks);
+    luminance.add_mark_list_action_on_press(Key::Q, reshape_marks, &marks);
+    luminance.add_mark_list_action_on_press(Key::W, move_marks, &marks);
+    luminance.add_mark_list_action_on_press(Key::E, color_marks, &marks);
+    luminance.add_mark_list_action_on_press(Key::R, resize_marks, &marks);
+    luminance.add_mark_list_action_on_press(Key::F, rotate_marks, &marks);
 
     luminance.run();
 }

@@ -1,3 +1,20 @@
+#[macro_use]
+extern crate lazy_static;
+use std::time::Instant;
+
+/// Timer accessible everywhere in the library.
+lazy_static! {
+    static ref TIMER: Instant = Instant::now();
+}
+
+/// Returns the number of milliseconds passed since launch.
+pub fn elapsed_time_float() -> f32 {
+    let elapsed = TIMER.elapsed();
+    let t64 = elapsed.as_secs() as f64 + (elapsed.subsec_millis() as f64 * 1e-3);
+    let t = t64 as f32;
+    t
+}
+
 pub mod markscontainer;
 pub mod markproperties;
 pub mod marks;
