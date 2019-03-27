@@ -20,6 +20,7 @@ use contrast::camera::Camera;
 use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::VertexSubLine;
+use contrast::marks::polygonmark::VertexPolygon;
 use contrast::marks::textmark::VertexText;
 use contrast::marks::textmark::TextMarkCmd;
 use contrast::marks::textmark::Glyph;
@@ -37,6 +38,9 @@ const GSPOINT: &'static str = include_str!("../../src/shaders/point/point.geom")
 const VSLINE: &'static str = include_str!("../../src/shaders/line/line.vert");
 const FSLINE: &'static str = include_str!("../../src/shaders/line/line.frag");
 const GSLINE: &'static str = include_str!("../../src/shaders/line/line.geom");
+
+const VSPOLYGON: &'static str = include_str!("../../src/shaders/polygon/polygon.vert");
+const FSPOLYGON: &'static str = include_str!("../../src/shaders/polygon/polygon.frag");
 
 const VSTEXT: &'static str = include_str!("../../src/shaders/text/text.vert");
 const FSTEXT: &'static str = include_str!("../../src/shaders/text/text.frag");
@@ -61,6 +65,14 @@ uniform_interface!
 
 uniform_interface!
 {
+    pub struct ShaderPolygonInterface
+    {
+        projection: M44
+    }
+}
+
+uniform_interface!
+{
     pub struct ShaderTextInterface
     {
         atlas: &'static BoundTexture<'static, Flat, Dim2, R32F>,
@@ -73,6 +85,7 @@ const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0, -10.0]
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
 const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
+const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0]);
 
 pub struct TessPool<V>
 {
@@ -115,6 +128,7 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
 }
 
 pub type RPoint = RenderPass<VertexPoint,ShaderPointInterface>;
+pub type RPolygon = RenderPass<VertexPolygon,ShaderPolygonInterface>;
 pub type RLine = RenderPass<VertexSubLine,ShaderInterface>;
 pub type RText = RenderPass<VertexText,ShaderTextInterface>;
 pub type Frame = Framebuffer<Flat,Dim2,(),()>;
@@ -134,6 +148,7 @@ pub struct LumiRenderer<'a>
     point: RPoint,
     line: RLine,
     text: RText,
+    polygon: RPolygon,
     cam: Camera,
     callbacks : HashMap<Key, Callback<'a>>,
     font_atlas: HashMap<String,Atlas>,
@@ -159,6 +174,10 @@ impl<'a> LumiRenderer<'a>
         let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_TEXT.clone());
         let text = RText{pool: tss, program: shd.0};
 
+        let shd = Program::<VertexPolygon, (), ShaderPolygonInterface>::from_strings(None, VSPOLYGON, None, FSPOLYGON).expect("program creation");
+        let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_POLYGON.clone());
+        let polygon = RPolygon{pool: tss, program: shd.0};
+
         let mut contrast = Contrast::new();
         contrast.init();
 
@@ -167,7 +186,7 @@ impl<'a> LumiRenderer<'a>
         let font_atlas = HashMap::new();
         let font_cmmds = LinkedList::new();
 
-        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks, font_atlas, font_cmmds}
+        LumiRenderer{contrast, surface, frame, point, line, text, polygon, cam, callbacks, font_atlas, font_cmmds}
     }
 
     fn update_font_atlas(&mut self, glyphs: LinkedList<Glyph>)
@@ -263,6 +282,7 @@ impl<'a> LumiRenderer<'a>
                 {
                     MarkTy::Point => self.point.pool.update(self.contrast.get_pointmarks_properties()),
                     MarkTy::Line => self.line.pool.update(self.contrast.get_linemarks_properties()),
+                    MarkTy::Polygon => self.polygon.pool.update(self.contrast.get_polygonmarks_properties()),
                     MarkTy::Text => { let b = self.contrast.get_textmarks_properties(); self.build_text_marks(b); }
                 }
             }
@@ -270,6 +290,7 @@ impl<'a> LumiRenderer<'a>
             let p = &self.point;
             let l = &self.line;
             let t = &self.text;
+            let poly = &self.polygon;
 
             let mat = self.cam.data();
             let ctx = &mut self.surface;
@@ -307,6 +328,14 @@ impl<'a> LumiRenderer<'a>
                         tess_gate.render(ctx, l.vertices());
                     });
                 });
+                shd_gate.shade(poly.shader(), |rdr_gate, iface|
+                {
+                    iface.projection.update(mat);
+                    rdr_gate.render(RenderState::default(), |tess_gate|
+                    {
+                        tess_gate.render(ctx, poly.vertices());
+                    });
+                });
                 for cmd in commands
                 {
                     let tex = textures.get(&cmd.name).unwrap();
@@ -321,7 +350,7 @@ impl<'a> LumiRenderer<'a>
                             tess_gate.render(ctx, t.vertices_range(cmd.start, cmd.end));
                         });
                     });
-                }                
+                }
             });
 
             self.surface.swap_buffers();
