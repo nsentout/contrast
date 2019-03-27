@@ -16,6 +16,7 @@ use contrast::marks::pointmark::Shape;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::LineMode;
 use contrast::marks::linemark::VertexSubLine;
+use contrast::marks::polygonmark::VertexPolygon;
 use contrast::camera::Camera;
 use contrast::MarkMacro;
 use properties::position::Position;
@@ -32,6 +33,9 @@ const GSPOINT: &'static str = include_str!("shaders/point.geom");
 const VSLINE: &'static str = include_str!("shaders/line.vert");
 const FSLINE: &'static str = include_str!("shaders/line.frag");
 const GSLINE: &'static str = include_str!("shaders/line.geom");
+
+const VSPOLY: &'static str = include_str!("shaders/polygon.vert");
+const FSPOLY: &'static str = include_str!("shaders/polygon.frag");
 
 // Window dimensions
 const WINDOW_WIDTH : u32 = 800;
@@ -101,6 +105,15 @@ fn main()
         .set_thickness(20.0)
         .set_color((1.0, 0.0, 0.0, 1.0))
         .set_mode(LineMode::Linear)
+        .get_id();
+
+    let mark_poly = contrast.add_polygon_mark().add_point((pos.x + 70.0, pos.y - 150.0, pos.z))
+        .add_point((pos.x + 70.0, pos.y - 50.0, pos.z))
+        .add_point((pos.x + 90.0, pos.y - 20.0, pos.z))
+        .add_point((pos.x + 170.0, pos.y - 50.0, pos.z))
+        .add_point((pos.x + 170.0, pos.y - 150.0, pos.z))
+        .add_point((pos.x + 120.0, pos.y - 190.0, pos.z))
+        .set_color((1.0, 0.7, 0.0, 1.0))
         .get_id();
 
     let mut _mark_triangle = contrast.add_point_mark().set_position(pos)
@@ -204,10 +217,12 @@ fn main()
     // We need a program to “shade” our triangles and to tell luminance which is the input vertex type
     let (program, _) = Program::<VertexPoint, (), ShaderInterface>::from_strings(None, VSPOINT, GSPOINT, FSPOINT).expect("program creation");
     let (programLine, _) = Program::<VertexSubLine, (), ShaderInterface>::from_strings(None, VSLINE, GSLINE, FSLINE).expect("program creation");
+    let (programPoly, _) = Program::<VertexPolygon, (), ShaderInterface>::from_strings(None, VSPOLY, None, FSPOLY).expect("program creation");
 
     // Create tessellation for direct geometry; that is, tessellation that will render vertices by taking one after another in the provided slice
     let tess = Tess::new(&mut surface, Mode::Point, &contrast.get_pointmarks_properties()[..], None);
     let tessLine = Tess::new(&mut surface, Mode::Point, &contrast.get_linemarks_properties()[..], None);
+    let tessPoly = Tess::new(&mut surface, Mode::Triangle, &contrast.get_polygonmarks_properties()[..], None);
     // The back buffer, which we will make our render into (we make it mutable so that we can change it whenever the window dimensions change)
     let mut back_buffer = Framebuffer::back_buffer(surface.size());
 
@@ -290,6 +305,17 @@ fn main()
                     let tessLine = &tessLine;
                     // Render the tessellation to the surface
                     tess_gate.render(&mut surface, tessLine.into());
+                });
+            });
+            shd_gate.shade(&programPoly, |rdr_gate, iface|
+            {
+                iface.projection.update(cam.data());
+                // Start rendering things with the default render state provided by luminance
+                rdr_gate.render(RenderState::default(), |tess_gate|
+                {
+                    let tessPoly = &tessPoly;
+                    // Render the tessellation to the surface
+                    tess_gate.render(&mut surface, tessPoly.into());
                 });
             });
 

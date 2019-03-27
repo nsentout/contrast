@@ -5,6 +5,7 @@ use properties::position::Position;
 use crate::marks::pointmark::PointMark;
 use crate::marks::linemark::LineMark;
 use crate::marks::textmark::TextMark;
+use crate::marks::polygonmark::PolygonMark;
 use self::MarkTy::*;
 use std::slice::Iter;
 
@@ -14,7 +15,8 @@ use std::slice::Iter;
 pub enum Mark {
 	Point(PointMark),
 	Line(LineMark),
-    Text(TextMark)
+    Text(TextMark),
+	Polygon(PolygonMark)
 }
 
 /// Pure enum to distinguish the type of marks.
@@ -23,14 +25,15 @@ pub enum MarkTy
 {
     Point,
     Line,
-    Text
+    Text,
+	Polygon
 }
 
 impl MarkTy
 {
     pub fn values() -> Iter<'static, MarkTy>
     {
-        static MARKS: [MarkTy;  3] = [Point, Line, Text];
+        static MARKS: [MarkTy;  4] = [Point, Line, Text, Polygon];
         MARKS.into_iter()
     }
 }
@@ -44,7 +47,8 @@ macro_rules! mark_get {
         match $mark {
             Mark::Point(p) => p.$get(),
             Mark::Line(l)  => l.$get(),
-            Mark::Text(t)  => t.$get()
+            Mark::Text(t)  => t.$get(),
+			Mark::Polygon(poly) => poly.$get()
         }
     )
 }
@@ -59,7 +63,8 @@ macro_rules! mark_set {
             match $mark {
                 Mark::Point(p) => { p.$set($param); } ,
                 Mark::Line(l)  => { l.$set($param); },
-                Mark::Text(t)  => { t.$set($param); }
+                Mark::Text(t)  => { t.$set($param); },
+				Mark::Polygon(poly)  => { poly.$set($param); }
             }
             $mark
         }
@@ -152,16 +157,33 @@ impl Mark {
         cast_mut_unchecked!(self, Line)
     }
 
+	//
+	pub fn as_polygon_mark(&self) -> Option<&PolygonMark> {
+        cast!(self, Polygon)
+    }
+
+    pub fn as_polygon_mark_mut(&mut self) -> Option<&mut PolygonMark> {
+        cast_mut!(self, Polygon)
+    }
+
+    pub fn as_polygon_mark_unchecked(&self) -> &PolygonMark {
+        cast_unchecked!(self, Polygon)
+    }
+
+    pub fn as_polygon_mark_mut_unchecked(&mut self) -> &mut PolygonMark {
+        cast_mut_unchecked!(self, Polygon)
+    }
+
     /// Move the mark according to the <position>. Used by Layer to move
     /// all his marks.
-    /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark 
+    /// Example : if <position> is (50.0, 0.0, 0.0), every point of the mark
     /// will move 50 pixels to the right.
     pub fn move_of<P : Into <Position>>(&mut self, position : P) {
         let position : Position = position.into();
 
         match self {
-            Mark::Point(p) => { 
-                p.set_position(*p.get_position() + position); 
+            Mark::Point(p) => {
+                p.set_position(*p.get_position() + position);
             },
             Mark::Line(l) => {
                 for pt in l.get_points_mut() {
@@ -176,7 +198,8 @@ impl Mark {
         match self {
             Mark::Point(p) => p.common_properties.markid.mark_index = mark_index,
             Mark::Line(l) => l.common_properties.markid.mark_index = mark_index,
-            Mark::Text(t) => t.common_properties.markid.mark_index = mark_index
+            Mark::Text(t) => t.common_properties.markid.mark_index = mark_index,
+			Mark::Polygon(poly) => poly.common_properties.markid.mark_index = mark_index
         }
         self
     }
@@ -185,7 +208,8 @@ impl Mark {
          match self {
             Mark::Point(p) => p.common_properties.markid.layer_index = layer_index,
             Mark::Line(l) => l.common_properties.markid.layer_index = layer_index,
-            Mark::Text(t) => t.common_properties.markid.layer_index = layer_index
+            Mark::Text(t) => t.common_properties.markid.layer_index = layer_index,
+			Mark::Polygon(poly) => poly.common_properties.markid.layer_index = layer_index
         }
         self
     }
@@ -194,7 +218,8 @@ impl Mark {
         match self {
             Mark::Point(p) => p.common_properties.markid.valid = valid,
             Mark::Line(l) => l.common_properties.markid.valid = valid,
-            Mark::Text(t) => t.common_properties.markid.valid = valid
+            Mark::Text(t) => t.common_properties.markid.valid = valid,
+			Mark::Polygon(poly) => poly.common_properties.markid.valid = valid
         }
         self
     }
@@ -203,7 +228,8 @@ impl Mark {
         match self {
             Mark::Point(p) => p.common_properties.markid.valid,
             Mark::Line(l) => l.common_properties.markid.valid,
-            Mark::Text(t) => t.common_properties.markid.valid
+            Mark::Text(t) => t.common_properties.markid.valid,
+			Mark::Polygon(poly) => poly.common_properties.markid.valid,
         }
     }
 

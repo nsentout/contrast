@@ -4,8 +4,11 @@ use properties::markid::MarkId;
 use crate::marks::mark::Mark;
 use crate::marks::mark::MarkTy;
 use crate::marks::pointmark::PointMark;
+
 use crate::marks::pointmark::VertexPoint;
 use crate::marks::linemark::VertexSubLine;
+use crate::marks::polygonmark::VertexPolygon;
+use crate::marks::polygonmark::PolygonMark;
 use crate::marks::linemark::LineMark;
 use crate::marks::textmark::TextMark;
 use crate::marks::textmark::FontCache;
@@ -68,7 +71,8 @@ impl Contrast {
                 {
                     Mark::Point(_) => self.update.insert(MarkTy::Point),
                     Mark::Line(_) => self.update.insert(MarkTy::Line),
-                    Mark::Text(_) => self.update.insert(MarkTy::Text)
+                    Mark::Text(_) => self.update.insert(MarkTy::Text),
+                    Mark::Polygon(_) => self.update.insert(MarkTy::Polygon),
                 }
             },
             None => panic!("Invalid MarkId")
@@ -123,6 +127,16 @@ impl Contrast {
         match self.layers.get_mut(self.current_layer_index).unwrap().get_last_mark_mut() {
             Mark::Text(t) => t,
             _ => panic!("A problem occured when adding a new text mark!")
+        }
+    }
+
+    pub fn add_polygon_mark(&mut self) -> &mut PolygonMark {
+        let polygon = Mark::Polygon(PolygonMark::new());
+        self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(polygon);
+
+        match self.layers.get_mut(self.current_layer_index).unwrap().get_last_mark_mut() {
+            Mark::Polygon(poly) => poly,
+            _ => panic!("A problem occured when adding a new polygon mark!")
         }
     }
 
@@ -204,6 +218,22 @@ impl Contrast {
             for mark in layer.get_all_marks() {
                 if let Mark::Line(l) = mark {
                     properties.append(&mut l.to_subline());
+                }
+            }
+        }
+        properties
+    }
+
+    /// Convert the PolygonMarks contained in the main vector into a vector
+    /// of sub-line understandable by the renderer, then returns it.
+    pub fn get_polygonmarks_properties(&mut self) -> Vec<VertexPolygon> {
+        self.layers.sort();
+        let mut properties : Vec<VertexPolygon> = Vec::<VertexPolygon>::new();
+        for layer in &self.layers {
+            for mark in layer.get_all_marks() {
+                println!("format1");
+                if let Mark::Polygon(poly) = mark {
+                    properties.append(&mut poly.as_vertex());
                 }
             }
         }
