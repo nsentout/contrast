@@ -1,0 +1,14 @@
+[package]
+name = "contrast"
+version = "0.1.0"
+authors = ["Lorian Corbel <lorian.corbel@etu.u-bordeaux.fr>, Camille Meyrignac <camille.meyrignac@etu.u-bordeaux.fr>, Maxime Pacaud <maxime.pacaud@etu.u-bordeaux.fr>, Nicolas Sentout <nicolas.sentout@etu.u-bordeaux.fr>"]
+edition = "2018"
+
+[dependencies]
+freetype-rs = "0.19.1"
+rect_packer = "0.2.1"
+nalgebra = "0.17"
+rand = "0.4"
+lazy_static = "1.3.0"
+mark_macro_derive = { path = "mark_macro_derive" }
+contrast-properties = { path = "../contrast-properties" }

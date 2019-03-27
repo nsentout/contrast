@@ -1,7 +1,0 @@
-[package]
-name = "properties"
-version = "0.1.0"
-authors = ["Lorian Corbel <lorian.corbel@etu.u-bordeaux.fr>, Camille Meyrignac <camille.meyrignac@etu.u-bordeaux.fr>, Maxime Pacaud <maxime.pacaud@etu.u-bordeaux.fr>, Nicolas Sentout <nicolas.sentout@etu.u-bordeaux.fr>"]
-edition = "2018"
-
-[dependencies]
