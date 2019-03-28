@@ -185,37 +185,45 @@ impl PointMark {
     /// a Color directly.
     pub fn set_color<C : Into <Color>>(&mut self, color : C) -> &mut Self
     {
-        self.color.old_value = self.common_properties.color;
-        self.common_properties.color = color.into();
-        self.color.target_value = self.common_properties.color;
-        self.color.start_anim = elapsed_time_float();
+        if elapsed_time_float() > self.color.start_anim + 1.0 || !self.is_displayed {
+            self.color.old_value = self.common_properties.color;
+            self.common_properties.color = color.into();
+            self.color.target_value = self.common_properties.color;
+            self.color.start_anim = elapsed_time_float();
+        }
         self
     }
 
     pub fn set_rotation(&mut self, rotation : f32) -> &mut Self
     {
-        self.rotation.old_value = self.common_properties.rotation;
-        self.common_properties.rotation = rotation;
-        self.rotation.target_value = self.common_properties.rotation;
-        self.rotation.start_anim = elapsed_time_float();
+        if elapsed_time_float() > self.rotation.start_anim + 1.0 || !self.is_displayed {
+            self.rotation.old_value = self.common_properties.rotation;
+            self.common_properties.rotation = rotation;
+            self.rotation.target_value = self.common_properties.rotation;
+            self.rotation.start_anim = elapsed_time_float();
+        }
         self
      }
 
     /// Set the position of a mark. You can pass as argument a tuple of 3 floats or
     /// a Position directly
     pub fn set_position<P : Into <Position>>(&mut self, position : P) -> &mut Self {
-        self.center.old_value = self.current_center;
-        self.current_center = position.into();
-        self.center.target_value = self.current_center;
-        self.center.start_anim = elapsed_time_float();
+        if elapsed_time_float() > self.center.start_anim + 1.0 || !self.is_displayed {
+            self.center.old_value = self.current_center;
+            self.current_center = position.into();
+            self.center.target_value = self.current_center;
+            self.center.start_anim = elapsed_time_float();
+        }
         self
     }
 
     pub fn set_shape(&mut self, shape : Shape) -> &mut Self {
-        self.shape.old_value = self.current_shape;
-        self.current_shape = shape;
-        self.shape.target_value = self.current_shape;
-        self.shape.start_anim = elapsed_time_float();
+        if elapsed_time_float() > self.shape.start_anim + 1.0 || !self.is_displayed {
+            self.shape.old_value = self.current_shape;
+            self.current_shape = shape;
+            self.shape.target_value = self.current_shape;
+            self.shape.start_anim = elapsed_time_float();
+        }
         self
     }
 

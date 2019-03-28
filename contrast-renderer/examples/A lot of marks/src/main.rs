@@ -17,6 +17,7 @@ use contrast::MarkMacro;
 use contrast::marks::pointmark::Shape;
 use contrast::markscontainer::Contrast;
 use contrast_properties::markid::MarkId;
+use contrast_properties::rotation::Rotation;
 use rand::Rng;
 
 const WINDOW_WIDTH : u32 = 800;
@@ -57,7 +58,7 @@ fn rotate_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
 
     // Give our marks a random rotation.
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().set_rotation(rng.gen_range::<f32>(3.14, 6.28));
+        contrast.get_mark_mut(&m).unwrap().set_rotation(rng.gen_range::<f32>(Rotation::from_degrees(45.0), Rotation::from_degrees(360.0)));
     }
     contrast.mark_dirty_all();
 }
