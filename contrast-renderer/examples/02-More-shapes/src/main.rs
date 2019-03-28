@@ -14,7 +14,7 @@ const WINDOW_HEIGHT : u32 = 900;
 
 fn main()
 {
-    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "More shapes");
     let contrast = renderer.get_contrast_mut();
 
     // Initialize some properties our marks will need.

@@ -22,12 +22,15 @@ fn move_one_text(contrast : &mut Contrast, markid : &MarkId) {
     let mut rng = rand::thread_rng();
 
     // Retrieve our mark thanks to the mark's id. We can now modify it as we wish.
+    // Note that we must cast our mark to a text mark to have access to specific
+    // method, like 'set_text'.
     let mark = contrast.get_mark_mut(&markid).unwrap().as_text_mark_mut_unchecked();
 
     // Change randomly the position and the text of our mark.
     mark.set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32 - 200.0), rng.gen_range::<f32>(50.0, WINDOW_HEIGHT as f32), 0.0));
     mark.set_text(RANDOM_TEXT[rng.gen_range::<usize>(0, 3)]);
 
+    // Indicate to contrast that the mark represented by 'markid' has been modified and that it needs to refresh.
     contrast.mark_dirty(*markid);
 }
 
@@ -46,7 +49,7 @@ fn move_both_texts(contrast : &mut Contrast, markids : &Vec<MarkId>) {
 
 fn main()
 {
-    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "That keyboard is not useless");
     let contrast = renderer.get_contrast_mut();
 
     contrast.register_font("fatty", "../../crimson-b.ttf", 50);

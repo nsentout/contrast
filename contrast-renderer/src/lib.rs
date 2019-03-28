@@ -87,7 +87,7 @@ impl<V> TessPool<V> where V: Vertex, V: std::marker::Copy
 {
     pub fn new(ctx: &mut GlfwSurface, mode: Mode, dummy: V) -> TessPool<V>
     {
-        let vertices: Vec<V> = iter::repeat(dummy).take(1000).collect();
+        let vertices: Vec<V> = iter::repeat(dummy).take(200000).collect();
         TessPool{tess: Tess::new(ctx, mode, &vertices[..], None), size: 0}
     }
 
@@ -124,7 +124,7 @@ pub type Frame = Framebuffer<Flat,Dim2,(),()>;
 pub type Atlas = Texture<Flat,Dim2,R32F>;
 
 enum Callback<'a> {
-    NoArgument(fn()),
+    NoArgument(fn(&mut Contrast)),
     ArgumentMark(fn(&mut Contrast, markid : &'a MarkId), &'a MarkId),
     ArgumentMarkList(fn(&mut Contrast, markids : &'a Vec<MarkId>), &'a Vec<MarkId>)
 }
@@ -162,8 +162,7 @@ impl<'a> LumiRenderer<'a>
         let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_TEXT.clone());
         let text = RText{pool: tss, program: shd.0};
 
-        let mut contrast = Contrast::new();
-        contrast.init();
+        let contrast = Contrast::new();
 
         let cam = Camera::init(w, h);
         let callbacks = HashMap::new();
@@ -204,10 +203,11 @@ impl<'a> LumiRenderer<'a>
 
     pub fn get_contrast_mut(&mut self) -> &mut Contrast
     {
+        self.contrast.init();
         &mut self.contrast
     }
 
-    pub fn add_action_on_press(&mut self, key : Key, f: fn()) {
+    pub fn add_action_on_press(&mut self, key : Key, f: fn(&mut Contrast)) {
         self.callbacks.insert(key, Callback::NoArgument(f));
     }
 
@@ -247,13 +247,12 @@ impl<'a> LumiRenderer<'a>
                         for (key, callback) in self.callbacks.iter_mut() {
                             if *key == k {
                                 match &callback {
-                                    Callback::NoArgument(f) => { f() }
+                                    Callback::NoArgument(f) => { f(&mut self.contrast) }
                                     Callback::ArgumentMark(f, markid) => { f(&mut self.contrast, *markid) }
                                     Callback::ArgumentMarkList(f, markids) => { f(&mut self.contrast, markids) }
                                 }
                             }
                         }
-
                     }
 
                     _ => ()

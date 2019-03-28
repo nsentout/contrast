@@ -16,7 +16,7 @@ const WINDOW_HEIGHT : u32 = 800;
 
 fn main()
 {
-    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "We need lines");
     let contrast = renderer.get_contrast_mut();
 
     let mut pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
@@ -32,7 +32,7 @@ fn main()
         .set_mode(LineMode::Linear)
         .get_id();
 
-    let mut pos2 = Position { x : 400.0, y : 250.0, z : 0.0 };;
+    let mut pos2 = Position { x : 400.0, y : 250.0, z : 0.0 };
 
     // Add a second line to contrast, with a thickness of 10 pixels.
     contrast.add_line_mark()

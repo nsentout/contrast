@@ -11,7 +11,7 @@ const WINDOW_HEIGHT : u32 = 800;
 fn main()
 {
     // Initialize the renderer, opening a window.
-    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Contrast");
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Hello, world!");
 
     // Initialize contrast, allowing us to handle the marks.
     let contrast = renderer.get_contrast_mut();
