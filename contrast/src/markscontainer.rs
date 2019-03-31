@@ -238,7 +238,7 @@ impl Contrast {
                         face.prepare_string(t.get_text());
                         let vtx = face.drawing_commands(t.get_x(), t.get_y(), t.get_z(), t.get_text());
                         let color = mark.get_color().clone();
-                        commands.push_front(TextMarkCmd::new(t.get_font(), color, cur, cur+vtx.len()));
+                        commands.push_front(TextMarkCmd::new(t.get_font(), color, cur, vtx.len()));
                         chars.extend(face.get_writable());
                         cur+= vtx.len();
                         properties.extend(vtx);
