@@ -80,26 +80,40 @@ const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
 pub struct TessPool<V>
 {
     pub(crate) tess: Tess<V>,
-    pub(crate) size: usize
+    pub(crate) size: usize,
+    pub(crate) mode: Mode,
+    pub(crate) zero: V
 }
 
 impl<V> TessPool<V> where V: Vertex, V: std::marker::Copy
 {
     pub fn new(ctx: &mut GlfwSurface, mode: Mode, dummy: V) -> TessPool<V>
     {
-        let vertices: Vec<V> = iter::repeat(dummy).take(200000).collect();
-        TessPool{tess: Tess::new(ctx, mode, &vertices[..], None), size: 0}
+        let vertices: Vec<V> = iter::repeat(dummy).take(1000).collect();
+        TessPool{tess: Tess::new(ctx, mode, &vertices[..], None), size: 0, mode, zero: dummy}
+    }
+
+    pub fn resize(&mut self, ctx: &mut GlfwSurface, reserve: usize)
+    {
+        let vertices: Vec<V> = iter::repeat(self.zero).take(reserve).collect();
+        self.tess = Tess::new(ctx, self.mode, &vertices[..], None);
     }
 
     pub fn data(&self) -> TessSlice<V> { TessSlice::one_sub(&self.tess, self.size) }
 
     pub fn range(&self, from: usize, to: usize) -> TessSlice<V> { TessSlice::one_slice(&self.tess, from, to) }
 
-    pub fn update(&mut self, vertices: Vec<V>)
+    pub fn update(&mut self, ctx: &mut GlfwSurface, vertices: Vec<V>)
     {
+
         self.size = vertices.len();
+        let len = { self.tess.as_slice().unwrap().len() };
+        if len < self.size
+        {
+            let vertices: Vec<V> = iter::repeat(self.zero).take(self.size+1000).collect();
+            self.tess = Tess::new(ctx, self.mode, &vertices[..], None);
+        }
         let mut buffer = self.tess.as_slice_mut::<GlfwSurface>().unwrap();
-        if buffer.len() < self.size { panic!("Tess is full") }
         buffer[..self.size].copy_from_slice(vertices.as_slice());
     }
 }
@@ -195,7 +209,7 @@ impl<'a> LumiRenderer<'a>
 
     fn build_text_marks(&mut self, bundle: (Vec<VertexText>,LinkedList<TextMarkCmd>,LinkedList<Glyph>))
     {
-        self.text.pool.update(bundle.0);
+        self.text.pool.update(&mut self.surface, bundle.0);
         self.font_cmmds.clear();
         self.font_cmmds.extend(bundle.1);
         self.update_font_atlas(bundle.2);
@@ -263,8 +277,8 @@ impl<'a> LumiRenderer<'a>
             {
                 match ty
                 {
-                    MarkTy::Point => self.point.pool.update(self.contrast.get_pointmarks_properties()),
-                    MarkTy::Line => self.line.pool.update(self.contrast.get_linemarks_properties()),
+                    MarkTy::Point => self.point.pool.update(&mut self.surface, self.contrast.get_pointmarks_properties()),
+                    MarkTy::Line => self.line.pool.update(&mut self.surface, self.contrast.get_linemarks_properties()),
                     MarkTy::Text => { let b = self.contrast.get_textmarks_properties(); self.build_text_marks(b); }
                 }
             }
