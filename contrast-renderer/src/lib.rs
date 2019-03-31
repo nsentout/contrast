@@ -33,17 +33,21 @@ use std::time::Instant;
 
 pub use luminance_glfw::event::Key;
 
+/// Shaders Point.
 const VSPOINT: &'static str = include_str!("../../contrast/src/shaders/point/point.vert");
 const FSPOINT: &'static str = include_str!("../../contrast/src/shaders/point/point.frag");
 const GSPOINT: &'static str = include_str!("../../contrast/src/shaders/point/point.geom");
 
+/// Shaders Line.
 const VSLINE: &'static str = include_str!("../../contrast/src/shaders/line/line.vert");
 const FSLINE: &'static str = include_str!("../../contrast/src/shaders/line/line.frag");
 const GSLINE: &'static str = include_str!("../../contrast/src/shaders/line/line.geom");
 
+/// Shaders Text.
 const VSTEXT: &'static str = include_str!("../../contrast/src/shaders/text/text.vert");
 const FSTEXT: &'static str = include_str!("../../contrast/src/shaders/text/text.frag");
 
+/// Glsl uniform for LineMark.
 uniform_interface!
 {
     pub struct ShaderInterface
@@ -52,6 +56,7 @@ uniform_interface!
     }
 }
 
+/// Glsl uniform for PointMark.
 uniform_interface!
 {
     pub struct ShaderPointInterface
@@ -62,6 +67,7 @@ uniform_interface!
     }
 }
 
+/// Glsl uniform for TextMark.
 uniform_interface!
 {
     pub struct ShaderTextInterface
@@ -72,11 +78,14 @@ uniform_interface!
     }
 }
 
-const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0, -10.0], 0.0, [0.0, 0.0], [0.0, 0.0], 0.0,
+/// Empty vertex used to fill a Tess.
+const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0], [0.0, 0.0], 0.0,
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
 const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
 
+/// Manage a Tess to update & resize.
+/// Its size is initialized wider to update its unused vertices gradually on demand.
 pub struct TessPool<V>
 {
     pub(crate) tess: Tess<V>,
@@ -87,37 +96,39 @@ pub struct TessPool<V>
 
 impl<V> TessPool<V> where V: Vertex, V: std::marker::Copy
 {
+    /// Create a new TessPool filled with his vertex type (default size = 1000).
     pub fn new(ctx: &mut GlfwSurface, mode: Mode, dummy: V) -> TessPool<V>
     {
         let vertices: Vec<V> = iter::repeat(dummy).take(1000).collect();
         TessPool{tess: Tess::new(ctx, mode, &vertices[..], None), size: 0, mode, zero: dummy}
     }
 
-    pub fn resize(&mut self, ctx: &mut GlfwSurface, reserve: usize)
-    {
-        let vertices: Vec<V> = iter::repeat(self.zero).take(reserve).collect();
-        self.tess = Tess::new(ctx, self.mode, &vertices[..], None);
-    }
-
+    /// Return a TessSlice on the vertices really used (not the empty vertices).
     pub fn data(&self) -> TessSlice<V> { TessSlice::one_sub(&self.tess, self.size) }
 
+    /// Do the same thing as before but on an interval.
     pub fn range(&self, from: usize, to: usize) -> TessSlice<V> { TessSlice::one_slice(&self.tess, from, to) }
 
+    /// Resize if needed & update the Tess.
+    /// Always fill the buffer from the beginning.
     pub fn update(&mut self, ctx: &mut GlfwSurface, vertices: Vec<V>)
     {
-
         self.size = vertices.len();
         let len = { self.tess.as_slice().unwrap().len() };
+        // Check size
         if len < self.size
         {
+            // Resize
             let vertices: Vec<V> = iter::repeat(self.zero).take(self.size+1000).collect();
             self.tess = Tess::new(ctx, self.mode, &vertices[..], None);
         }
+        // Update
         let mut buffer = self.tess.as_slice_mut::<GlfwSurface>().unwrap();
         buffer[..self.size].copy_from_slice(vertices.as_slice());
     }
 }
 
+/// Pair of TessPool & Shader Program used to render a mark type.
 pub struct RenderPass<V, U>
 {
     pub(crate) pool: TessPool<V>,
@@ -126,15 +137,23 @@ pub struct RenderPass<V, U>
 
 impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
 {
+    /// Borrow the shader program.
     pub fn shader(&self) -> &Program<V, (), U> { &self.program }
+    /// Get the whole TessSlice.
     pub fn vertices(&self) -> TessSlice<V> { self.pool.data() }
+    /// Get the ranged TessSlice.
     pub fn vertices_range(&self, from: usize, to: usize) -> TessSlice<V> { self.pool.range(from, to) }
 }
 
+/// Point Renderer
 pub type RPoint = RenderPass<VertexPoint,ShaderPointInterface>;
+/// Line Renderer
 pub type RLine = RenderPass<VertexSubLine,ShaderInterface>;
+/// Text Renderer
 pub type RText = RenderPass<VertexText,ShaderTextInterface>;
+/// Back Buffer
 pub type Frame = Framebuffer<Flat,Dim2,(),()>;
+/// 2D Texture RED-only
 pub type Atlas = Texture<Flat,Dim2,R32F>;
 
 enum Callback<'a> {
@@ -143,6 +162,7 @@ enum Callback<'a> {
     ArgumentMarkList(fn(&mut Contrast, markids : &'a Vec<MarkId>), &'a Vec<MarkId>)
 }
 
+/// Contrast Luminance Renderer
 pub struct LumiRenderer<'a>
 {
     contrast: Contrast,
@@ -159,6 +179,7 @@ pub struct LumiRenderer<'a>
 
 impl<'a> LumiRenderer<'a>
 {
+    /// Create & init a new LumiRenderer.
     pub fn init(w: u32, h: u32, title: &str) -> LumiRenderer
     {
         let mut surface = GlfwSurface::new(WindowDim::Windowed(w, h), title, WindowOpt::default()).expect("GLFW ERROR");
@@ -186,18 +207,24 @@ impl<'a> LumiRenderer<'a>
         LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks, font_atlas, font_cmmds}
     }
 
+    /// Create or upload the textures atlas for each glyph.
+    /// The texture font atlas are stored in a hastmap associated with their name.
     fn update_font_atlas(&mut self, glyphs: LinkedList<Glyph>)
     {
         for glyph in glyphs
         {
+            // if the atlas texture does not exist
             if !self.font_atlas.contains_key(&glyph.name)
             {
+                // Create
                 let tex = Texture::new(&mut self.surface, [1024, 1024], 0, &Sampler::default()).expect("luminance texture creation");
                 self.font_atlas.insert(glyph.name.clone(), tex);
             }
 
+            // Get
             let atlas = self.font_atlas.get_mut(&glyph.name).unwrap();
 
+            // Upload
             let x = glyph.rect.x as u32;
             let y = glyph.rect.y as u32;
             let w = glyph.rect.width as u32;
@@ -207,6 +234,7 @@ impl<'a> LumiRenderer<'a>
         }
     }
 
+    /// Update VertexText, TextMarkCmd and Texture font atlas.
     fn build_text_marks(&mut self, bundle: (Vec<VertexText>,LinkedList<TextMarkCmd>,LinkedList<Glyph>))
     {
         self.text.pool.update(&mut self.surface, bundle.0);
@@ -215,24 +243,29 @@ impl<'a> LumiRenderer<'a>
         self.update_font_atlas(bundle.2);
     }
 
+    /// Borrow Contrast mutable.
     pub fn get_contrast_mut(&mut self) -> &mut Contrast
     {
         self.contrast.init();
         &mut self.contrast
     }
 
+    /// Add listener on press.
     pub fn add_action_on_press(&mut self, key : Key, f: fn(&mut Contrast)) {
         self.callbacks.insert(key, Callback::NoArgument(f));
     }
 
+    /// Add listener on press for one mark.
     pub fn add_mark_action_on_press(&mut self, key : Key, f: fn(&mut Contrast, &'a MarkId), markid : &'a MarkId) {
         self.callbacks.insert(key, Callback::ArgumentMark(f, markid));
     }
 
+    /// Add listener on press for mark list.
     pub fn add_mark_list_action_on_press(&mut self, key : Key, f: fn(&mut Contrast, &'a Vec<MarkId>), markids : &'a Vec<MarkId>) {
         self.callbacks.insert(key, Callback::ArgumentMarkList(f, markids));
     }
 
+    /// Main loop.
     pub fn run(&mut self)
     {
         let mut time = Instant::now();
@@ -241,6 +274,7 @@ impl<'a> LumiRenderer<'a>
 
         'app: loop
         {
+            // Execute events.
             for event in self.surface.poll_events()
             {
                 match event
@@ -273,6 +307,7 @@ impl<'a> LumiRenderer<'a>
                 }
             }
 
+            // Try to update.
             for ty in self.contrast.fetch_update()
             {
                 match ty
@@ -283,6 +318,7 @@ impl<'a> LumiRenderer<'a>
                 }
             }
 
+            // Rust oblige...
             let p = &self.point;
             let l = &self.line;
             let t = &self.text;
@@ -295,6 +331,7 @@ impl<'a> LumiRenderer<'a>
             let textures = &self.font_atlas;
             let blending = Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement));
 
+            // FPS process.
             elapsed = time.elapsed();
             frames += 1;
 
@@ -304,8 +341,10 @@ impl<'a> LumiRenderer<'a>
                 frames = 0;
             }
 
+            // Main Pipeline.
             ctx.pipeline_builder().pipeline(back_buffer, [0., 0., 0., 0.], |pipeline, shd_gate|
             {
+                // Render points.
                 shd_gate.shade(p.shader(), |rdr_gate, iface|
                 {
                     iface.time.update(elapsed_time_float());
@@ -315,6 +354,7 @@ impl<'a> LumiRenderer<'a>
                         tess_gate.render(ctx, p.vertices());
                     });
                 });
+                // Render lines.
                 shd_gate.shade(l.shader(), |rdr_gate, iface|
                 {
                     iface.projection.update(mat);
@@ -323,6 +363,7 @@ impl<'a> LumiRenderer<'a>
                         tess_gate.render(ctx, l.vertices());
                     });
                 });
+                // Render texts per batch with the associated texture & color.
                 for cmd in commands
                 {
                     let tex = textures.get(&cmd.name).unwrap();
