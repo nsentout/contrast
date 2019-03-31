@@ -29,6 +29,7 @@ pub enum MarkTy
 
 impl MarkTy
 {
+    /// Return an iterator on all values of MarkTy.
     pub fn values() -> Iter<'static, MarkTy>
     {
         static MARKS: [MarkTy;  3] = [Point, Line, Text];
@@ -185,8 +186,8 @@ impl Mark {
                     *pt += position.into();
                 }
             },
-            Mark::Text(_t) => { 
-                ()  //TODO
+            Mark::Text(t) => { 
+                t.set_position(*t.get_position() + position);
             }
         }
     }

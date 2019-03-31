@@ -9,18 +9,24 @@ use std::collections::LinkedList;
 
 use rect_packer::{Packer, Rect};
 
+/// Texture atlas size.
 const SIZE: &'static f32 = &1024.0;
+/// Static atlas config.
 const ATLAS: &'static rect_packer::Config = &rect_packer::Config{width: 1024, height: 1024, border_padding: 5, rectangle_padding: 10};
+/// Default ascii chars.
 const ASCII: &'static str = &"!\"#$%&\'()*+,-./:;<=>?[]\\|{}^~_@`abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
+/// type VertexText = (xyz, uv).
 pub type VertexText = ([f32; 3],[f32; 2]);
 
+/// Cache Font & Freetype library.
 pub struct FontCache
 {
     pub(crate) library: freetype::Library,
     pub(crate) cached: HashMap<String,FaceCache>
 }
 
+/// Stores glyph metrics, bitmap & face cache name.
 #[derive(Clone)]
 pub struct Glyph
 {
@@ -32,6 +38,9 @@ pub struct Glyph
     by: i32
 }
 
+/// Stores a font face & all her loaded glyphs.
+/// A face is a font loaded with a police size.
+/// Generally contrast calls a font name, the key that stores a FaceCache.
 #[derive(Clone)]
 pub struct FaceCache
 {
@@ -44,11 +53,13 @@ pub struct FaceCache
 
 impl Glyph
 {
+    /// Creates a new glyph.
     pub fn new(name: String, bitmap: Vec<f32>, rect: Rect, adv: i64, bx: i32, by: i32) -> Glyph
     {
         Glyph{name, bitmap, rect, adv: adv as i32, bx, by}
     }
 
+    /// Creates an empty glyph.
     pub fn empty() -> Glyph
     {
         Glyph{name: String::from(""), bitmap: Vec::new(), rect: Rect::new(0, 0, 0, 0), adv: 0, bx: 0, by: 0}
@@ -57,11 +68,14 @@ impl Glyph
 
 impl FontCache
 {
+    /// Creates & initialize Freetype.
     pub fn new() -> FontCache
     {
         FontCache{library: freetype::Library::init().unwrap(), cached: HashMap::new()}
     }
 
+    /// Create a FaceCache and store it with the associated font name.
+    /// Be careful, the font name is unique and does not match the actual name of the font, it just serves to store a FaceCache.
     pub fn create_face(&mut self, name: &str, font: &str, police: u32)
     {
         let face = self.library.new_face(font, 0).unwrap();
@@ -70,11 +84,13 @@ impl FontCache
         self.cached.insert(name.to_string(), FaceCache::new(face, name.to_string()));
     }
 
+    /// Returns a FaceCache, if it exists.
     pub fn get_face(&mut self, name: &str) -> Option<&mut FaceCache>
     {
         self.cached.get_mut(name)
     }
 
+    /// Checks if a font is registered.
     pub fn contains(&self, name: &str) -> bool
     {
         self.cached.contains_key(name)
@@ -83,13 +99,16 @@ impl FontCache
 
 impl FaceCache
 {
+    /// Stores a new face & loads her glyphs.
     pub fn new(face: freetype::Face, name: String) -> FaceCache
     {
         let mut cache = FaceCache{face, name, chars: HashMap::new(), atlas: Packer::new(*ATLAS), writable: LinkedList::new()};
+        // Default load ascii characters.
         cache.prepare_string(ASCII);
         cache
     }
 
+    /// Loads char glyphs contained in the string.
     pub fn prepare_string(&mut self, s: &str)
     {
         for c in s.chars()
@@ -115,6 +134,7 @@ impl FaceCache
         }
     }
 
+    /// Builds vertices in accordance with a position & a content.
     pub fn drawing_commands(&self, x: i32, y: i32, z: f32, text: &str) -> Vec<VertexText>
     {
         let mut x = x;
@@ -150,6 +170,7 @@ impl FaceCache
         vertices
     }
 
+    /// Returns news loaded glyphs that need to be updated on a texture.
     pub fn get_writable(&mut self) -> LinkedList<Glyph>
     {
         let mut list = LinkedList::new();
@@ -158,6 +179,11 @@ impl FaceCache
     }
 }
 
+/// Command needed to draw a mark text correctly.
+/// Store :
+/// - The font name (key to FaceCache & Texture)
+/// - The color
+/// - Indexes in vertices
 pub struct TextMarkCmd
 {
     pub name: String,
@@ -168,12 +194,17 @@ pub struct TextMarkCmd
 
 impl TextMarkCmd
 {
+    /// Creates a new Cmd.
     pub fn new(name: &str, color: Color, start: usize, end: usize) -> TextMarkCmd
     {
         TextMarkCmd{name: name.to_string(), color, start, end}
     }
 }
 
+/// This is the structure that describes the marks of type Text.
+/// Structure directly manipulable by the user.
+/// The font is only a string to avoid copy.
+/// The mark only contains the key to the FontCache.
 #[derive(MarkMacro, Clone)]
 pub struct TextMark
 {
@@ -185,42 +216,57 @@ pub struct TextMark
 
 impl TextMark
 {
+    /// Returns a new empty instance of TextMark.
     pub fn new() -> TextMark
     {
         TextMark{common_properties: MarkProperties::new(), face: String::from(""), text: String::from(""), pos: Position{x: 0.0, y: 0.0, z:0.0}}
     }
 
+    /// Setter of the font.
     pub fn set_font(&mut self, face: &str) -> &mut Self
     {
         self.face = face.to_string();
         self
     }
 
+    /// Setter of the text content.
     pub fn set_text(&mut self, text: &str) -> &mut Self
     {
         self.text = text.to_string();
         self
     }
 
+    /// Setter of the position
     pub fn set_position<P : Into <Position>>(&mut self, position: P) -> &mut Self
     {
         self.pos = position.into();
         self
     }
 
+    /// Borrow the position.
+    pub fn get_position(&self) -> &Position
+    {
+        &self.pos
+    }
+
+    /// Borrow the font name.
     pub fn get_font(&self) -> &String
     {
         &self.face
     }
     
+    /// Borrow the text content.
     pub fn get_text(&self) -> &String
     {
         &self.text
     }
 
+    /// Get the X-coord in i32.
     pub fn get_x(&self) -> i32 { self.pos.x as i32 }
 
+    /// Get the Y-coord in i32.
     pub fn get_y(&self) -> i32 { self.pos.y as i32 }
 
+    /// Get the Z-coord in f32.
     pub fn get_z(&self) -> f32 { self.pos.z }
 }
