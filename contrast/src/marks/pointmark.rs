@@ -176,6 +176,8 @@ impl PointMark {
             self.size.old_value = self.common_properties.size;
             self.common_properties.size = size.into();
             self.size.target_value = self.common_properties.size;
+            // Saying that the animation started 10 seconds before the launch of the timer
+            // ensures there will be no animation.
             self.size.start_anim = -10.0;
         }
         self
