@@ -297,6 +297,85 @@ en paramètre une fonction définie par l'utilisateur, et applique cette fonctio
 peut ainsi appliquer n'importe quelle modification à l'ensemble des marques d'un calque.
 
 \subsection{Animation des marques}
+\subsubsection{Qu'est-ce qu'une animation de marque ?}
+
+Une marque animée est une marque dont le changement de propriété se fait progressivement.
+Si l'on change la position d'une marque animée, on verra la marque se déplacer de manière fluide vers la
+nouvelle position. Si l'on change la forme d'un marque de type point, nous verrons la transformation en la nouvelle forme progressivement.
+La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme "Astérisque" vers une 
+forme "Trèfle".
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/anim-exemple}
+  \caption{Exemple d'animation pour le changement de forme}
+  \label{fig:anim-ex}
+\end{figure}
+
+\subsubsection{Implémentation}
+
+Par manque de temps, nous n'avons pas implémenté les animations en utilisant 3 buffers, comme c'était le
+cas pour FATuM. Cela nous aurait demandé un changement trop important de l'architecture déjà en place.
+
+À la place, nous avons créé une structure avec un type générique, \textit{AnimationAttribute}.
+Notre structure de marque doit contenir autant d'\textit{AnimationAttribute} qu'il y a de propriétés et le
+type paramamétré sera celui de la propriété.
+Cette structure permet de stocker :
+\begin{itemize}
+\item La valeur de l'attribut qu'avait la marque avant le début de l'animation, que nous appelerons l'« 
+\textit{ancienne valeur} ».
+\item La valeur qu'aura l'attribut de la marque à la fin de l'animation, la « \textit{valeur cible} »
+\item Le temps au moment où l'animation a commencé, le « \textit{temps de début} ».
+\end{itemize}
+
+Pour effectuer une animation d'une propriété, nous utilisons la fonction 
+\textit{\href{https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/mix.xhtml}{mix}} de GLSL, qui effectue une
+interpolation linéaire entre deux valeurs. 
+Elle prend 3 paramètres : 
+\begin{itemize}
+\item le début de la plage dans laquelle interpoler, « \textit{x} »
+\item la fin de la plage dans laquelle interpoler, « \textit{y} »
+\item la valeur à utiliser pour interpoler entre x et y, « \textit{a} ».
+\end{itemize}
+
+\textit{x} correspond à l'\textit{ancienne valeur} de la propriété et \textit{y} correspond à la 
+\textit{valeur cible}.
+Pour obtenir une animation propre et fluide, il faudrait que \textit{a} croisse lentement de 0 à 1.
+Pour revenir à l'exemple d'animation de forme précédent, 0 correspondrait à la première marque, 0.5 
+correspondrait à la troisième, et 1 correspondrait à la dernière.
+
+Le \textit{temps de début} est récupéré grâce à un timer que nous lançons au démarrage du programme.
+En passant ce timer aux shaders en tant qu'\gls{uniform}, nous sommes donc capable d'obtenir une croissance
+de \textit{a} nous garantissant une animation fluide, en utilisant la formule suivante :
+\textit{valeur interpolée = mix(ancienne valeur , valeur cible , min(t - temps de début , 1.0))} où t est 
+le temps  écoulé depuis le lancement de l'application.
+Nous utilisons la fonction minimum pour s'assurer que \textit{a} se dépasse jamais 1. Une valeur de 
+\textit{a} supérieure à 1 donne lieu à des formes très étranges et fausse.
+
+Jusqu'ici, les animations fonctionnent. Seulement, rien n'empêche l'utilisateur de modifier une propriété pendant une animation, donnant lieu à des comportements confus.
+Pour cette raison, nous ignorons les modifications faites à une propriété si celle-ci est en cours
+d'animation.
+
+On notera également que cette implémentation permet d'animer plusieurs propriétés en même temps.
+
+\subsubsection{Difficultés rencontrées}
+
+La première difficulté a été de trouver comment implémenter les animations sans modifier l'architecture 
+principale. La solution a été de modifier directement les structures des 
+marques en elles-mêmes et de ne pas toucher à la structure principale. La partie précédente décrit plus en 
+détails l'implémentation de cette solution.
+
+La deuxième difficulté a été d'implémenter les animations dans \textit{contrast}.
+En effet, dans un premier temps, nous les avions implémenté de manière indépendante à \textit{contrast} et avec une seule marque. Cette implémentation marchait certes correctement mais l'adapter à \textit{contrast} n'a pas été trivial.
+Dans cette implémentation, nous détections la fin d'une animation de manière différente. Nous vérifions 
+dans la boucle principale si l'animation était terminée pour chaque marque, et nous la mettions à jour si 
+c'était le cas.
+Mais imaginons cette mécanique avec plus de 200 000 marques : si elles étaient toutes animées en même 
+temps, l'application ne pourrait jamais atteindre les 60 images par seconde.
+Nous avons donc enlevé cette vérification quand nous avons implémenté les animations dans \textit{contrast}
+pour des raisons évidentes de performances.
+À la place, nous vérifions si une animation est finie seulement lorsque que l'on souhaite modifier la 
+marque, donc dans les setters.
 
 \subsection{Bibliothèques externes utilisées}
 
