@@ -21,6 +21,7 @@ use contrast::markscontainer::Contrast;
 use contrast::marks::pointmark::VertexPoint;
 use contrast::marks::linemark::VertexSubLine;
 use contrast::marks::textmark::VertexText;
+use contrast::marks::polygonmark::VertexPolygon;
 use contrast::marks::textmark::TextMarkCmd;
 use contrast::marks::textmark::Glyph;
 use contrast::marks::mark::MarkTy;
@@ -43,6 +44,11 @@ const GSPOINT: &'static str = include_str!("../../contrast/src/shaders/point/poi
 const VSLINE: &'static str = include_str!("../../contrast/src/shaders/line/line.vert");
 const FSLINE: &'static str = include_str!("../../contrast/src/shaders/line/line.frag");
 const GSLINE: &'static str = include_str!("../../contrast/src/shaders/line/line.geom");
+
+/// Shaders Polygon.
+const VSPOLYGON: &'static str = include_str!("../../contrast/src/shaders/polygon/polygon.vert");
+const FSPOLYGON: &'static str = include_str!("../../contrast/src/shaders/polygon/polygon.frag");
+const GSPOLYGON: &'static str = include_str!("../../contrast/src/shaders/polygon/polygon.geom");
 
 /// Shaders Text.
 const VSTEXT: &'static str = include_str!("../../contrast/src/shaders/text/text.vert");
@@ -84,6 +90,7 @@ const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
 const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
+const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0,0.0,0.0]);
 
 /// Manage a Tess to update & resize.
 /// Its size is initialized wider to update its unused vertices gradually on demand.
@@ -150,6 +157,8 @@ impl<V, U> RenderPass<V, U> where V: Vertex, V: std::marker::Copy
 pub type RPoint = RenderPass<VertexPoint,ShaderPointInterface>;
 /// Line Renderer
 pub type RLine = RenderPass<VertexSubLine,ShaderInterface>;
+/// Polygon Renderer
+pub type RPolygon = RenderPass<VertexPolygon,ShaderInterface>;
 /// Text Renderer
 pub type RText = RenderPass<VertexText,ShaderTextInterface>;
 /// Back Buffer
@@ -172,6 +181,7 @@ pub struct LumiRenderer<'a>
     frame: Frame,
     point: RPoint,
     line: RLine,
+    polygon: RPolygon,
     text: RText,
     cam: Camera,
     callbacks : HashMap<Key, Callback<'a>>,
@@ -195,6 +205,10 @@ impl<'a> LumiRenderer<'a>
         let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_LINE.clone());
         let line = RLine{pool: tss, program: shd.0};
 
+        let shd = Program::<VertexPolygon, (), ShaderInterface>::from_strings(None, VSPOLYGON, GSPOLYGON, FSPOLYGON).expect("program creation");
+        let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_POLYGON.clone());
+        let polygon = RPolygon{pool: tss, program: shd.0};
+
         let shd = Program::<VertexText, (), ShaderTextInterface>::from_strings(None, VSTEXT, None, FSTEXT).expect("program creation");
         let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_TEXT.clone());
         let text = RText{pool: tss, program: shd.0};
@@ -208,7 +222,7 @@ impl<'a> LumiRenderer<'a>
         let font_atlas = HashMap::new();
         let font_cmmds = LinkedList::new();
 
-        LumiRenderer{contrast, surface, background_color, frame, point, line, text, cam, callbacks, font_atlas, font_cmmds}
+        LumiRenderer{contrast, surface, background_color, frame, point, line, polygon, text, cam, callbacks, font_atlas, font_cmmds}
     }
 
     /// Create or upload the textures atlas for each glyph.
@@ -323,6 +337,7 @@ impl<'a> LumiRenderer<'a>
                 {
                     MarkTy::Point => self.point.pool.update(&mut self.surface, self.contrast.get_pointmarks_properties()),
                     MarkTy::Line => self.line.pool.update(&mut self.surface, self.contrast.get_linemarks_properties()),
+                    MarkTy::Polygon => self.polygon.pool.update(&mut self.surface, self.contrast.get_polygonmarks_properties()),
                     MarkTy::Text => { let b = self.contrast.get_textmarks_properties(); self.build_text_marks(b); }
                 }
             }
@@ -331,6 +346,7 @@ impl<'a> LumiRenderer<'a>
             let p = &self.point;
             let l = &self.line;
             let t = &self.text;
+            let poly = &self.polygon;
 
             let mat = self.cam.data();
             let ctx = &mut self.surface;
@@ -372,6 +388,15 @@ impl<'a> LumiRenderer<'a>
                         tess_gate.render(ctx, l.vertices());
                     });
                 });
+                // Render lines.
+                shd_gate.shade(poly.shader(), |rdr_gate, iface|
+                {
+                    iface.projection.update(mat);
+                    rdr_gate.render(RenderState::default(), |tess_gate|
+                    {
+                        tess_gate.render(ctx, poly.vertices());
+                    });
+                });
                 // Render texts per batch with the associated texture & color.
                 for cmd in commands
                 {
@@ -387,7 +412,7 @@ impl<'a> LumiRenderer<'a>
                             tess_gate.render(ctx, t.vertices_range(cmd.start, cmd.end));
                         });
                     });
-                }                
+                }
             });
 
             self.surface.swap_buffers();

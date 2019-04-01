@@ -4,6 +4,7 @@ use contrast::MarkMacro;
 use contrast::marks::pointmark::Shape;
 use contrast::markscontainer::Contrast;
 use contrast::properties::MarkId;
+use contrast::properties::Position;
 use rand::Rng;
 
 const WINDOW_WIDTH : u32 = 800;
@@ -127,6 +128,18 @@ fn main()
             .set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0))
             .set_shape(Shape::Triangle);
     }
+*/
+/*
+    let pos = Position { x : 150.0, y : 400.0, z : 5.0 };
+    let mark_poly = contrast.add_polygon_mark().add_point((pos.x + 70.0, pos.y - 150.0, pos.z + 1.0))
+    .add_point((pos.x + 70.0, pos.y - 50.0, pos.z + 1.0))
+    .add_point((pos.x + 90.0, pos.y - 20.0, pos.z + 1.0))
+    .add_point((pos.x + 170.0, pos.y - 50.0, pos.z + 1.0))
+    .add_point((pos.x + 170.0, pos.y - 150.0, pos.z + 1.0))
+    //.add_point((pos.x + 120.0, pos.y - 190.0, pos.z + 1.0))
+    .set_rotation(45.0)
+    .set_color((1.0, 0.7, 0.0, 1.0))
+    .get_id();
 */
     contrast.mark_dirty_all();
 

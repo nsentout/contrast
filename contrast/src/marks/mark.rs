@@ -208,18 +208,13 @@ impl Mark {
                     *pt += position.into();
                 }
             },
-<<<<<<< HEAD:src/marks/mark.rs
 			Mark::Polygon(poly) => {
                 for pt in poly.get_points_mut() {
                     *pt += position.into();
                 }
             },
-            Mark::Text(_t) => {
-                ()  //TODO
-=======
-            Mark::Text(t) => { 
+            Mark::Text(t) => {
                 t.set_position(*t.get_position() + position);
->>>>>>> 1cb396dadec0e03507d063f547cf9605be16133a:contrast/src/marks/mark.rs
             }
         }
     }
