@@ -1,6 +1,7 @@
 use crate::MarkMacro;
 use crate::markproperties::MarkProperties;
 use crate::elapsed_time_float;
+use crate::ANIM_DURATION;
 use properties::position::Position;
 use properties::color::Color;
 use properties::size::Size;
@@ -74,7 +75,7 @@ impl Shape {
 /// Structure used to handle animations.
 /// 'old_value' refers to the value of the attribute before it has been modified by a setter.
 /// 'target_value' refers to the value of the attribute after it has been modified by a setter.
-/// 'start_anim' refers to the time in milliseconds when the animation started.
+/// 'start_anim' refers to the time in seconds when the animation started.
 /// We will use those attributes in the shaders to perform a smooth animation.
 /// To perform an animation, we make a linear interpolation between 'old_value' and 'target_value' in
 /// the shaders and we use 'start_anim' to make it look smooth.
@@ -148,19 +149,8 @@ impl PointMark {
     }
 
     /// Converts a MarkPoint into a VertexPoint, which is a type understandable
-    /// by the renderer. Returns a vertex that will used only at the first display
-    /// of our mark.
-    pub fn as_static_vertex(&self) -> VertexPoint {
-        (*self.current_center.to_array(), *self.current_center.to_array(), 0.0,
-            *self.common_properties.size.to_array(), *self.common_properties.size.to_array(), 0.0,
-            *self.common_properties.color.to_array(), *self.common_properties.color.to_array(), 0.0,
-            self.common_properties.rotation, self.common_properties.rotation, 0.0,
-            self.current_shape as u32, self.current_shape as u32, 0.0)
-    }
-
-    /// Converts a MarkPoint into a VertexPoint, which is a type understandable
-    /// by the renderer. Returns a vertex allowing the mark to be animated.
-    pub fn as_anim_vertex(&self) -> VertexPoint {
+    /// by the renderer, then returns it.
+    pub fn to_vertex(&self) -> VertexPoint {
         (*self.center.old_value.to_array(), *self.center.target_value.to_array(), self.center.start_anim,
             *self.size.old_value.to_array(), *self.size.target_value.to_array(), self.size.start_anim,
             *self.color.old_value.to_array(), *self.color.target_value.to_array(), self.color.start_anim,
@@ -172,11 +162,21 @@ impl PointMark {
     /// a Size directly.
     pub fn set_size<S : Into <Size>>(&mut self, size : S) -> &mut Self
     {
-        if elapsed_time_float() > self.size.start_anim + 1.0 || !self.is_displayed {
+        // Change the size only if the previous animation is finished
+        if elapsed_time_float() > self.size.start_anim + ANIM_DURATION  {
             self.size.old_value = self.common_properties.size;
             self.common_properties.size = size.into();
             self.size.target_value = self.common_properties.size;
             self.size.start_anim = elapsed_time_float();
+        }
+        // Prevent the animations done within the first second to negate the transition effect
+        // Without this code, there would be an animation from the default size (0.0, 0.0)
+        // to the actual size of the mark when we display the mark for the first time.
+        else if !self.is_displayed {
+            self.size.old_value = self.common_properties.size;
+            self.common_properties.size = size.into();
+            self.size.target_value = self.common_properties.size;
+            self.size.start_anim = -10.0;
         }
         self
     }
@@ -185,44 +185,68 @@ impl PointMark {
     /// a Color directly.
     pub fn set_color<C : Into <Color>>(&mut self, color : C) -> &mut Self
     {
-        if elapsed_time_float() > self.color.start_anim + 1.0 || !self.is_displayed {
+        if elapsed_time_float() > self.color.start_anim + ANIM_DURATION  {
             self.color.old_value = self.common_properties.color;
             self.common_properties.color = color.into();
             self.color.target_value = self.common_properties.color;
             self.color.start_anim = elapsed_time_float();
+        }
+        else if !self.is_displayed {
+            self.color.old_value = self.common_properties.color;
+            self.common_properties.color = color.into();
+            self.color.target_value = self.common_properties.color;
+            self.color.start_anim = -10.0;
         }
         self
     }
 
     pub fn set_rotation(&mut self, rotation : f32) -> &mut Self
     {
-        if elapsed_time_float() > self.rotation.start_anim + 1.0 || !self.is_displayed {
+        if elapsed_time_float() > self.rotation.start_anim + ANIM_DURATION  {
+            self.rotation.old_value = self.common_properties.rotation;
+            self.common_properties.rotation = rotation.into();
+            self.rotation.target_value = self.common_properties.rotation;
+            self.rotation.start_anim = elapsed_time_float();
+        }
+        else if !self.is_displayed {
             self.rotation.old_value = self.common_properties.rotation;
             self.common_properties.rotation = rotation;
             self.rotation.target_value = self.common_properties.rotation;
-            self.rotation.start_anim = elapsed_time_float();
+            self.rotation.start_anim = -10.0;
         }
         self
      }
 
     /// Set the position of a mark. You can pass as argument a tuple of 3 floats or
     /// a Position directly
-    pub fn set_position<P : Into <Position>>(&mut self, position : P) -> &mut Self {
-        if elapsed_time_float() > self.center.start_anim + 1.0 || !self.is_displayed {
+    pub fn set_position<P : Into <Position>>(&mut self, center : P) -> &mut Self {
+        if elapsed_time_float() > self.center.start_anim + ANIM_DURATION  {
             self.center.old_value = self.current_center;
-            self.current_center = position.into();
+            self.current_center = center.into();
             self.center.target_value = self.current_center;
             self.center.start_anim = elapsed_time_float();
+        }
+        else if !self.is_displayed {
+            self.center.old_value = self.current_center;
+            self.current_center = center.into();
+            self.center.target_value = self.current_center;
+            self.center.start_anim = -10.0;
         }
         self
     }
 
     pub fn set_shape(&mut self, shape : Shape) -> &mut Self {
-        if elapsed_time_float() > self.shape.start_anim + 1.0 || !self.is_displayed {
+        if elapsed_time_float() > self.shape.start_anim + ANIM_DURATION  {
             self.shape.old_value = self.current_shape;
             self.current_shape = shape;
             self.shape.target_value = self.current_shape;
             self.shape.start_anim = elapsed_time_float();
+        }
+        else if !self.is_displayed {
+            self.shape.old_value = self.current_shape;
+            self.current_shape = shape;
+            self.shape.target_value = self.current_shape;
+            self.shape.start_anim = -10.0;
         }
         self
     }
@@ -239,22 +263,8 @@ impl PointMark {
         self.common_properties.markid.valid
     }
 
-    pub(crate) fn is_displayed(&self) -> bool {
-        self.is_displayed
-    }
-
     pub(crate) fn set_displayed(&mut self, is_displayed : bool) {
         self.is_displayed = is_displayed;
     }
 
-    /// Prevent the animations done within the first second to negate the transition effect
-    /// Without this function, there would be an animation from the default position (0.0, 0.0, 0.0),
-    /// to the actual position of the mark when we display the mark for the first time.
-    pub(crate) fn prevent_animation(&mut self) {
-        self.size.old_value = self.common_properties.size;
-        self.color.old_value = self.common_properties.color;
-        self.rotation.old_value = self.common_properties.rotation;
-        self.center.old_value = self.current_center;
-        self.shape.old_value = self.current_shape;
-    }
 }

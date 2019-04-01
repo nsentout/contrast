@@ -2,6 +2,7 @@
 extern crate lazy_static;
 use std::time::Instant;
 
+// Remove the dependency to properties
 pub mod properties {
     pub use properties::color::*;
     pub use properties::markid::*;
@@ -14,6 +15,8 @@ pub mod properties {
 lazy_static! {
     static ref TIMER: Instant = Instant::now();
 }
+
+const ANIM_DURATION : f32 = 1.0;
 
 /// Returns the number of milliseconds passed since launch.
 pub fn elapsed_time_float() -> f32 {

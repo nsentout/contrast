@@ -191,16 +191,9 @@ impl Contrast {
         for layer in &mut self.layers {
             for mark in &mut layer.marks {
                 if let Mark::Point(ref mut p) = mark {
-                    let display = p.is_displayed();
                     p.set_displayed(true);
                     if p.is_valid() {
-                        if !display {   // if first time the mark is displayed
-                            p.prevent_animation();
-                            properties.push(p.as_static_vertex());
-                        }
-                        else {
-                            properties.push(p.as_anim_vertex());
-                        }
+                        properties.push(p.to_vertex());
                     }
                 }
             }
