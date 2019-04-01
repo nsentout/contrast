@@ -10,4 +10,3 @@ luminance-glfw = "0.5.4"
 luminance-windowing = "0.2.4"
 rand = "0.4"
 contrast = { path = "../../contrast" }
-contrast-properties = { path = "../../contrast-properties" }

@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::mem;
-use contrast_properties::markid::MarkId;
-use contrast_properties::position::Position;
+use properties::markid::MarkId;
+use properties::position::Position;
 use crate::marks::mark::Mark;
 use crate::markscontainer::Contrast;
 

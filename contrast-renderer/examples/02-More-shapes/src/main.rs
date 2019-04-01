@@ -4,9 +4,9 @@
 //! You can press <escape> to close the window.
 
 use contrast_renderer::LumiRenderer;
-use contrast_properties::position::Position;
-use contrast_properties::size::Size;
-use contrast_properties::color::Color;
+use contrast::properties::Position;
+use contrast::properties::Size;
+use contrast::properties::Color;
 use contrast::marks::pointmark::Shape;
 
 const WINDOW_WIDTH : u32 = 900;

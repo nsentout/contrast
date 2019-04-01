@@ -3,7 +3,7 @@ use contrast_renderer::Key;
 use contrast::MarkMacro;
 use contrast::marks::pointmark::Shape;
 use contrast::markscontainer::Contrast;
-use contrast_properties::markid::MarkId;
+use contrast::properties::MarkId;
 use rand::Rng;
 
 const WINDOW_WIDTH : u32 = 800;

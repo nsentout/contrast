@@ -7,4 +7,3 @@ edition = "2018"
 [dependencies]
 contrast = { path = "../../../contrast" }
 contrast-renderer = { path = "../../../contrast-renderer" }
-contrast-properties = { path = "../../../contrast-properties" }

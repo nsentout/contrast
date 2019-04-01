@@ -1,6 +1,6 @@
-use contrast_properties::markid::MarkId;
-use contrast_properties::size::Size;
-use contrast_properties::color::Color;
+use properties::markid::MarkId;
+use properties::size::Size;
+use properties::color::Color;
 
 /// Structure representing the properties shared
 /// by every type of marks, that is an id,

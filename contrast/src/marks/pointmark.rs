@@ -1,9 +1,9 @@
 use crate::MarkMacro;
 use crate::markproperties::MarkProperties;
 use crate::elapsed_time_float;
-use contrast_properties::position::Position;
-use contrast_properties::color::Color;
-use contrast_properties::size::Size;
+use properties::position::Position;
+use properties::color::Color;
+use properties::size::Size;
 use mark_macro_derive::MarkMacro;
 use rand::Rng;
 

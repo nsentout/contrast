@@ -5,7 +5,7 @@ use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
 use contrast::markscontainer::Contrast;
 use contrast::elapsed_time_float;
-use contrast_properties::markid::MarkId;
+use contrast::properties::MarkId;
 use rand::Rng;
 
 const WINDOW_WIDTH : u32 = 800;

@@ -15,6 +15,42 @@ impl Color {
             std::mem::transmute::<&Color, &[f32; 4]>(self)
         }
     }
+
+    pub fn black() -> Color {
+        Color { r : 0.0, g : 0.0, b : 0.0, a : 1.0 }
+    }
+
+    pub fn white() -> Color {
+        Color { r : 1.0, g : 1.0, b : 1.0, a : 1.0 }
+    }
+
+    pub fn yellow() -> Color {
+        Color { r : 1.0, g : 1.0, b : 0.0, a : 1.0 }
+    }
+
+    pub fn pink() -> Color {
+        Color { r : 1.0, g : 0.0, b : 1.0, a : 1.0 }
+    }
+
+    pub fn cyan() -> Color {
+        Color { r : 0.0, g : 1.0, b : 1.0, a : 1.0 }
+    }
+    
+    pub fn grey() -> Color {
+        Color { r : 0.5, g : 0.5, b : 0.5, a : 1.0 }
+    }
+
+    pub fn red() -> Color {
+        Color { r : 1.0, g : 0.0, b : 0.0, a : 1.0 }
+    }
+
+    pub fn green() -> Color {
+        Color { r : 0.0, g : 1.0, b : 0.0, a : 1.0 }
+    }
+
+    pub fn blue() -> Color {
+        Color { r : 0.0, g : 0.0, b : 1.0, a : 1.0 }
+    }
 }
 
 impl From <(f32, f32, f32, f32)> for Color {

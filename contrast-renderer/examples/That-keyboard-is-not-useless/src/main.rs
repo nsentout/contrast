@@ -8,7 +8,7 @@
 
 use contrast_renderer::LumiRenderer;
 use contrast_renderer::Key;
-use contrast_properties::markid::MarkId;
+use contrast::properties::MarkId;
 use contrast::MarkMacro;
 use contrast::markscontainer::Contrast;
 use rand::Rng;

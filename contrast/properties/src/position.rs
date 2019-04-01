@@ -27,6 +27,14 @@ impl From <(f32, f32, f32)> for Position {
     }
 }
 
+impl From <(f32, f32)> for Position {
+    fn from(p : (f32, f32)) -> Position {
+       Position {
+           x : p.0, y : p.1, z : 0.0
+       }
+    }
+}
+
 impl Add for Position {
     type Output = Position;
 

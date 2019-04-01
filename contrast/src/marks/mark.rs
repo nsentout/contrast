@@ -1,8 +1,8 @@
 use crate::MarkMacro;
-use contrast_properties::markid::MarkId;
-use contrast_properties::color::Color;
-use contrast_properties::size::Size;
-use contrast_properties::position::Position;
+use properties::markid::MarkId;
+use properties::color::Color;
+use properties::size::Size;
+use properties::position::Position;
 use crate::marks::pointmark::PointMark;
 use crate::marks::linemark::LineMark;
 use crate::marks::textmark::TextMark;

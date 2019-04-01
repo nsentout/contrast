@@ -2,6 +2,14 @@
 extern crate lazy_static;
 use std::time::Instant;
 
+pub mod properties {
+    pub use properties::color::*;
+    pub use properties::markid::*;
+    pub use properties::position::*;
+    pub use properties::rotation::*;
+    pub use properties::size::*;
+}
+
 /// Timer accessible everywhere in the library.
 lazy_static! {
     static ref TIMER: Instant = Instant::now();
@@ -28,13 +36,13 @@ pub mod camera;
 pub trait MarkMacro
 {
     /// Returns the id of a mark.
-    fn get_id(&self) -> contrast_properties::markid::MarkId;
+    fn get_id(&self) -> properties::MarkId;
 
     /// Returns the size of a mark.
-    fn get_size(&self) -> contrast_properties::size::Size;
+    fn get_size(&self) -> properties::Size;
 
     /// Returns the color of a mark.
-    fn get_color(&self) -> contrast_properties::color::Color;
+    fn get_color(&self) -> properties::Color;
 
     /// Returns the rotation of a mark.
     fn get_rotation(&self) -> f32;
@@ -44,11 +52,11 @@ pub trait MarkMacro
 
     /// Set the size of a mark. You can pass as argument a tuple of 2 floats (width and height) or
     /// a Size directly.
-    fn set_size<S : Into <contrast_properties::size::Size>>(&mut self, size : S) -> &mut Self;
+    fn set_size<S : Into <properties::Size>>(&mut self, size : S) -> &mut Self;
 
     /// Set the color of a mark. You can pass as argument a tuple of 4 floats (rgba) or
     /// a Color directly.
-    fn set_color<C : Into <contrast_properties::color::Color>>(&mut self, color : C) -> &mut Self;
+    fn set_color<C : Into <properties::Color>>(&mut self, color : C) -> &mut Self;
 
     /// Set the rotation of a mark.
     fn set_rotation(&mut self, rotation : f32) -> &mut Self;

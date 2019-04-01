@@ -1,4 +1,4 @@
-//! This program use the previously shown feature allowing us
+//! This program uses the previously shown feature allowing us
 //! to bind actions to our keys to show how we can animate
 //! our marks. 
 //!
@@ -16,8 +16,8 @@ use contrast_renderer::Key;
 use contrast::MarkMacro;
 use contrast::marks::pointmark::Shape;
 use contrast::markscontainer::Contrast;
-use contrast_properties::markid::MarkId;
-use contrast_properties::rotation::Rotation;
+use contrast::properties::MarkId;
+use contrast::properties::Rotation;
 use rand::Rng;
 
 const WINDOW_WIDTH : u32 = 800;

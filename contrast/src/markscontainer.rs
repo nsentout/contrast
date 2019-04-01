@@ -1,6 +1,6 @@
 use std::collections::LinkedList;
 use std::collections::HashSet;
-use contrast_properties::markid::MarkId;
+use properties::markid::MarkId;
 use crate::marks::mark::Mark;
 use crate::marks::mark::MarkTy;
 use crate::marks::pointmark::PointMark;

@@ -24,7 +24,8 @@ use contrast::marks::textmark::VertexText;
 use contrast::marks::textmark::TextMarkCmd;
 use contrast::marks::textmark::Glyph;
 use contrast::marks::mark::MarkTy;
-use contrast_properties::markid::MarkId;
+use contrast::properties::MarkId;
+use contrast::properties::Color;
 
 use std::collections::LinkedList;
 use std::collections::HashMap;
@@ -167,6 +168,7 @@ pub struct LumiRenderer<'a>
 {
     contrast: Contrast,
     surface: GlfwSurface,
+    background_color : Color,
     frame: Frame,
     point: RPoint,
     line: RLine,
@@ -199,12 +201,14 @@ impl<'a> LumiRenderer<'a>
 
         let contrast = Contrast::new();
 
+        let background_color = Color { r : 0.0, g : 0.0, b : 0.0, a : 0.0 };
+
         let cam = Camera::init(w, h);
         let callbacks = HashMap::new();
         let font_atlas = HashMap::new();
         let font_cmmds = LinkedList::new();
 
-        LumiRenderer{contrast, surface, frame, point, line, text, cam, callbacks, font_atlas, font_cmmds}
+        LumiRenderer{contrast, surface, background_color, frame, point, line, text, cam, callbacks, font_atlas, font_cmmds}
     }
 
     /// Create or upload the textures atlas for each glyph.
@@ -241,6 +245,11 @@ impl<'a> LumiRenderer<'a>
         self.font_cmmds.clear();
         self.font_cmmds.extend(bundle.1);
         self.update_font_atlas(bundle.2);
+    }
+
+    /// Change the background color.
+    pub fn set_background_color<C : Into <Color>>(&mut self, color : C) {
+        self.background_color = color.into();
     }
 
     /// Borrow Contrast mutable.
@@ -342,7 +351,7 @@ impl<'a> LumiRenderer<'a>
             }
 
             // Main Pipeline.
-            ctx.pipeline_builder().pipeline(back_buffer, [0., 0., 0., 0.], |pipeline, shd_gate|
+            ctx.pipeline_builder().pipeline(back_buffer, *self.background_color.to_array(), |pipeline, shd_gate|
             {
                 // Render points.
                 shd_gate.shade(p.shader(), |rdr_gate, iface|

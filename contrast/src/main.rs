@@ -3,8 +3,8 @@ use contrast::marks::mark::Mark;
 use contrast::marks::pointmark::Shape;
 use contrast::marks::linemark::LineMode;
 use contrast::MarkMacro;
-use contrast_properties::position::Position;
-use contrast_properties::size::Size;
+use properties::position::Position;
+use properties::size::Size;
 
 
 fn rotate_marks(mark : &mut Mark) {

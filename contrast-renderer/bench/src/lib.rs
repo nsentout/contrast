@@ -26,7 +26,7 @@ use contrast::marks::textmark::TextMarkCmd;
 use contrast::marks::textmark::Glyph;
 use contrast::marks::mark::MarkTy;
 use contrast::marks::pointmark::Shape;
-use contrast_properties::markid::MarkId;
+use contrast::properties::MarkId;
 
 use std::collections::LinkedList;
 use std::collections::HashMap;
