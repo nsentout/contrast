@@ -244,7 +244,6 @@ impl Contrast {
         let mut properties : Vec<VertexPolygon> = Vec::<VertexPolygon>::new();
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
-                println!("format1");
                 if let Mark::Polygon(poly) = mark {
                     properties.append(&mut poly.as_vertex());
                 }
@@ -363,12 +362,12 @@ mod tests {
 
         let m1 = c.add_line_mark().get_id();
 
-        assert_eq!(c.get_linemarks_properties().len(), 1);
+        assert_eq!(c.get_linemarks_properties().len(), 0);
 
         let m2 = c.add_line_mark().get_id();
         let m3 = c.add_line_mark().get_id();
 
-        assert_eq!(c.get_linemarks_properties().len(), 3);
+        assert_eq!(c.get_linemarks_properties().len(), 0);
     }
 
     #[test]

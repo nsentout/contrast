@@ -41,6 +41,7 @@ const GSLINE: &'static str = include_str!("../../src/shaders/line/line.geom");
 
 const VSPOLYGON: &'static str = include_str!("../../src/shaders/polygon/polygon.vert");
 const FSPOLYGON: &'static str = include_str!("../../src/shaders/polygon/polygon.frag");
+const GSPOLYGON: &'static str = include_str!("../../src/shaders/polygon/polygon.geom");
 
 const VSTEXT: &'static str = include_str!("../../src/shaders/text/text.vert");
 const FSTEXT: &'static str = include_str!("../../src/shaders/text/text.frag");
@@ -85,7 +86,7 @@ const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0, -10.0]
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
 const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
-const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0]);
+const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0]);
 
 pub struct TessPool<V>
 {
@@ -174,8 +175,8 @@ impl<'a> LumiRenderer<'a>
         let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_TEXT.clone());
         let text = RText{pool: tss, program: shd.0};
 
-        let shd = Program::<VertexPolygon, (), ShaderPolygonInterface>::from_strings(None, VSPOLYGON, None, FSPOLYGON).expect("program creation");
-        let tss = TessPool::new(&mut surface, Mode::Triangle, DUMMY_POLYGON.clone());
+        let shd = Program::<VertexPolygon, (), ShaderPolygonInterface>::from_strings(None, VSPOLYGON, GSPOLYGON, FSPOLYGON).expect("program creation");
+        let tss = TessPool::new(&mut surface, Mode::Point, DUMMY_POLYGON.clone());
         let polygon = RPolygon{pool: tss, program: shd.0};
 
         let mut contrast = Contrast::new();

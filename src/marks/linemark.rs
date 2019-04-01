@@ -53,7 +53,6 @@ impl LineMark {
             let mut previous = self.points[0];
             let mut origin = self.points[0];
             let mut target = self.points[0];
-            let mut n = self.points[0];
             for next in self.points.clone() {
                 let vl : VertexSubLine = (*self.common_properties.size.to_array(),
                 *self.common_properties.color.to_array(), self.common_properties.rotation,
@@ -62,11 +61,10 @@ impl LineMark {
                 previous = origin;
                 origin = target;
                 target = next;
-                n = next;
             }
             let vl : VertexSubLine = (*self.common_properties.size.to_array(),
             *self.common_properties.color.to_array(), self.common_properties.rotation,
-            *origin.to_array(), *target.to_array(), *previous.to_array(), *n.to_array(),self.thickness, *mode as u32);
+            *origin.to_array(), *target.to_array(), *previous.to_array(), *self.points[self.points.len()-1].to_array(),self.thickness, *mode as u32);
             sublines.push(vl);
             if sublines.len() > 0 {
                 sublines.remove(0);
