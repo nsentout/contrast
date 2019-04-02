@@ -185,19 +185,54 @@ aux exigences de vitesse qui nous sont fixés.
 
 \section{Description du logiciel}
 %% Parler des problèmes rencontrés au sain de l'archi
-%% Remplacer cette archi outdated
 \subsection{Description de l'architecture}
 
-Ce diagramme, disponible ici (figure~\ref{fig:arch}), décrit les structures, énumérations et traits
-(interfaces) qui seront utilisés dans le projet. Il n'y a ni classes, ni héritage dans Rust. C'est
-pourquoi ce diagramme est différent d'un diagramme de classes classique.
+L'architecture est composé d'une structure principale contenant tous les calques. Les calques contiennent
+chacun leurs marques.
+
+La figure~\ref{fig:arch} décrit de manière simplifiée l'architecture.
 
 \begin{figure}[htp]
   \centering
-  \includegraphics[scale=0.35]{images/architecture}
-  \caption{Diagramme de l'architecture de \textit{contrast}}
+  \includegraphics[scale=1.0]{images/architecture}
+  \caption{Diagramme simplifié de l'architecture de \textit{contrast} }
   \label{fig:arch}
 \end{figure}
+
+\textit{Contrast} supporte différents types de marques mais elles ont en commun certaines propriétés.
+Elles ont toutes une identifiant, font parties d'un calque, ont une taille et une couleur.
+La solution venant directement à l'esprit pour représenter de telles structures est celle de l'héritage.
+Toutes nos marques hériteraient d'une structure qui contient ces propriétés communes ainsi que certaines
+méthodes communes.
+Cependant, Rust n'a pas d'héritage. Nous devons donc utiliser des solutions propres à Rust pour régler
+ce problème.
+Nous avons donc utilisé une macro procédurale. C'est une macro permettant de générer du code à la 
+compilation. Elle permet de fournir une implémentation par défaut à un trait. Nos structures peuvent
+ensuite dériver de ce trait. Elles auront ainsi accès aux méthodes implémentées par la macro.
+
+Toujours pour palier à ce problème d'héritage, nous disposons d'une union de toutes les structures
+de données des marques. Cela permet de stocker nos marques plus facilement et d'utiliser des conteneurs d'union plutôt que des conteneurs pour chaque type de marque.
+
+Côté GLSL, nous disposons de shaders différents pour chaque type de marque. Toutes nos marques utilisent un vertex shader, un geometry shader et un fragment shader à l'exception du texte qui n'utilise pas de geometry shader.
+
+\subsection{Organisation de l'architecture}
+
+Notre bibliothèque est composé de 2 parties principales :
+\begin{itemize}
+\item la partie bas niveau, contenu dans le dossier \textit{contrast}
+\item la partie haut niveau, contenu dans le dossier  \textit{contrast-renderer}.
+\end{itemize}
+
+La partie bas niveau est elle-même séparée en plusieurs dossiers ;
+\begin{itemize}
+\item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
+\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque 
+\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
+\end{itemize}
+
+\textbf{TODO: expliquer les différents shaders, justifiez le choix rust / geometry shader}
+
+\textbf{TODO: pourquoi on développe en Rust (je ne sais pas où mettre cette partie)}
 
 \subsection{Schéma du pipeline}
 
@@ -205,7 +240,7 @@ Cette figure~\ref{fig:pipe} présente la décomposition des différents élémen
 graphique pour chaque marque. Le pipeline peut être externe à notre bibliothèque, il doit juste demander
 les canaux, autrement dit les vertices (\gls{vertex}), contenu dans le \gls{VBO} et les \gls{uniform}
 du \gls{shader} à notre bibliothèque\cite{Semi}.
-Dans notre cas, c'est \textit{luminance} qui est en charge du pipeline.
+Dans notre cas, c'est \textit{luminance} \cite{luminance} qui est en charge du pipeline.
 
 Le renderer n'est actuellement pas présent dans notre diagramme de l'architecture pour des 
 raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand une marque demande
@@ -378,6 +413,75 @@ pour des raisons évidentes de performances.
 marque, donc dans les setters.
 
 \subsection{Bibliothèques externes utilisées}
+\subsubsection{lazy\_static}
+Nous utilisons cette bibliothèque \cite{lazy-static} une seule fois dans 
+\textit{contrast} : pour déclarer le timer. Nous avons besoin qu'il soit valide pendant 
+toute la durée du programme et nous voulons qu'il soit accessible partout dans le code.
+C'est ce que cette bibliothèque permet de faire : déclarer facilement des variables 
+statiques en Rust.
+
+\subsubsection{rand}
+C'est une bibliothèque \cite{rand} permettant de générer des nombres aléatoirement. Nous 
+l'utilisons dans le but de fournir une fonction permettant de retourner une forme 
+aléatoire.
+
+\textbf{TODO: les autres crates}
+
+\section{Problèmes généraux rencontrés}
+% a ranger plus tard si possible
+\subsection{Les identifiants de marques}
+
+L'utilisateur manipule des marques. Mais pour retrouver une marque existante et y 
+appliquer des modifications, nous avons besoin de son identifiant.
+
+La structure représentant un identifiant de marque comprend toutes les données dont nous 
+avons besoin pour retrouver une marque, c'est-à-dire l'index du calque où elle est 
+stockée et l'index de la marque en elle-même dans le conteneur de marques du calque.
+Que se passe t-il alors lorsque l'on ajoute une marque qui était déjà dans un calque à
+un autre calque ? L'identifiant auquel a accès l'utilisateur deviendra faux car les index
+auront changés.
+
+Nous devons alors, à chaque modification d'une marque, mettre à jour le réel
+identifiant de la marque mais également l'identifiant auquel a accès l'utilisateur, qui n'est pas le même.
+Effectivement, si l'utilisateur avait accès au réel identifiant, le problème ne se
+poserait pas.
+
+Il y avait deux méthodes qui aurait permis d'avoir accès au réel identifiant :
+\begin{itemize}
+\item en utilisant des pointeurs : la méthode \textit{get\_id()} renverrait un pointeur 
+vers le véritable identifiant et le problème serait résolu. Cependant, il y avait un gros
+inconvénient à cette méthode, que nous avons rencontré quand nous avons tenté
+d'implémenter cette solution : à chaque fois que devions déréférencer ce pointeur, nous
+devions mettre le code dans une zone non sûre. Cela générait beaucoup de zones non sûres 
+et nous faisait dévier de l'un des principes de Rust qui est de faire du code sûr. Nous 
+avons donc décider d'abandonner 
+cette idée.
+\item en utilisant une référence : une référence étant grossièrement, en Rust, un 
+pointeur safe, nous pourrions résoudre le problème. La méthode \textit{get\_id()} 
+retournerait ainsi une référence pointant vers le réel identifiant. 
+
+En utilisant un concept de Rust, nous nous heurtons à un autre problème lié à Rust : 
+l'ownership. Le but ici n'étant pas d'expliquer tous les paradigmes de Rust, nous 
+définirons simplement l'ownership en disant que c'est le moyen qu'utilise Rust pour gérer la mémoire.
+
+Récupérer une référence signifie que l'on emprunte l'objet vers lequel la référence
+pointe. L'objet en question étant dans un conteneur qui lui-même appartient à une 
+structure (la structure principale), emprunter cet objet revient à emprunter toute la 
+structure. 
+
+Nous pouvons emprunter plusieurs fois la structure tant que nous faisons des 
+emprunts immutables, c'est-à-dire que nous promettons à Rust de ne jamais modifier cette
+structure. Nous ne pouvons cependant emprunter mutablement qu'une seule fois dans un scope, empêchant donc l'utilisateur de modifier les marques comme il le souhaite.
+Cette idée a donc elle aussi était mis de côté.
+\end{itemize}
+
+Notre solution est donc que \textit{get\_id()} renvoie une copie du réel identifiant. A chaque 
+fois que l'utilisateur souhaite modifier une marque, il doit passer une référence mutable
+de la copie dont il dispose pour que nous puissions la mettre à jour en même temps que
+le réel identifiant.
+
+\subsection{Les actions liées aux touches dans la partie haut niveau}
+\textbf{TODO: pourquoi pas des closures ?}
 
 \section{Analyse du fonctionnement du logiciel}
 
