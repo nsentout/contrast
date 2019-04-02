@@ -77,6 +77,13 @@
     description={Un programme shader écrit en GLSL qui régit le traitement des primitives (marque)}
 }
 
+\newglossaryentry{frag}
+{
+    name={fragment},
+    description={Un ensemble d'information destiné à devenir un pixel}
+}
+
+
 \newglossaryentry{unsafe}
 {
     name={unsafe},
@@ -259,6 +266,15 @@ raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand un
 %% Parler des problèmes rencontrés au sain de l'archi
 
 \subsection{Imlémentation des marques point}
+
+Nous avons utilisé trois shaders en OpenGL afin de réaliser l'implémentation de ces marques. Tout d'abord le vertex shader, il permet de manipuler les vertices ici nous avons un seul vertex pour chaque marque. Dans une version sans animation des marques points il faut simplement transmettre la position, la couleur, la taille, la rotation et le type de forme au shader suivant du pipeline graphique. Ce nouveau shader est appelé geometry shader, ce shader permet de générer des nouveaux sommets permettant de créer des nouvelles formes. 
+
+Dans notre cas, le geometry shader permet de générer un rectangle englobant dans lequel sera contenu notre forme. Nous avons donc crée six sommet sois deux triangles, chacun étant une moitié de notre rectangle englobant. C'est lors de la création de ces sommets que nous appliquons la rotation à notre forme et que nous lui appliquons une matrice de projection afin de faire passer cette forme dans le repère de l'observateur, c'est à dire que l'affichage de cette forme dépend maintenant de la caméra. On doit ensuite passer à l'étape où la forme à proprement parlé est calculé.
+
+Ainsi nous arrivons ensuite dans le dernier shader, le fragment shader, le principe de ce shader est de calculer la couleur final de chaque pixel qui est affiché à l'écran. Dans ce shader on utilise une fonction de distance entre le \gls{frag} en cours de traitement et le centre de notre rectangle englobant afin de savoir si chaque pixel de ce rectangle fait parti ou non de la forme souhaité. Les fonctions de distance utilisés sont tirées du papier de Nicolas Rougier \cite{Rougier}. On calcul cette fonction distance différemment pour chaque forme puis si la distance est trop grande on se défausse du \gls{frag}. On génère donc notre forme de manière procédurale.
+
+Cette implémentation à été choisi car grâce à ça nous n'avons besoin que d'un seul sommet pour réaliser des formes complexes, tous les traitements sont réalisés coté GPU ce qui permet un énorme gain de performance par rapport à une implémentation où l'on devrait fournir tous les sommets de notre forme avant de devoir l'afficher. C'est un gain particulièrement important pour des formes arrondis nécessitant beaucoup de sommets pour éviter l'aliasing.
+L'avantage du fragment shader c'est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU. 
 
 \subsection{Implémentation des marques ligne}
 
