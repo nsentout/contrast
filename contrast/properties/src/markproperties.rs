@@ -1,12 +1,12 @@
-use properties::markid::MarkId;
-use properties::size::Size;
-use properties::color::Color;
+use crate::markid::MarkId;
+use crate::size::Size;
+use crate::color::Color;
 
 /// Structure representing the properties shared
 /// by every type of marks, that is an id,
 /// a size, a color and a rotation.
 #[derive(Debug, Clone)]
-pub(crate) struct MarkProperties {
+pub struct MarkProperties {
     pub markid : MarkId,
     pub size : Size,
     pub color: Color,
@@ -16,7 +16,7 @@ pub(crate) struct MarkProperties {
 impl MarkProperties {
     /// Simply returns a new instance of MarkProperties, initializing
     /// all attributes to their default values.
-    pub(crate) fn new() -> Self
+    pub fn new() -> Self
     {
         MarkProperties {
             markid : MarkId::new(),

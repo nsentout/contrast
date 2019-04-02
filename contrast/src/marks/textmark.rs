@@ -1,7 +1,7 @@
 use crate::MarkMacro;
-use crate::markproperties::MarkProperties;
 use properties::position::Position;
 use properties::color::Color;
+use properties::markproperties::MarkProperties;
 use mark_macro_derive::MarkMacro;
 
 use std::collections::HashMap;

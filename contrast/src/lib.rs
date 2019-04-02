@@ -27,7 +27,6 @@ pub fn elapsed_time_float() -> f32 {
 }
 
 pub mod markscontainer;
-pub mod markproperties;
 pub mod marks;
 pub mod layer;
 pub mod camera;

@@ -1,6 +1,6 @@
 use crate::MarkMacro;
-use crate::markproperties::MarkProperties;
 use properties::position::Position;
+use properties::markproperties::MarkProperties;
 use mark_macro_derive::MarkMacro;
 
 

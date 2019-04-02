@@ -1,10 +1,10 @@
 use crate::MarkMacro;
-use crate::markproperties::MarkProperties;
 use crate::elapsed_time_float;
 use crate::ANIM_DURATION;
 use properties::position::Position;
 use properties::color::Color;
 use properties::size::Size;
+use properties::markproperties::MarkProperties;
 use mark_macro_derive::MarkMacro;
 use rand::Rng;
 
