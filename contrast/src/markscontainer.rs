@@ -131,6 +131,7 @@ impl Contrast {
         }
     }
 
+    /// Same behavior than add_point_mark but it adds a mark of type "Polygon".
     pub fn add_polygon_mark(&mut self) -> &mut PolygonMark {
         let polygon = Mark::Polygon(PolygonMark::new());
         self.layers.get_mut(self.current_layer_index).unwrap().force_add_mark(polygon);

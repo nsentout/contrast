@@ -5,9 +5,6 @@
 
 use contrast_renderer::LumiRenderer;
 use contrast::properties::Position;
-use contrast::properties::Size;
-use contrast::properties::Color;
-use contrast::marks::pointmark::Shape;
 use contrast::marks::linemark::LineMode;
 use contrast::MarkMacro;
 
@@ -19,7 +16,7 @@ fn main()
     let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "We need lines");
     let contrast = renderer.get_contrast_mut();
 
-    let mut pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
+    let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
 
     // Add a first line to contrast, with a thickness of 1 pixel.
     contrast.add_line_mark()
@@ -32,7 +29,7 @@ fn main()
         .set_mode(LineMode::Linear)
         .get_id();
 
-    let mut pos2 = Position { x : 400.0, y : 250.0, z : 0.0 };
+    let pos2 = Position { x : 400.0, y : 250.0, z : 0.0 };
 
     // Add a second line to contrast, with a thickness of 10 pixels.
     contrast.add_line_mark()
