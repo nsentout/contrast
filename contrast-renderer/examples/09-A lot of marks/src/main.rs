@@ -13,7 +13,6 @@
 
 use contrast_renderer::LumiRenderer;
 use contrast_renderer::Key;
-use contrast::MarkMacro;
 use contrast::marks::pointmark::Shape;
 use contrast::markscontainer::Contrast;
 use contrast::properties::MarkId;
@@ -28,7 +27,8 @@ fn move_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
 
     // Move our marks to a random position.
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked().set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0));
+        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked()
+            .set_position((rng.gen_range::<f32>(0.0, WINDOW_WIDTH as f32), rng.gen_range::<f32>(0.0, WINDOW_HEIGHT as f32), 0.0));
     }
     contrast.mark_dirty_all();
 }
@@ -38,7 +38,8 @@ fn resize_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
 
     // Give our marks a random size.
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().set_size((rng.gen_range::<f32>(100.0, 200.0), rng.gen_range::<f32>(100.0, 200.0)));
+        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked()
+            .set_size((rng.gen_range::<f32>(100.0, 200.0), rng.gen_range::<f32>(100.0, 200.0)));
     }
     contrast.mark_dirty_all();
 }
@@ -48,7 +49,8 @@ fn color_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
 
     // Give our marks a random color.
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
+        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked()
+            .set_color((rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), rng.gen_range::<f32>(0.0, 1.0), 1.0));
     }
     contrast.mark_dirty_all();
 }
@@ -58,7 +60,8 @@ fn rotate_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
 
     // Give our marks a random rotation.
     for m in markids {
-        contrast.get_mark_mut(&m).unwrap().set_rotation(rng.gen_range::<f32>(Rotation::from_degrees(45.0), Rotation::from_degrees(360.0)));
+        contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked()
+            .set_rotation(rng.gen_range::<f32>(Rotation::from_degrees(45.0), Rotation::from_degrees(360.0)));
     }
     contrast.mark_dirty_all();
 }

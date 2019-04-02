@@ -27,6 +27,8 @@ const WINDOW_HEIGHT : u32 = 800;
 // Functions that will be applied to each mark of a layer //
 
 fn rotate_marks(mark : &mut Mark) {
+    // We cannot apply rotation on lines so we convert mark to a pointmark
+    let mark = mark.as_point_mark_mut_unchecked();
     mark.set_rotation(mark.get_rotation() + Rotation::from_degrees(30.0));
 }
 
@@ -35,6 +37,8 @@ fn color_marks(mark : &mut Mark) {
 }
 
 fn enlarge_marks(mark : &mut Mark) {
+    // We cannot change the size of lines so we convert mark to a pointmark
+    let mark = mark.as_point_mark_mut_unchecked();
     let size = mark.get_size();
     mark.set_size((size.width * 2.0, size.height * 2.0));
 }

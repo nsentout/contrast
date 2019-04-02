@@ -1,7 +1,7 @@
 use crate::MarkMacro;
 use properties::position::Position;
 use properties::color::Color;
-use properties::markproperties::MarkProperties;
+use properties::markid::MarkId;
 use mark_macro_derive::MarkMacro;
 
 use std::collections::HashMap;
@@ -208,7 +208,8 @@ impl TextMarkCmd
 #[derive(MarkMacro, Clone)]
 pub struct TextMark
 {
-    pub(crate) common_properties: MarkProperties,
+    pub(crate) markid : MarkId,
+    pub(crate) color : Color,
     pub(crate) face: String,
     pub(crate) text: String,
     pub(crate) pos: Position
@@ -219,7 +220,8 @@ impl TextMark
     /// Returns a new empty instance of TextMark.
     pub fn new() -> TextMark
     {
-        TextMark{common_properties: MarkProperties::new(), face: String::from(""), text: String::from(""), pos: Position{x: 0.0, y: 0.0, z:0.0}}
+        TextMark{markid: MarkId::new(), color : Color::default(), face: String::from(""), text: String::from("")
+                , pos: Position{x: 0.0, y: 0.0, z:0.0}}
     }
 
     /// Setter of the font.

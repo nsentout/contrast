@@ -1,7 +1,6 @@
 use crate::MarkMacro;
 use properties::markid::MarkId;
 use properties::color::Color;
-use properties::size::Size;
 use properties::position::Position;
 use crate::marks::pointmark::PointMark;
 use crate::marks::linemark::LineMark;
@@ -175,7 +174,6 @@ impl Mark {
         cast_mut_unchecked!(self, Polygon)
     }
 
-
     pub fn as_text_mark(&self) -> Option<&TextMark> {
         cast!(self, Text)
     }
@@ -221,30 +219,30 @@ impl Mark {
 
     pub(crate) fn set_mark_index(&mut self, mark_index : usize) -> &mut Self {
         match self {
-            Mark::Point(p) => p.common_properties.markid.mark_index = mark_index,
-            Mark::Line(l) => l.common_properties.markid.mark_index = mark_index,
-            Mark::Text(t) => t.common_properties.markid.mark_index = mark_index,
-			Mark::Polygon(poly) => poly.common_properties.markid.mark_index = mark_index
+            Mark::Point(p) => p.markid.mark_index = mark_index,
+            Mark::Line(l) => l.markid.mark_index = mark_index,
+            Mark::Text(t) => t.markid.mark_index = mark_index,
+			Mark::Polygon(poly) => poly.markid.mark_index = mark_index
         }
         self
     }
 
     pub(crate) fn set_layer_index(&mut self, layer_index : usize) -> &mut Self {
          match self {
-            Mark::Point(p) => p.common_properties.markid.layer_index = layer_index,
-            Mark::Line(l) => l.common_properties.markid.layer_index = layer_index,
-            Mark::Text(t) => t.common_properties.markid.layer_index = layer_index,
-			Mark::Polygon(poly) => poly.common_properties.markid.layer_index = layer_index
+            Mark::Point(p) => p.markid.layer_index = layer_index,
+            Mark::Line(l) => l.markid.layer_index = layer_index,
+            Mark::Text(t) => t.markid.layer_index = layer_index,
+			Mark::Polygon(poly) => poly.markid.layer_index = layer_index
         }
         self
     }
 
     pub(crate) fn set_valid(&mut self, valid : bool) -> &mut Self {
         match self {
-            Mark::Point(p) => p.common_properties.markid.valid = valid,
-            Mark::Line(l) => l.common_properties.markid.valid = valid,
-            Mark::Text(t) => t.common_properties.markid.valid = valid,
-			Mark::Polygon(poly) => poly.common_properties.markid.valid = valid
+            Mark::Point(p) => p.markid.valid = valid,
+            Mark::Line(l) => l.markid.valid = valid,
+            Mark::Text(t) => t.markid.valid = valid,
+			Mark::Polygon(poly) => poly.markid.valid = valid
         }
         self
     }
@@ -255,32 +253,16 @@ impl MarkMacro for Mark  {
         mark_get!(self, get_id)
     }
 
-    fn get_size(&self) -> Size {
-        mark_get!(self, get_size)
-    }
-
     fn get_color(&self) -> Color {
         mark_get!(self, get_color)
-    }
-
-    fn get_rotation(&self) -> f32 {
-        mark_get!(self, get_rotation)
     }
 
     fn get_layer_index(&self) -> usize {
         mark_get!(self, get_layer_index)
     }
 
-    fn set_size<S : Into <Size>>(&mut self, size : S) -> &mut Self {
-        mark_set!(self, set_size, size)
-    }
-
     fn set_color<C : Into <Color>>(&mut self, color : C) -> &mut Self {
         mark_set!(self, set_color, color)
-    }
-
-    fn set_rotation(&mut self, rotation : f32) -> &mut Self {
-        mark_set!(self, set_rotation, rotation)
     }
 }
 

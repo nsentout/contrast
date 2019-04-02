@@ -1,6 +1,8 @@
 use crate::MarkMacro;
 use properties::position::Position;
-use properties::markproperties::MarkProperties;
+use properties::size::Size;
+use properties::color::Color;
+use properties::markid::MarkId;
 use mark_macro_derive::MarkMacro;
 
 
@@ -18,7 +20,10 @@ pub type VertexPolygon = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3],
 /// draw the stroke.
 #[derive(MarkMacro, Clone, Debug)]
 pub struct PolygonMark {
-    pub(crate) common_properties : MarkProperties,
+    pub(crate) markid : MarkId,
+    pub(crate) color : Color,
+    pub(crate) size : Size,
+    pub(crate) rotation : f32,
     pub(crate) points : Vec<Position>,
     pub(crate) stroke_width : f32,
     pub(crate) fill : bool /*TODO */
@@ -29,7 +34,10 @@ impl PolygonMark {
     /// all attributes to their default value.
     pub fn new() -> Self {
         PolygonMark {
-            common_properties : MarkProperties::new(),
+            markid : MarkId::new(),
+            color : Color::default(),
+            size : Size::default(),
+            rotation : 0.0,
             points : Vec::<Position>::new(),
             stroke_width : 15.0,
             fill : false
@@ -58,21 +66,21 @@ impl PolygonMark {
             let mut target = self.points[0];
             for next in self.points.clone() {
                 if previous == origin { previous = self.points[self.points.len()-1]}
-                let vl : VertexPolygon = (*self.common_properties.size.to_array(),
-                *self.common_properties.color.to_array(), self.common_properties.rotation,
+                let vl : VertexPolygon = (*self.size.to_array(),
+                *self.color.to_array(), self.rotation,
                 *origin.to_array(), *target.to_array(), *previous.to_array(), *next.to_array(),self.stroke_width, *centroid.to_array());
                 vertex_polygon.push(vl);
                 previous = origin;
                 origin = target;
                 target = next;
             }
-            let vl : VertexPolygon = (*self.common_properties.size.to_array(),
-            *self.common_properties.color.to_array(), self.common_properties.rotation,
+            let vl : VertexPolygon = (*self.size.to_array(),
+            *self.color.to_array(), self.rotation,
             *origin.to_array(), *target.to_array(),
             *previous.to_array(), *self.points[0].to_array(),self.stroke_width, *centroid.to_array());
             vertex_polygon.push(vl);
-            let vr : VertexPolygon = (*self.common_properties.size.to_array(),
-            *self.common_properties.color.to_array(), self.common_properties.rotation,
+            let vr : VertexPolygon = (*self.size.to_array(),
+            *self.color.to_array(), self.rotation,
             *self.points[self.points.len()-1].to_array(), *self.points[0].to_array(),
             *self.points[self.points.len()-2].to_array(), *self.points[1].to_array(),self.stroke_width, *centroid.to_array());
             vertex_polygon.push(vr);

@@ -432,11 +432,11 @@ mod tests {
         let mut c = Contrast::new();
         c.init();
 
-        let m1 = c.add_line_mark().set_size((10.0, 20.0)).get_id();
-        let m2 = c.add_line_mark().set_size((30.0, 40.0)).get_id();
+        let m1 = c.add_point_mark().set_size((10.0, 20.0)).get_id();
+        let m2 = c.add_point_mark().set_size((30.0, 40.0)).get_id();
 
-        assert_eq!(c.get_mark_mut(&m1).unwrap().get_size(), Size { width : 10.0, height : 20.0 });
-        assert_eq!(c.get_mark_mut(&m2).unwrap().get_size(), Size { width : 30.0, height : 40.0 });
+        assert_eq!(c.get_mark_mut(&m1).unwrap().as_point_mark_unchecked().get_size(), Size { width : 10.0, height : 20.0 });
+        assert_eq!(c.get_mark_mut(&m2).unwrap().as_point_mark_unchecked().get_size(), Size { width : 30.0, height : 40.0 });
     }
 
     #[test]
@@ -458,10 +458,10 @@ mod tests {
         let mut c = Contrast::new();
         c.init();
 
-        let m1 = c.add_line_mark().set_rotation(90.0).get_id();
-        let m2 = c.add_line_mark().set_rotation(180.0).get_id();
+        let m1 = c.add_point_mark().set_rotation(90.0).get_id();
+        let m2 = c.add_point_mark().set_rotation(180.0).get_id();
 
-        assert_eq!(c.get_mark_mut(&m1).unwrap().get_rotation(), 90.0);
-        assert_eq!(c.get_mark_mut(&m2).unwrap().get_rotation(), 180.0);
+        assert_eq!(c.get_mark_mut(&m1).unwrap().as_point_mark_unchecked().get_rotation(), 90.0);
+        assert_eq!(c.get_mark_mut(&m2).unwrap().as_point_mark_unchecked().get_rotation(), 180.0);
     }
 }
