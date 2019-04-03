@@ -222,7 +222,7 @@ impl Contrast {
         self.layers.sort();
         let mut properties : Vec<VertexSubLine> = Vec::<VertexSubLine>::new();
         for layer in &self.layers {
-            for mark in layer.get_all_marks() {
+            for mark in &layer.marks {
                 if let Mark::Line(l) = mark {
                     if l.is_valid() {
                         properties.append(&mut l.to_subline());
@@ -239,7 +239,7 @@ impl Contrast {
         self.layers.sort();
         let mut properties : Vec<VertexPolygon> = Vec::<VertexPolygon>::new();
         for layer in &self.layers {
-            for mark in layer.get_all_marks() {
+            for mark in &layer.marks {
                 if let Mark::Polygon(poly) = mark {
                     if poly.is_valid() {
                         properties.append(&mut poly.as_vertex());
@@ -276,16 +276,23 @@ impl Contrast {
         (properties,commands,chars)
     }
 
+    /// Useful only for the tests.
+    pub(crate) fn get_pointer(&mut self) -> *mut Contrast {
+        self as *mut Contrast
+    }
+
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use properties::position::Position;
     use properties::color::Color;
     use properties::size::Size;
-    use crate::marks::pointmark::Shape;
+    use std::collections::BinaryHeap;
+    use crate::marks::pointmark::*;
+    use crate::marks::linemark::*;
     use crate::MarkMacro;
-    use properties::position::Position;
 
     fn vertex_point_is_equal(v1 : VertexPoint, v2 : VertexPoint) -> bool
     {
@@ -300,7 +307,22 @@ mod tests {
     #[test]
     fn new()
     {
-        assert_eq!(Contrast::new().get_pointmarks_properties().len(), 0);
+        let mut c = Contrast::new();
+
+        assert_eq!(c.get_pointmarks_properties().len(), 0);
+        assert_eq!(c.get_linemarks_properties().len(), 0);
+        assert_eq!(c.get_polygonmarks_properties().len(), 0);
+        assert_eq!(c.layers.len(), 0);
+    }
+
+    #[test]
+    fn init()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        assert_eq!(c.layers.len(), 1);
+
     }
 
     #[test]
@@ -309,12 +331,12 @@ mod tests {
         let mut c = Contrast::new();
         c.init();
 
-        let m1 = c.add_point_mark().get_id();
+        c.add_point_mark();
 
         assert_eq!(c.get_pointmarks_properties().len(), 1);
 
-        let m2 = c.add_point_mark().get_id();
-        let m3 = c.add_point_mark().get_id();
+        c.add_point_mark();
+        c.add_point_mark();
 
         assert_eq!(c.get_pointmarks_properties().len(), 3);
     }
@@ -331,6 +353,15 @@ mod tests {
         c.remove_mark(&mut m1);
 
         assert_eq!(c.get_pointmarks_properties().len(), 1);
+
+        let mut m3 = c.add_point_mark().get_id();
+        let mut m4 = c.add_point_mark().get_id();
+        let mut m5 = c.add_point_mark().get_id();
+
+        c.remove_mark(&mut m2);
+        c.remove_mark(&mut m4);
+
+        assert_eq!(c.get_pointmarks_properties().len(), 2);
     }
 
     #[test]
@@ -436,18 +467,292 @@ mod tests {
     }
 
     #[test]
+    fn add_layers()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        assert_eq!(c.layers.len(), 1);
+        c.add_layers(3);
+        assert_eq!(c.layers.len(), 4);
+        c.add_layers(10);
+        assert_eq!(c.layers.len(), 14);
+    }
+
+     #[test]
+    fn get_layer()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        c.add_layers(2);
+
+        c.layers.get_mut(2).unwrap().marks.push(Mark::Point(PointMark::new()));
+        c.layers.get_mut(2).unwrap().marks.push(Mark::Line(LineMark::new()));
+
+        c.layers.get_mut(0).unwrap().marks.push(Mark::Polygon(PolygonMark::new()));
+
+        let expected_layer_0 = Layer {
+            marks : vec!(Mark::Polygon(PolygonMark::new())),
+            depth : 0,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+         let expected_layer_1 = Layer {
+            marks : Vec::<Mark>::new(),
+            depth : 1,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+        let expected_layer_2 = Layer {
+            marks : vec!(Mark::Point(PointMark::new()), Mark::Line(LineMark::new())),
+            depth : 2,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+        assert_eq!(*c.get_layer(0).unwrap(), expected_layer_0);
+        assert_eq!(*c.get_layer(1).unwrap(), expected_layer_1);
+        assert_eq!(*c.get_layer(2).unwrap(), expected_layer_2);
+    }
+
+     #[test]
+    fn get_layer_mut()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        c.add_layers(2);
+
+        c.layers.get_mut(2).unwrap().marks.push(Mark::Point(PointMark::new()));
+        c.layers.get_mut(2).unwrap().marks.push(Mark::Line(LineMark::new()));
+
+        c.layers.get_mut(0).unwrap().marks.push(Mark::Polygon(PolygonMark::new()));
+
+        let expected_layer_0 = Layer {
+            marks : vec!(Mark::Polygon(PolygonMark::new())),
+            depth : 0,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+         let expected_layer_1 = Layer {
+            marks : Vec::<Mark>::new(),
+            depth : 1,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+        let expected_layer_2 = Layer {
+            marks : vec!(Mark::Point(PointMark::new()), Mark::Line(LineMark::new())),
+            depth : 2,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+        assert_eq!(*c.get_layer_mut(0).unwrap(), expected_layer_0);
+        assert_eq!(*c.get_layer_mut(1).unwrap(), expected_layer_1);
+        assert_eq!(*c.get_layer_mut(2).unwrap(), expected_layer_2);
+    }
+
+    #[test]
+    fn get_mark()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        let mut m1 = c.add_polygon_mark()
+                        .set_color(Color::red())
+                        .add_point((1.0, 2.0, 3.0))
+                        .add_point((-10.3, 25.7, 3.9))
+                        .set_stroke_width(3.0)
+                        .get_id();
+
+        let mut m2 = c.add_point_mark()
+                        .set_color(Color::blue())
+                        .set_shape(Shape::Point)
+                        .get_id();
+
+        let mut m3 = c.add_text_mark()
+                        .set_text("Test123")
+                        .set_position((10.0, 20.5, 0.0))
+                        .get_id();
+
+        let mut m4 = c.add_line_mark()
+                        .add_point((5.0, 5.0, 5.0))
+                        .set_thickness(12.0)
+                        .get_id();
+
+        let expected_m1 = PolygonMark {
+            markid : MarkId { mark_index : 0, layer_index : 0, valid : true },
+            color : Color::red(),
+            size : Size::default(),
+            rotation : 0.0,
+            points : vec!(Position { x : 1.0, y : 2.0, z : 3.0 }, Position { x : -10.3, y : 25.7, z : 3.9 }),
+            stroke_width : 3.0,
+            fill : false
+        };
+
+        let expected_m2 = PointMark {
+            markid : MarkId { mark_index : 1, layer_index : 0, valid : true },
+            size : AnimationAttribute {
+                old_value : Size::default(),
+                target_value : Size::default(),
+                start_anim : 0.0
+            },
+            color : AnimationAttribute {
+                old_value : Color::default(),
+                target_value : Color::blue(),
+                start_anim : -10.0
+            },
+            rotation : AnimationAttribute {
+                old_value : 0.0,
+                target_value : 0.0,
+                start_anim : 0.0
+            },
+            center : AnimationAttribute {
+                old_value : Position::default(),
+                target_value : Position::default(),
+                start_anim : 0.0
+            },
+            shape : AnimationAttribute {
+                old_value : Shape::None,
+                target_value : Shape::Point,
+                start_anim : -10.0
+            },
+            is_displayed : false
+        };
+
+        let expected_m3 = TextMark{
+                markid : MarkId { mark_index : 2, layer_index : 0, valid : true },
+                color : Color::default(),
+                face : String::from(""),
+                text : String::from("Test123"),
+                pos : Position { x : 10.0, y : 20.5, z : 0.0}
+        };
+
+        let expected_m4 = LineMark {
+            markid : MarkId { mark_index : 3, layer_index : 0, valid : true },
+            color : Color::default(),
+            points : vec!(Position { x : 5.0, y : 5.0, z : 5.0 }),
+            thickness : 12.0
+        };
+
+        assert_eq!(*c.get_mark(&m1).unwrap().as_polygon_mark_unchecked(), expected_m1);
+        assert_eq!(*c.get_mark(&m2).unwrap().as_point_mark_unchecked(), expected_m2);
+        assert_eq!(*c.get_mark(&m3).unwrap().as_text_mark_unchecked(), expected_m3);
+        assert_eq!(*c.get_mark(&m4).unwrap().as_line_mark_unchecked(), expected_m4);
+    }
+
+    #[test]
+    fn get_mark_mut()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        let mut m1 = c.add_polygon_mark()
+                        .set_color(Color::red())
+                        .add_point((1.0, 2.0, 3.0))
+                        .add_point((-10.3, 25.7, 3.9))
+                        .set_stroke_width(3.0)
+                        .get_id();
+
+        let mut m2 = c.add_point_mark()
+                        .set_color(Color::blue())
+                        .set_shape(Shape::Point)
+                        .get_id();
+
+        let mut m3 = c.add_text_mark()
+                        .set_text("Test123")
+                        .set_position((10.0, 20.5, 0.0))
+                        .get_id();
+
+        let mut m4 = c.add_line_mark()
+                        .add_point((5.0, 5.0, 5.0))
+                        .set_thickness(12.0)
+                        .get_id();
+
+        let expected_m1 = PolygonMark {
+            markid : MarkId { mark_index : 0, layer_index : 0, valid : true },
+            color : Color::red(),
+            size : Size::default(),
+            rotation : 0.0,
+            points : vec!(Position { x : 1.0, y : 2.0, z : 3.0 }, Position { x : -10.3, y : 25.7, z : 3.9 }),
+            stroke_width : 3.0,
+            fill : false
+        };
+
+        let expected_m2 = PointMark {
+            markid : MarkId { mark_index : 1, layer_index : 0, valid : true },
+            size : AnimationAttribute {
+                old_value : Size::default(),
+                target_value : Size::default(),
+                start_anim : 0.0
+            },
+            color : AnimationAttribute {
+                old_value : Color::default(),
+                target_value : Color::blue(),
+                start_anim : -10.0
+            },
+            rotation : AnimationAttribute {
+                old_value : 0.0,
+                target_value : 0.0,
+                start_anim : 0.0
+            },
+            center : AnimationAttribute {
+                old_value : Position::default(),
+                target_value : Position::default(),
+                start_anim : 0.0
+            },
+            shape : AnimationAttribute {
+                old_value : Shape::None,
+                target_value : Shape::Point,
+                start_anim : -10.0
+            },
+            is_displayed : false
+        };
+
+        let expected_m3 = TextMark{
+                markid : MarkId { mark_index : 2, layer_index : 0, valid : true },
+                color : Color::default(),
+                face : String::from(""),
+                text : String::from("Test123"),
+                pos : Position { x : 10.0, y : 20.5, z : 0.0}
+        };
+
+        let expected_m4 = LineMark {
+            markid : MarkId { mark_index : 3, layer_index : 0, valid : true },
+            color : Color::default(),
+            points : vec!(Position { x : 5.0, y : 5.0, z : 5.0 }),
+            thickness : 12.0,
+        };
+
+        assert_eq!(*c.get_mark_mut(&m1).unwrap().as_polygon_mark_unchecked(), expected_m1);
+        assert_eq!(*c.get_mark_mut(&m2).unwrap().as_point_mark_unchecked(), expected_m2);
+        assert_eq!(*c.get_mark_mut(&m3).unwrap().as_text_mark_unchecked(), expected_m3);
+        assert_eq!(*c.get_mark_mut(&m4).unwrap().as_line_mark_unchecked(), expected_m4);
+    }
+
+    #[test]
     fn get_id()
     {
         let mut c = Contrast::new();
         c.init();
 
-        let m1 = c.add_line_mark().get_id();
-        let m2 = c.add_line_mark().get_id();
+        let mut m1 = c.add_text_mark().get_id();
+        let mut m2 = c.add_text_mark().get_id();
 
         let expected_m1_id = MarkId { mark_index : 0, layer_index : 0, valid : true };
         let expected_m2_id = MarkId { mark_index : 1, layer_index : 0, valid : true };
 
         assert_eq!(m1, expected_m1_id);
+        assert_eq!(m2, expected_m2_id);
+
+        c.remove_mark(&mut m2);
+
+        let expected_m2_id = MarkId { mark_index : 1, layer_index : 0, valid : false };
         assert_eq!(m2, expected_m2_id);
     }
 
@@ -460,8 +765,8 @@ mod tests {
         let m1 = c.add_point_mark().set_size((10.0, 20.0)).get_id();
         let m2 = c.add_point_mark().set_size((30.0, 40.0)).get_id();
 
-        assert_eq!(c.get_mark_mut(&m1).unwrap().as_point_mark_unchecked().get_size(), Size { width : 10.0, height : 20.0 });
-        assert_eq!(c.get_mark_mut(&m2).unwrap().as_point_mark_unchecked().get_size(), Size { width : 30.0, height : 40.0 });
+        assert_eq!(c.get_mark(&m1).unwrap().as_point_mark_unchecked().get_size(), Size { width : 10.0, height : 20.0 });
+        assert_eq!(c.get_mark(&m2).unwrap().as_point_mark_unchecked().get_size(), Size { width : 30.0, height : 40.0 });
     }
 
     #[test]
@@ -473,8 +778,8 @@ mod tests {
         let m1 = c.add_line_mark().set_color((0.1, 0.2, 0.3, 0.4)).get_id();
         let m2 = c.add_line_mark().set_color((0.5, 0.6, 0.7, 0.8)).get_id();
 
-        assert_eq!(c.get_mark_mut(&m1).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 });
-        assert_eq!(c.get_mark_mut(&m2).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 });
+        assert_eq!(c.get_mark(&m1).unwrap().get_color(), Color { r : 0.1, g : 0.2, b : 0.3, a : 0.4 });
+        assert_eq!(c.get_mark(&m2).unwrap().get_color(), Color { r : 0.5, g : 0.6, b : 0.7, a : 0.8 });
     }
 
     #[test]
@@ -486,7 +791,7 @@ mod tests {
         let m1 = c.add_point_mark().set_rotation(90.0).get_id();
         let m2 = c.add_point_mark().set_rotation(180.0).get_id();
 
-        assert_eq!(c.get_mark_mut(&m1).unwrap().as_point_mark_unchecked().get_rotation(), 90.0);
-        assert_eq!(c.get_mark_mut(&m2).unwrap().as_point_mark_unchecked().get_rotation(), 180.0);
+        assert_eq!(c.get_mark(&m1).unwrap().as_point_mark_unchecked().get_rotation(), 90.0);
+        assert_eq!(c.get_mark(&m2).unwrap().as_point_mark_unchecked().get_rotation(), 180.0);
     }
 }

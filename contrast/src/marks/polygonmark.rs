@@ -16,7 +16,7 @@ pub type VertexPolygon = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3],
 /// Polygon marks also have a vector of positions representing its points,
 /// a stroke width and a boolean to indicate whether or not we must
 /// draw the stroke.
-#[derive(MarkMacro, Clone, Debug)]
+#[derive(MarkMacro, PartialEq, Clone, Debug)]
 pub struct PolygonMark {
     pub(crate) markid : MarkId,
     pub(crate) color : Color,

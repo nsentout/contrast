@@ -11,7 +11,7 @@ use std::slice::Iter;
 
 
 /// Union of every type of mark.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Mark {
 	Point(PointMark),
 	Line(LineMark),

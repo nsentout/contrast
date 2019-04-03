@@ -14,7 +14,7 @@ pub type VertexSubLine = ([f32; 4], [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32)
 /// Each type of mark share some properties, that is an id and a color.
 /// Line marks also have a vector of positions representing its points,
 /// a thickness and a mode to draw them differently.
-#[derive(MarkMacro, Clone, Debug)]
+#[derive(MarkMacro, PartialEq, Clone, Debug)]
 pub struct LineMark {
     pub(crate) markid : MarkId,
     pub(crate) color : Color,

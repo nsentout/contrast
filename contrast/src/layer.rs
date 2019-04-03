@@ -11,6 +11,7 @@ use crate::markscontainer::Contrast;
 /// it will be displayed on first plan.
 /// A Layer keeps track of indexes where marks have been removed 
 /// to replace them later.
+#[derive(Debug)]
 pub struct Layer {
     pub(crate) marks : Vec<Mark>,
     pub(crate) depth : usize,

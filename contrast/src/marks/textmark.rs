@@ -207,7 +207,7 @@ impl TextMarkCmd
 /// Structure directly manipulable by the user.
 /// The font is only a string to avoid copy.
 /// The mark only contains the key to the FontCache.
-#[derive(MarkMacro, Clone)]
+#[derive(PartialEq, Debug, MarkMacro, Clone)]
 pub struct TextMark
 {
     pub(crate) markid : MarkId,

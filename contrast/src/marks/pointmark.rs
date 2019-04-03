@@ -13,7 +13,7 @@ use rand::Rng;
 pub type VertexPoint = ([f32; 3], [f32; 3], f32, [f32; 2], [f32; 2], f32, [f32; 4], [f32; 4], f32, f32, f32, f32, u32, u32, f32);
 
 /// This enum describes every shape that should be drawable.
-#[derive(Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Shape {
     None = 0,
     Rectangle = 1,
@@ -106,7 +106,7 @@ macro_rules! anim_set {
 /// We will use those attributes in the shaders to perform a smooth animation.
 /// To perform an animation, we make a linear interpolation between 'old_value' and 'target_value' in
 /// the shaders and we use 'start_anim' to make it look smooth.
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub(crate) struct AnimationAttribute<A> {
     pub(crate) old_value : A,
     pub(crate) target_value : A,
@@ -123,7 +123,7 @@ pub(crate) struct AnimationAttribute<A> {
 /// Finally, we need a boolean telling us whether or not the mark
 /// has already been displayed, allowing us to disable the
 /// animation at the first display of our mark.
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct PointMark {
     pub(crate) markid : MarkId,
     pub(crate) color : AnimationAttribute<Color>,
