@@ -47,9 +47,9 @@ const VSLINE: &'static str = include_str!("../../../contrast/src/shaders/line/li
 const FSLINE: &'static str = include_str!("../../../contrast/src/shaders/line/line.frag");
 const GSLINE: &'static str = include_str!("../../../contrast/src/shaders/line/line.geom");
 
-const VSPOLYGON: &'static str = include_str!("../../../src/shaders/polygon/polygon.vert");
-const FSPOLYGON: &'static str = include_str!("../../../src/shaders/polygon/polygon.frag");
-const GSPOLYGON: &'static str = include_str!("../../../src/shaders/polygon/polygon.geom");
+const VSPOLYGON: &'static str = include_str!("../../../contrast/src/shaders/polygon/polygon.vert");
+const FSPOLYGON: &'static str = include_str!("../../../contrast/src/shaders/polygon/polygon.frag");
+const GSPOLYGON: &'static str = include_str!("../../../contrast/src/shaders/polygon/polygon.geom");
 
 const VSTEXT: &'static str = include_str!("../../../contrast/src/shaders/text/text.vert");
 const FSTEXT: &'static str = include_str!("../../../contrast/src/shaders/text/text.frag");
@@ -92,9 +92,9 @@ uniform_interface!
 
 const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, -10.0], [0.0, 0.0, -10.0], 0.0, [0.0, 0.0], [0.0, 0.0], 0.0,
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
-const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
+const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
-const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0]);
+const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0]);
 
 pub struct TessPool<V>
 {

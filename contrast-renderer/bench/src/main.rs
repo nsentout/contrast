@@ -19,13 +19,6 @@ fn move_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
     contrast.mark_dirty_all();
 }
 
-fn resize_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
-    let mut rng = rand::thread_rng();
-    for m in markids {
-        contrast.get_mark_mut(&m).unwrap().set_size((rng.gen_range::<f32>(6.0, 10.0), rng.gen_range::<f32>(6.0, 10.0)));
-    }
-    contrast.mark_dirty_all();
-}
 
 fn color_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
     let mut rng = rand::thread_rng();
@@ -35,13 +28,6 @@ fn color_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
     contrast.mark_dirty_all();
 }
 
-fn rotate_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
-    let mut rng = rand::thread_rng();
-    for m in markids {
-        contrast.get_mark_mut(&m).unwrap().set_rotation(rng.gen_range::<f32>(3.14, 6.28));
-    }
-    contrast.mark_dirty_all();
-}
 
 fn reshape_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
     let mut rng = rand::thread_rng();
@@ -72,8 +58,6 @@ fn main()
     luminance.add_mark_list_action_on_press(Key::Q, reshape_marks, &marks);
     luminance.add_mark_list_action_on_press(Key::W, move_marks, &marks);
     luminance.add_mark_list_action_on_press(Key::E, color_marks, &marks);
-    luminance.add_mark_list_action_on_press(Key::R, resize_marks, &marks);
-    luminance.add_mark_list_action_on_press(Key::F, rotate_marks, &marks);
 
     luminance.run();
 }

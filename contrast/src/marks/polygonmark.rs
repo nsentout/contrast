@@ -9,7 +9,7 @@ use mark_macro_derive::MarkMacro;
 /// This is the type that will receive our shaders when we will want to render our polygon marks.
 /// We could describe it this way to be more clear :
 /// type VertexPolygon = (color, rotation, origin).                                             //centroid
-pub type VertexPolygon = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, [f32; 3]);
+pub type VertexPolygon = ([f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, [f32; 3]);
 
 /// This is the structure that describes the marks of type Polygon.
 /// Each type of mark share some properties, that is an id and a color.
@@ -20,7 +20,6 @@ pub type VertexPolygon = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3],
 pub struct PolygonMark {
     pub(crate) markid : MarkId,
     pub(crate) color : Color,
-    pub(crate) size : Size,
     pub(crate) rotation : f32,
     pub(crate) points : Vec<Position>,
     pub(crate) stroke_width : f32,
@@ -34,7 +33,6 @@ impl PolygonMark {
         PolygonMark {
             markid : MarkId::new(),
             color : Color::default(),
-            size : Size::default(),
             rotation : 0.0,
             points : Vec::<Position>::new(),
             stroke_width : 15.0,
@@ -42,6 +40,8 @@ impl PolygonMark {
         }
     }
 
+    /// Compute the centroid of the polygon
+    /// and return the centroid
     fn compute_centroid(&self) -> Position {
         let mut centroid = Position { x : 0.0, y : 0.0, z : 0.0 };
         for point in self.points.clone() {
@@ -64,21 +64,22 @@ impl PolygonMark {
             let mut target = self.points[0];
             for next in self.points.clone() {
                 if previous == origin { previous = self.points[self.points.len()-1]}
-                let vl : VertexPolygon = (*self.size.to_array(),
-                *self.color.to_array(), self.rotation,
-                *origin.to_array(), *target.to_array(), *previous.to_array(), *next.to_array(),self.stroke_width, *centroid.to_array());
+                let vl : VertexPolygon = (*self.color.to_array(),
+                self.rotation,
+                *origin.to_array(), *target.to_array(), *previous.to_array(),
+                *next.to_array(),self.stroke_width, *centroid.to_array());
                 vertex_polygon.push(vl);
                 previous = origin;
                 origin = target;
                 target = next;
             }
-            let vl : VertexPolygon = (*self.size.to_array(),
-            *self.color.to_array(), self.rotation,
+            let vl : VertexPolygon = (*self.color.to_array(),
+            self.rotation,
             *origin.to_array(), *target.to_array(),
             *previous.to_array(), *self.points[0].to_array(),self.stroke_width, *centroid.to_array());
             vertex_polygon.push(vl);
-            let vr : VertexPolygon = (*self.size.to_array(),
-            *self.color.to_array(), self.rotation,
+            let vr : VertexPolygon = (*self.color.to_array(),
+            self.rotation,
             *self.points[self.points.len()-1].to_array(), *self.points[0].to_array(),
             *self.points[self.points.len()-2].to_array(), *self.points[1].to_array(),self.stroke_width, *centroid.to_array());
             vertex_polygon.push(vr);

@@ -1,12 +1,11 @@
-layout (location = 0) in vec2 size;
-layout (location = 1) in vec4 color;
-layout (location = 2) in float rotation;
-layout (location = 3) in vec3 origin;
-layout (location = 4) in vec3 target;
-layout (location = 5) in vec3 previous;
-layout (location = 6) in vec3 next;
-layout (location = 7) in float thickness;
-layout (location = 8) in vec3 polygon_centroid;
+layout (location = 0) in vec4 color;
+layout (location = 1) in float rotation;
+layout (location = 2) in vec3 origin;
+layout (location = 3) in vec3 target;
+layout (location = 4) in vec3 previous;
+layout (location = 5) in vec3 next;
+layout (location = 6) in float thickness;
+layout (location = 7) in vec3 polygon_centroid;
 
 out vec4 v_color;
 out float v_rotation;
