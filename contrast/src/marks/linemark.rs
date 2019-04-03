@@ -21,9 +21,7 @@ pub enum LineMode {
 }
 
 /// This is the structure that describes the marks of type Line (or polyline).
-/// Each type of mark share some properties, that is an id, a size,
-/// a color and a rotation. Those properties are described by the
-/// attribute common_properties.
+/// Each type of mark share some properties, that is an id and a color.
 /// Line marks also have a vector of positions representing its points,
 /// a thickness and a mode to draw them differently.
 #[derive(MarkMacro, Clone, Debug)]

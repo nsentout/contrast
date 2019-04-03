@@ -42,7 +42,7 @@ impl MarkTy
 /// Macro calling the getter $get of the MarkMacro trait on the mark $mark.
 /// Example : mark_get!(mark_point_1, get_color) calls the get_color method
 /// implemented in the procedural macro "mark_macro_derive" that returns
-/// the color of "mark mark_point_1"
+/// the color of the mark "mark_point_1"
 macro_rules! mark_get {
     ($mark:ident, $get:ident) => (
         match $mark {
@@ -56,7 +56,7 @@ macro_rules! mark_get {
 
 /// Macro calling the setter $set of the MarkMacro trait (with parameter $param) on the mark $mark.
 /// Example : mark_set!(mark_point_1, set_color, (1.0, 0.0, 0.0, 1.0)) calls the set_color method
-/// implemented in the procedural macro "mark_macro_derive" that set the color of "mark mark_point_1"
+/// implemented in the procedural macro "mark_macro_derive" that set the color of the mark "mark_point_1"
 /// to (1.0, 0.0, 0.0, 1.0).
 macro_rules! mark_set {
     ($mark:ident, $set:ident, $param:expr) => {
@@ -249,7 +249,7 @@ impl Mark {
 }
 
 // Allows to have access to these methods directly 
-// via the mark type. We don't need to cast it into
+// via the Mark type. We don't need to cast it into
 // a specific type of mark.
 impl MarkMacro for Mark  {
     fn get_id(&self) -> MarkId {

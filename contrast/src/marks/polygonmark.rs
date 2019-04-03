@@ -12,9 +12,7 @@ use mark_macro_derive::MarkMacro;
 pub type VertexPolygon = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, [f32; 3]);
 
 /// This is the structure that describes the marks of type Polygon.
-/// Each type of mark share some properties, that is an id, a size,
-/// a color and a rotation. Those properties are described by the
-/// attribute common_properties.
+/// Each type of mark share some properties, that is an id and a color.
 /// Polygon marks also have a vector of positions representing its points,
 /// a stroke width and a boolean to indicate whether or not we must
 /// draw the stroke.

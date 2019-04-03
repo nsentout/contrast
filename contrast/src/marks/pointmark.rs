@@ -169,7 +169,7 @@ impl PointMark {
         }
     }
 
-    /// Converts a MarkPoint into a VertexPoint, which is a type understandable
+    /// Converts a PointMark into a VertexPoint, which is a type understandable
     /// by the renderer, then returns it.
     pub fn to_vertex(&self) -> VertexPoint {
         (*self.center.old_value.to_array(), *self.center.target_value.to_array(), self.center.start_anim,
@@ -181,22 +181,19 @@ impl PointMark {
 
     /// Set the color of a mark. You can pass as argument a tuple of 4 floats or
     /// a Color directly.
-    pub fn set_color<C : Into <Color>>(&mut self, color : C) -> &mut Self
-    {
+    pub fn set_color<C : Into <Color>>(&mut self, color : C) -> &mut Self {
         anim_set!(self, color, color.into())
     }
 
-     /// Set the size of a mark. You can pass as argument a tuple of 2 floats or
+    /// Set the size of a mark. You can pass as argument a tuple of 2 floats or
     /// a Size directly.
-    pub fn set_size<S : Into <Size>>(&mut self, size : S) -> &mut Self
-    {
+    pub fn set_size<S : Into <Size>>(&mut self, size : S) -> &mut Self {
         anim_set!(self, size, size.into())
     }
 
-    pub fn set_rotation(&mut self, rotation : f32) -> &mut Self
-    {
+    pub fn set_rotation(&mut self, rotation : f32) -> &mut Self {
         anim_set!(self, rotation, rotation)
-     }
+    }
 
     /// Set the position of a mark. You can pass as argument a tuple of 2 or 3 floats, or
     /// a Position directly

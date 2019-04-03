@@ -16,7 +16,9 @@ const ATLAS: &'static rect_packer::Config = &rect_packer::Config{width: 1024, he
 /// Default ascii chars.
 const ASCII: &'static str = &"!\"#$%&\'()*+,-./:;<=>?[]\\|{}^~_@`abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-/// type VertexText = (xyz, uv).
+/// This is the type that will receive our shaders when we will want to render our text marks.
+/// We could describe it this way to be clearer :
+/// type VertexText = (position, texture coordinates).
 pub type VertexText = ([f32; 3],[f32; 2]);
 
 /// Cache Font & Freetype library.
