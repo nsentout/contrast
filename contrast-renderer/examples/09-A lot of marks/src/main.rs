@@ -39,7 +39,7 @@ fn resize_marks(contrast : &mut Contrast, markids : &Vec<MarkId>) {
     // Give our marks a random size.
     for m in markids {
         contrast.get_mark_mut(&m).unwrap().as_point_mark_mut_unchecked()
-            .set_size((rng.gen_range::<f32>(100.0, 200.0), rng.gen_range::<f32>(100.0, 200.0)));
+            .set_size((rng.gen_range::<f32>(6.0, 8.0), rng.gen_range::<f32>(6.0, 8.0)));
     }
     contrast.mark_dirty_all();
 }

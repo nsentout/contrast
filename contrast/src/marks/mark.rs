@@ -248,6 +248,9 @@ impl Mark {
     }
 }
 
+// Allows to have access to these methods directly 
+// via the mark type. We don't need to cast it into
+// a specific type of mark.
 impl MarkMacro for Mark  {
     fn get_id(&self) -> MarkId {
         mark_get!(self, get_id)
@@ -259,6 +262,10 @@ impl MarkMacro for Mark  {
 
     fn get_layer_index(&self) -> usize {
         mark_get!(self, get_layer_index)
+    }
+
+    fn is_valid(&self) -> bool {
+        mark_get!(self, is_valid)
     }
 
     fn set_color<C : Into <Color>>(&mut self, color : C) -> &mut Self {

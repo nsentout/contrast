@@ -224,7 +224,9 @@ impl Contrast {
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Line(l) = mark {
-                    properties.append(&mut l.to_subline());
+                    if l.is_valid() {
+                        properties.append(&mut l.to_subline());
+                    }
                 }
             }
         }
@@ -239,7 +241,9 @@ impl Contrast {
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Polygon(poly) = mark {
-                    properties.append(&mut poly.as_vertex());
+                    if poly.is_valid() {
+                        properties.append(&mut poly.as_vertex());
+                    }
                 }
             }
         }
@@ -255,7 +259,7 @@ impl Contrast {
         for layer in &self.layers {
             for mark in layer.get_all_marks() {
                 if let Mark::Text(t) = mark {
-                    if self.contains_font(t.get_font())
+                    if t.is_valid() && self.contains_font(t.get_font())
                     {
                         let face = self.fonts.get_face(t.get_font()).unwrap();
                         face.prepare_string(t.get_text());

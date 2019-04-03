@@ -46,6 +46,9 @@ pub trait MarkMacro
     /// Returns the layer index whose mark is bound to.
     fn get_layer_index(&self) -> usize;
 
+    /// Indicate whether or not the mark is valid.
+    fn is_valid(&self) -> bool;
+
     /// Set the color of a mark. You can pass as argument a tuple of 4 floats (rgba) or
     /// a Color directly.
     fn set_color<C : Into <properties::Color>>(&mut self, color : C) -> &mut Self;
