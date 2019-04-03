@@ -6,6 +6,9 @@
 \usepackage{graphicx}
 \usepackage{lmodern}
 \usepackage{csquotes}
+\usepackage{minted}
+\usepackage{xcolor}
+\usepackage{color}
 \usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
 \usepackage[xindy]{glossaries}
 \usepackage[hidelinks]{hyperref}
@@ -14,8 +17,10 @@
 \parskip=5pt plus2pt minus 1pt
 \frenchbsetup{ReduceListSpacing=false}
 
-\catcode`\|=13
-\def|#1|{\texttt{\detokenize{#1}}}
+\definecolor{back}{HTML}{ebebe0}
+
+%\catcode`\|=13
+%\def|#1|{\texttt{\detokenize{#1}}}
 
 \addbibresource{bibli.bib}
 \makeglossaries
@@ -207,7 +212,7 @@ La figure~\ref{fig:arch} décrit de manière simplifiée l'architecture.
 \end{figure}
 
 \textit{Contrast} supporte différents types de marques mais elles ont en commun certaines propriétés.
-Elles ont toutes une identifiant, font parties d'un calque, ont une taille et une couleur.
+Elles ont toutes une identifiant, font parties d'un calque et ont une couleur.
 La solution venant directement à l'esprit pour représenter de telles structures est celle de l'héritage.
 Toutes nos marques hériteraient d'une structure qui contient ces propriétés communes ainsi que certaines
 méthodes communes.
@@ -220,7 +225,7 @@ ensuite dériver de ce trait. Elles auront ainsi accès aux méthodes implément
 Toujours pour palier à ce problème d'héritage, nous disposons d'une union de toutes les structures
 de données des marques. Cela permet de stocker nos marques plus facilement et d'utiliser des conteneurs d'union plutôt que des conteneurs pour chaque type de marque.
 
-Côté GLSL, nous disposons de shaders différents pour chaque type de marque. Toutes nos marques utilisent un vertex shader, un geometry shader et un fragment shader à l'exception du texte qui n'utilise pas de geometry shader.
+Côté GLSL, nous disposons de shaders différents pour chaque type de marque. Toutes nos marques utilisent un vertex shader, un \gls{geom} et un \gls{frag} shader à l'exception du texte qui n'utilise pas de geometry shader.
 
 \subsection{Organisation de l'architecture}
 
@@ -313,7 +318,7 @@ Nous n'avons pas mentionné la suppression des marques volontairement. La raison
 jamais de marques de nos vecteurs. La motivation derrière ce choix est que nous souhaitons une performance
 maximale, ce qui implique avoir l'ajout, la récupération et la suppression en temps constant, quitte à
 ce que la consommation mémoire soit importante.
-Ainsi, nous avons introduit un mécanisme d'"invalidation" de marques. Lorsque l'utilisateur souhaitera
+Ainsi, nous avons introduit un mécanisme d'invalidation de marques. Lorsque l'utilisateur souhaitera
 supprimer une marque et ne plus l'afficher dans sa fenêtre, \textit{contrast} invalidera la marque.
 L'invalidation d'une marque indique à \textit{contrast} qu'il faudra l'ignorer lors du prochain
 rafraichissement de l'écran, la faisant ainsi disparaître de la fenêtre.
@@ -353,8 +358,8 @@ peut ainsi appliquer n'importe quelle modification à l'ensemble des marques d'u
 Une marque animée est une marque dont le changement de propriété se fait progressivement.
 Si l'on change la position d'une marque animée, on verra la marque se déplacer de manière fluide vers la
 nouvelle position. Si l'on change la forme d'un marque de type point, nous verrons la transformation en la nouvelle forme progressivement.
-La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme "Astérisque" vers une 
-forme "Trèfle".
+La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme \og Astérisque \fg vers une 
+forme \og Trèfle \fg.
 
 \begin{figure}[htp]
   \centering
@@ -373,10 +378,10 @@ Notre structure de marque doit contenir autant d'\textit{AnimationAttribute} qu'
 type paramamétré sera celui de la propriété.
 Cette structure permet de stocker :
 \begin{itemize}
-\item La valeur de l'attribut qu'avait la marque avant le début de l'animation, que nous appelerons l'« 
-\textit{ancienne valeur} ».
-\item La valeur qu'aura l'attribut de la marque à la fin de l'animation, la « \textit{valeur cible} »
-\item Le temps au moment où l'animation a commencé, le « \textit{temps de début} ».
+\item La valeur de l'attribut qu'avait la marque avant le début de l'animation, que nous appelerons l'\og 
+\textit{ancienne valeur} \fg.
+\item La valeur qu'aura l'attribut de la marque à la fin de l'animation, la \og \textit{valeur cible} \fg
+\item Le temps au moment où l'animation a commencé, le \og \textit{temps de début} \fg.
 \end{itemize}
 
 Pour effectuer une animation d'une propriété, nous utilisons la fonction 
@@ -384,9 +389,9 @@ Pour effectuer une animation d'une propriété, nous utilisons la fonction
 interpolation linéaire entre deux valeurs. 
 Elle prend 3 paramètres : 
 \begin{itemize}
-\item le début de la plage dans laquelle interpoler, « \textit{x} »
-\item la fin de la plage dans laquelle interpoler, « \textit{y} »
-\item la valeur à utiliser pour interpoler entre x et y, « \textit{a} ».
+\item le début de la plage dans laquelle interpoler, \og \textit{x} \fg
+\item la fin de la plage dans laquelle interpoler, \og \textit{y} \fg
+\item la valeur à utiliser pour interpoler entre x et y, \og \textit{a} \fg.
 \end{itemize}
 
 \textit{x} correspond à l'\textit{ancienne valeur} de la propriété et \textit{y} correspond à la 
@@ -496,8 +501,48 @@ fois que l'utilisateur souhaite modifier une marque, il doit passer une référe
 de la copie dont il dispose pour que nous puissions la mettre à jour en même temps que
 le réel identifiant.
 
-\subsection{Les actions liées aux touches dans la partie haut niveau}
-\textbf{TODO: pourquoi pas des closures ?}
+\subsection{Les actions liées aux touches}
+
+Dans la partie haut niveau de \textit{contrast}, nous avons donné la possibilité à
+l'utilisateur de lier des touches du clavier qu'il aura choisi à des actions.
+Cependant ce que nous offrons est assez limité. Nous fournissons en effet 3 fonctions :
+\begin{itemize}
+\item une fonction prenant en paramètre seulement la touche qui déclenchera l'action.
+Cette fonction permet principalement de récupérer des marques ou des calques pour
+afficher leurs propriétés
+\item une fonction prenant en paramètre la touche et un identifiant de marque. Celle-ci 
+permet d'appliquer des modifications en temps réelle à la marque représentée par cet 
+identifiant.
+\item une fonction prenant en paramètre la touche et une liste d'identifiants, permettant de modifier les marques représentées par ces derniers.
+\end{itemize}
+
+Les paramètres sur lesquels influent l'utilisateur sont donc limités.
+Une bonne solution aurait été d'utiliser des closures (ou fonctions anoynymes). De cette
+manière, l'utilisateur aurait été beaucoup plus libre pour écrire ses actions.
+
+On pourrait représenter cette solution avec une syntaxe de ce type
+(voir listing~\ref{lst:ex-closure}).
+\begin{listing}[H]
+    \caption{Exemple d'un lien touche/action avec l'utilisation d'une closure}
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    [...]
+    let contrast = renderer.get_contrast_mut();
+    [...]
+    renderer.add_action_on_press(Key::A, || {
+        // code de la closure
+    }
+    \end{minted}
+    \label{lst:ex-closure}
+\end{listing}
+
+Le problème apparaît si l'utilisateur utilise la variable \textit{contrast} dans la 
+closure. Le comportement des closures fait qu'elle sera capturée et empruntée 
+mutablement une seconde fois (la première fois étant lors de la déclaration de la 
+variable \textit{contrast}). Hors comme précédemment indiqué, on ne peut emprunter une
+variable qu'une seule fois.
+
+C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de 
+partie.
 
 \section{Analyse du fonctionnement du logiciel}
 
