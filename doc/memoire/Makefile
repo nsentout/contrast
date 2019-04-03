@@ -1,5 +1,5 @@
 default:
-	pdflatex memoire
+	pdflatex --shell-escape memoire
 	makeglossaries memoire
 	biber memoire
-	pdflatex memoire
+	pdflatex --shell-escape memoire
