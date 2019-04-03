@@ -192,6 +192,7 @@ mod tests {
     use super::*;
     use crate::MarkMacro;
     use crate::marks::pointmark::VertexPoint;
+    use properties::color::Color;
 
     fn vertex_point_is_equal(v1 :VertexPoint ,v2 : VertexPoint) -> bool
     {
@@ -201,6 +202,34 @@ mod tests {
             return true;
         }
         false
+    }
+
+    fn color_red_marks(mark : &mut Mark) {
+        mark.set_color(Color::red());
+    }
+
+    #[test]
+    fn apply_to_marks()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        c.add_point_mark();
+        c.add_line_mark();
+        c.add_text_mark();
+        c.add_polygon_mark();
+
+        let layer_0 = c.layers.get_mut(0).unwrap();
+        
+        for m in layer_0.get_all_marks() {
+            assert_eq!(m.get_color(), Color::default());
+        }
+
+        layer_0.apply_to_marks(color_red_marks);
+
+        for m in layer_0.get_all_marks() {
+            assert_eq!(m.get_color(), Color::red());
+        }
     }
 
     #[test]
