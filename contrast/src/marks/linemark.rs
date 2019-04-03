@@ -1,24 +1,14 @@
 use crate::MarkMacro;
 use properties::position::Position;
 use properties::color::Color;
-use properties::size::Size;
 use properties::markid::MarkId;
 use mark_macro_derive::MarkMacro;
 
 /// This is the type that will receive our shaders when we will want to render our line marks.
 /// We could describe it this way to be more clear :
 /// type VertexSubLine = (size, color, rotation, origin, target, previous, next, thickness, line_mode).
-pub type VertexSubLine = ([f32; 2], [f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, u32);
+pub type VertexSubLine = ([f32; 4], [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32);
 
-
-/// Those are the different ways we shoud be able to
-/// draw lines.
-#[derive(Debug,Copy,Clone)]
-pub enum LineMode {
-    Linear,
-    Dashed,
-    Dotted
-}
 
 /// This is the structure that describes the marks of type Line (or polyline).
 /// Each type of mark share some properties, that is an id and a color.
@@ -27,12 +17,9 @@ pub enum LineMode {
 #[derive(MarkMacro, Clone, Debug)]
 pub struct LineMark {
     pub(crate) markid : MarkId,
-    pub(crate) size : Size,
     pub(crate) color : Color,
-    pub(crate) rotation : f32,
     pub(crate) points : Vec<Position>,
     pub(crate) thickness : f32,
-    pub(crate) mode : LineMode
 }
 
 impl LineMark {
@@ -41,12 +28,9 @@ impl LineMark {
     pub fn new() -> Self {
         LineMark {
             markid : MarkId::new(),
-            size : Size::default(),
             color : Color::default(),
-            rotation : 0.0,
             points : Vec::<Position>::new(),
-            thickness : 0.0,
-            mode : LineMode::Linear
+            thickness : 1.0,
         }
     }
 
@@ -54,27 +38,26 @@ impl LineMark {
     /// understandable by the renderer.
     pub fn to_subline(&self) -> Vec<VertexSubLine> {
         let mut sublines : Vec<VertexSubLine> = Vec::<VertexSubLine>::new();
-        if self.points.len()>0 {
-            let mode = &self.mode;
+        if self.points.len()>=2 {
             let mut previous = self.points[0];
             let mut origin = self.points[0];
             let mut target = self.points[0];
             for next in self.points.clone() {
-                let vl : VertexSubLine = (*self.size.to_array(),
-                *self.color.to_array(), self.rotation,
-                *origin.to_array(), *target.to_array(), *previous.to_array(), *next.to_array(),self.thickness, *mode as u32);
+                let vl : VertexSubLine = (
+                *self.color.to_array(), *origin.to_array(), *target.to_array(),
+                *previous.to_array(), *next.to_array(),self.thickness);
                 sublines.push(vl);
                 previous = origin;
                 origin = target;
                 target = next;
             }
-            let vl : VertexSubLine = (*self.size.to_array(),
-            *self.color.to_array(), self.rotation,
-            *origin.to_array(), *target.to_array(), *previous.to_array(), *self.points[self.points.len()-1].to_array(),self.thickness, *mode as u32);
+            let vl : VertexSubLine = (
+            *self.color.to_array(), *origin.to_array(), *target.to_array(),
+            *previous.to_array(), *self.points[self.points.len()-1].to_array(),
+            self.thickness);
             sublines.push(vl);
-            if sublines.len() > 0 {
-                sublines.remove(0);
-            }
+            sublines.remove(0);
+            sublines.remove(0);
         }
         sublines
     }
@@ -88,11 +71,6 @@ impl LineMark {
 
     pub fn set_thickness(&mut self, thickness : f32) -> &mut Self {
         self.thickness = thickness;
-        self
-    }
-
-    pub fn set_mode(&mut self, mode : LineMode) -> &mut Self {
-        self.mode = mode;
         self
     }
 

@@ -88,7 +88,7 @@ uniform_interface!
 /// Empty vertex used to fill a Tess.
 const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0, 0.0], [0.0, 0.0], 0.0,
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
-const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, 0u32);
+const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
 const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0,0.0,0.0]);
 

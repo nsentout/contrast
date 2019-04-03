@@ -1,12 +1,9 @@
-layout (location = 0) in vec2 size;
-layout (location = 1) in vec4 color;
-layout (location = 2) in float rotation;
-layout (location = 3) in vec3 origin;
-layout (location = 4) in vec3 target;
-layout (location = 5) in vec3 previous;
-layout (location = 6) in vec3 next;
-layout (location = 7) in float thickness;
-layout (location = 8) in uint line_mode;
+layout (location = 0) in vec4 color;
+layout (location = 1) in vec3 origin;
+layout (location = 2) in vec3 target;
+layout (location = 3) in vec3 previous;
+layout (location = 4) in vec3 next;
+layout (location = 5) in float thickness;
 
 uniform mat4 projection;
 out vec4 v_color;
@@ -23,7 +20,5 @@ void main() {
   v_previous = vec4(previous,1.0);
   v_next = vec4(next,1.0);
   v_color = color;
-  v_rotation = rotation;
   v_thick = thickness;
-  v_mode = line_mode;
 }

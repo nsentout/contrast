@@ -285,6 +285,7 @@ mod tests {
     use properties::size::Size;
     use crate::marks::pointmark::Shape;
     use crate::MarkMacro;
+    use properties::position::Position;
 
     fn vertex_point_is_equal(v1 : VertexPoint, v2 : VertexPoint) -> bool
     {
@@ -362,11 +363,14 @@ mod tests {
         let m1 = c.add_line_mark().get_id();
 
         assert_eq!(c.get_linemarks_properties().len(), 0);
+        let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
+        let m2 = c.add_line_mark().add_point(pos1)
+        .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+        .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+        .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+        .get_id();
 
-        let m2 = c.add_line_mark().get_id();
-        let m3 = c.add_line_mark().get_id();
-
-        assert_eq!(c.get_linemarks_properties().len(), 0);
+        assert_eq!(c.get_linemarks_properties().len(), 3);
     }
 
     #[test]
@@ -376,11 +380,28 @@ mod tests {
         c.init();
 
         let mut m1 = c.add_line_mark().get_id();
-        let mut m2 = c.add_line_mark().get_id();
 
+        assert_eq!(c.get_linemarks_properties().len(), 0);
         c.remove_mark(&mut m1);
+        let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
+        assert_eq!(c.get_linemarks_properties().len(), 0);
+        let mut m2 = c.add_line_mark()
+        .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+        .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+        .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+        .get_id();
 
-        assert_eq!(c.get_linemarks_properties().len(), 1);
+        let mut m3 = c.add_line_mark()
+        .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+        .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+        .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+        .get_id();
+        c.remove_mark(&mut m3);
+        let mut m4 = c.add_line_mark().get_id();
+        let mut m5 = c.add_line_mark().get_id();
+        assert_eq!(c.get_linemarks_properties().len(), 2);
+
+
     }
 
     #[test]

@@ -2,11 +2,8 @@ layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
 
-in vec2 v_size[];
 in vec4 v_color[];
-in float v_rotation[];
 in float v_thick[];
-in uint v_mode[];
 in vec4 v_target[];
 in vec4 v_previous[];
 in vec4 v_next[];
