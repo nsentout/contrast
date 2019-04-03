@@ -79,7 +79,7 @@ macro_rules! anim_set {
     ($point:ident, $property:ident, $param:expr) => {
         {
             // Change the property only if the previous animation is finished
-            if elapsed_time_float() > $point.$property.start_anim + ANIM_DURATION  {
+            if elapsed_time_float() > $point.$property.start_anim + ANIM_DURATION && $point.is_displayed {
                 $point.$property.old_value = $point.$property.target_value;
                 $point.$property.target_value = $param;
                 $point.$property.start_anim = elapsed_time_float();
