@@ -338,6 +338,84 @@ Et finalement voici le résultat~\ref{fig:line}.
 
 
 \subsection{Implémentation des marques texte}
+%TODO ceci n'est pas complet
+Un texte est une marque qui permet d'afficher une chaîne de caractère dont le contenu, la font, la taille de police ainsi que la position et couleur est défini par l'utilisateur.
+
+\subsubsection{Généralité}
+
+Pour afficher du texte en fonction d'une véritable font généralement vectorielle, il faut avant toute chose rasteriser les caractères utilisés en bitmap.
+C'est une opération complexe et c'est pourquoi nous utilisons la bibliothèque \textbf{FreeType} \cite{freetype-rs} spécialisé dans cette fonction.
+FreeType va prendre en entrée un fichier de font et la taille de police qui correspond en réalité à la hauteur en pixel d'un caractère, la largeur est calculé automatiquement
+par la bibliothèque pour respecter la proportionnalité. En sortie, nous obtenons ce que FreeType appelle une font face qui est propre à notre configuration font et police.
+À partir de cette face nous allons pouvoir charger chaque caractères que nous allons utiliser un par un, il ne sont pas tous charger car cela pourrait gâcher de la mémoire.
+Un caractère rasteriser donne un glyphe, c'est une représentation graphique d'un signe typographique. Pour FreeType c'est aussi une structure contenant toutes les métriques
+du glyphe ainsi que le bitmap associé, c'est évidemment un format binaire car la couleur ne dépend pas de la font.
+
+Une fois que nous avons rasteriser chacun des caractères de notre chaîne de caractères, nous pouvons transformer les bitmaps en texture OpenGL pour ensuite les plaquer
+sur des rectangles alignés bout à bout afin de construire une chaîne de caractères lisible. C'est rectangles sont les boites englobantes de chaque glyphe qui dépendent
+de leur métriques qui eux même sont calculés grâce à la police.
+Notez que nous parlons de glyphe car ils sont forcément associé à une taille de police ainsi qu'à une font alors que ce n'est pas le cas pour un caractère.
+La métrique d'un glyphe \cite{metrics} contient entre autre la hauteur et largeur du bitmap et d'autre information nécessaire à son bon placement pour former un mot typographiquement correct.
+C'est le cas par example du \textit{BearingY} qui sert à positioner la hampe du caractère ou encore d'\textit{Advance} qui est l'espacement, que l'ont peut voir sur la figure~\ref{fig:metrics}.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/metrics}
+  \caption{Métrique de glyphe}
+  \label{fig:metrics}
+\end{figure}
+
+Pour des raisons d'optimisation, nous ne pouvons mamheureusement pas créer une texture par bitmap. Le moyen le plus simple d'optimiser un rendu en OpenGL et de faire du dessin par lot,
+c'est-à-dire du Batching. Nous reviendrons probablement dessus dans la section dédié à la couche au niveau mais pour résumer brièvement, c'est le principe d'afficher le plus
+possible de vertices en un seul appels d'OpenGL (en l'occurence un draw) en utilisant des tableaux de vertices.
+
+Utiliser une seule texture par bitmap nous forcerez à devoir changer la texture courante (sous-entendez texture bind) entre chaque caractère dessiné puisque que le nombre de texture
+courante est limité par OpenGL. Cela détruirait tout effort de Batching car il faudrait appeler OpenGL entre chaque changement de texture.
+Pour y rémédier, nous avons fait le choix de rassembler l'ensemble des bitmaps de la même font face dans une seule et même texture.
+C'est ce que l'ont appelle une texture atlas, voir figure~\ref{fig:atlas}.
+Les glyphes et donc les bitmaps n'ont pas tous la même boite englobante ce qui complique l'emballage de tout les glyphes dans la même texture.
+C'est pourquoi nous utilisons une seconde bibliothèque pour \og packer \fg{} comme le dise les anglophones nos différentes boites englobantes, evidemment des rectangles, dans la même très grande boite
+englobante qui est notre texture atlas. La bibliothèque en question est \textbf{rect\_packer} \cite{rect-packer}, elle utilise une heuristique Skyline. Dans notre cas toute les textures atlas
+ont pour dimensions 1024 pixels, elle ne peuvent donc pas contenir toute les tailles de police possible mais c'est très largement suffisant pour la pluspart des utilisation standard.
+C'est d'ailleurs un des intérèt de pas charger tout les caractères possibles d'une font mais seulement ceux utilisés ou qui ont une très forte chance de l'être comme l'ASCII.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/font-atlas}
+  \caption{Font atlas}
+  \label{fig:atlas}
+\end{figure}
+
+Désormais nous avons uniquement besoin de changer de texture courante quand on change de font face. C'est parfait puisqu'en moyenne nous utilisons pas plus de deux font à la fois.
+
+Il y a tout de même un prix à payer pour l'utilisation de la texture atlas et celui-ci c'est fait sur la mémoire. En effet il faut maintenant rajouter un attribut à chacun de nos vertices
+pour stocker la coordonnée de texture (U,V) afin de définir la sous région dans la texture correspondant au glyphe. Pour résumer nos vertices contiennent la position, calculé à partir de
+la métrique de la glyphe et la texcoord pour plaquer la bonne sous région de la texture atlas.
+
+\subsubsection{Implémentation}
+
+Les fameux rectangles de chaque glyphe sont en réalité composé de deux triangles car la primitive de dessin rectangle n'existe pas. Il faut donc 6 vertices pour afficher un seul caractère.
+Nous aurions pu indexer les vertices pour n'afficher un rectangle qu'avec 4 vertices mais nous n'avons pas eu le temps.
+Mais que deviens donc la couleur ? La couleur est effectivement pas stocké dans les vertices, c'est une redondance qui pèserait un poid non négligeable en mémoire. La couleur est une variable
+commune à beaucoup de caractères, nous avons décidé d'envoyer au shader la couleur du texte avec une variable dite \og uniform \fg{}, sorte de variable globale, de cet fait il n'y a pas de redondance.
+Cette même économie de mémoire pourrait nous être reproché de casser le batching. C'est vrai que si la couleur la change comme avec les textures, il faut mettre à jour la variable de la couleur
+dans le shader. Mais généralement un texte lisible est de couleur uni. De plus la couleur s'applique à une chaîne de caractères entière et non au caractères. Nous pensons vraiment que nos utilisateurs
+ne vont pas essayer d'afficher un texte bariolé des couleurs de l'arc-en-ciel, qui de toute façon pour voir le jour, devrait contenir une marque texte pour chaque caractère de cet artistique texte.
+Comme nous venons de le dire plus haut, la couleur s'applique à une marque texte entière, c'est une situation qui devrait pas arriver.
+
+Pour en revenir sur l'implémentation dans contrast, une marque texte contient uniquement la position, la couleur, le contenu du texte et pour finir une référence (sous forme
+de chaîne de caractère). Toute les fonts faces (FaceCache) sont stockés dans un cache (FontCache) contenu dans contrast. Elles sont indexées dans un tableau associatif (HashMap) avec la référence
+comme clef. C'est pour eviter tout problème mémoire lié à Rust. Ainsi quand contrast fabrique les vertices des marques textes, il a juste à récupérer la clef correspondant à la font face,
+vérifier si elle est présente et procéder. Acessoirement cela permet à l'utilisateur de changer la taille de police d'une font, il suffit qu'il enregistre un nouveau couple font et police
+sous une autre clef et il pourra s'en servir.
+
+\subsubsection{Petit subtilitée}
+
+Il faut savoir que quand FreeType rasterise un glyphe, le bitmap qu'il produit à son axe Y inversé à celui de contrast. Par défaut donc les glyphes sont dessinés la tête en bas.
+Ce n'est pas pratique à lire vous en conviendrez. Pour ne pas compliquer les calculs de nos shaders, nous avons décidé d'inverser directement les bitmaps produit avant de les envoyer
+dans la texture atlas.
+
+À noter, il n'existe pas de glyphe pour le caractère espace. Par conséquent l'espace est simplement un déplacement de la taille de l'advance d'un point d'exclamation.
 
 \subsection{Les calques}
 \subsubsection{Qu'est-ce qu'un calque ?}
