@@ -13,7 +13,7 @@
 \usepackage[xindy]{glossaries}
 \usepackage[hidelinks]{hyperref}
 %\graphicspath{ {images/} }
- 
+
 \parskip=5pt plus2pt minus 1pt
 \frenchbsetup{ReduceListSpacing=false}
 
@@ -40,20 +40,20 @@
 
 % DEFINITIONS HERE
 \newglossaryentry{marque}
-{ 
-    name=marque,  
+{
+    name=marque,
     description={Les marques sont les éléments basiques, c'est à dire des formes primitives dont les
-    propriétés peuvent être gérées par des données liées} 
+    propriétés peuvent être gérées par des données liées}
 }
 \newglossaryentry{canaux}
-{ 
-    name=canaux,  
-    description={Caractéristique d'une marque; ex: position, taille, rotation, profondeur, couleur, etc} 
+{
+    name=canaux,
+    description={Caractéristique d'une marque; ex: position, taille, rotation, profondeur, couleur, etc}
 }
 \newglossaryentry{crate}
 {
-    name=crate,  
-    description={Une crate est une collection de code source Rust} 
+    name=crate,
+    description={Une crate est une collection de code source Rust}
 }
 \newglossaryentry{shader}
 {
@@ -101,9 +101,9 @@
 
 \section{Abstract}
 
-De nos jours le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels tant en maintenant un nombre d'image par seconde satisfaisant. 
-C'est dans ce contexte qui nous a été demandé de réaliser un moteur de rendu en Rust gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieurs à celles de bibliothèques similaires.  
- 
+De nos jours le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels tant en maintenant un nombre d'image par seconde satisfaisant.
+C'est dans ce contexte qui nous a été demandé de réaliser un moteur de rendu en Rust gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieurs à celles de bibliothèques similaires.
+
 
 \section{Travaux précédents}
 
@@ -112,7 +112,7 @@ Premièrement la bibliothèque FATuM, une bibliothèque C++ qui se veux être un
 
 La seconde bibliothèques, vega écrite en javascript est une bibliothèque visant à donner divers outils de dessin pour des bibliothèques de plus haut niveau.
 
-Finalement notre client nous a aussi donner un proof of concept de ce que nous devions implémenter. Écrite en Rust, cette bibliothèque propose l'affichage de plusieurs type de forme que nous devions nous aussi être capable d'afficher.    
+Finalement notre client nous a aussi donner un proof of concept de ce que nous devions implémenter. Écrite en Rust, cette bibliothèque propose l'affichage de plusieurs type de forme que nous devions nous aussi être capable d'afficher.
 
 \section{Analyse des besoins}
 %% Etoffer la partie analyse des besoins
@@ -122,14 +122,14 @@ L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque per
 \gls{marque}s \cite{VegaMarks}. Il doit notamment être capable de préciser des \gls{canaux} associés à
 ces marques : la position de la marque, sa taille, sa rotation, sa profondeur, sa couleur, sa forme,
 l'épaisseur et la couleur de son contour, son contraste, sa luminance, son rayon, ses angles, etc.
-\textit{Contrast} offrira la possibilité d'afficher les marques suivantes : 
+\textit{Contrast} offrira la possibilité d'afficher les marques suivantes :
 \begin{itemize}
     \item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
     distance calculée en GLSL. Les marques de type Points peuvent prendre différentes formes (triangle, rectangle, diamant, trèfle, astérisque, etc.).
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
     (continu, tirets, pointillés...).
-    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un 
+    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
     polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
     différente de la couleur des contours.
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
@@ -137,7 +137,7 @@ l'épaisseur et la couleur de son contour, son contraste, sa luminance, son rayo
     \item Texte : utilisable pour représenter du texte et peut avoir différentes propriétés : italique,
     gras, centré, aligné à droite, en haut, etc.
 \end{itemize}
-    
+
 Pour tester cette fonctionnalité, il devra y avoir des tests permettant d'afficher des marques de façon
 contrôlée et de ce fait vérifier si les marques s'affichent bien suivant leurs \gls{canaux} associés.
 
@@ -154,7 +154,7 @@ Ces marques pourront également être animées. La gestion des animations sera i
 à FATuM, c'est-à-dire avec un double tampon pour la visualisation, un tampon servant de tampon avant et un tampon servant de tampon arrière. Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise à jour est finie (c'est-à-dire que l'on a une autre image à afficher). Les deux tampons peuvent être échangés par différentes techniques notamment un simple échange : le tampon arrière devient le tampon avant et inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu lisible. Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
 
 Dans un premier temps la bibliothèque ainsi développée devra être capable d'afficher,
-à 50 images par seconde, au moins 10 fois plus d’éléments que la librairie JavaScript D3.js. 
+à 50 images par seconde, au moins 10 fois plus d’éléments que la librairie JavaScript D3.js.
 Le but final étant que \textit{contrast} ait de meilleures performances que FATuM.
 
 \section{Analyse des besoins non fonctionnels}
@@ -218,7 +218,7 @@ Toutes nos marques hériteraient d'une structure qui contient ces propriétés c
 méthodes communes.
 Cependant, Rust n'a pas d'héritage. Nous devons donc utiliser des solutions propres à Rust pour régler
 ce problème.
-Nous avons donc utilisé une macro procédurale. C'est une macro permettant de générer du code à la 
+Nous avons donc utilisé une macro procédurale. C'est une macro permettant de générer du code à la
 compilation. Elle permet de fournir une implémentation par défaut à un trait. Nos structures peuvent
 ensuite dériver de ce trait. Elles auront ainsi accès aux méthodes implémentées par la macro.
 
@@ -238,7 +238,7 @@ Notre bibliothèque est composé de 2 parties principales :
 La partie bas niveau est elle-même séparée en plusieurs dossiers ;
 \begin{itemize}
 \item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
-\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque 
+\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque
 \item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
 \end{itemize}
 
@@ -254,7 +254,7 @@ les canaux, autrement dit les vertices (\gls{vertex}), contenu dans le \gls{VBO}
 du \gls{shader} à notre bibliothèque\cite{Semi}.
 Dans notre cas, c'est \textit{luminance} \cite{luminance} qui est en charge du pipeline.
 
-Le renderer n'est actuellement pas présent dans notre diagramme de l'architecture pour des 
+Le renderer n'est actuellement pas présent dans notre diagramme de l'architecture pour des
 raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand une marque demande
 à être affiché, elle notifie le renderer qui va récupérer ses canaux et construire le VBO.
 
@@ -272,16 +272,70 @@ raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand un
 
 \subsection{Imlémentation des marques point}
 
-Nous avons utilisé trois shaders en OpenGL afin de réaliser l'implémentation de ces marques. Tout d'abord le vertex shader, il permet de manipuler les vertices ici nous avons un seul vertex pour chaque marque. Dans une version sans animation des marques points il faut simplement transmettre la position, la couleur, la taille, la rotation et le type de forme au shader suivant du pipeline graphique. Ce nouveau shader est appelé geometry shader, ce shader permet de générer des nouveaux sommets permettant de créer des nouvelles formes. 
+Nous avons utilisé trois shaders en OpenGL afin de réaliser l'implémentation de ces marques. Tout d'abord le vertex shader, il permet de manipuler les vertices ici nous avons un seul vertex pour chaque marque. Dans une version sans animation des marques points il faut simplement transmettre la position, la couleur, la taille, la rotation et le type de forme au shader suivant du pipeline graphique. Ce nouveau shader est appelé geometry shader, ce shader permet de générer des nouveaux sommets permettant de créer des nouvelles formes.
 
 Dans notre cas, le geometry shader permet de générer un rectangle englobant dans lequel sera contenu notre forme. Nous avons donc crée six sommet sois deux triangles, chacun étant une moitié de notre rectangle englobant. C'est lors de la création de ces sommets que nous appliquons la rotation à notre forme et que nous lui appliquons une matrice de projection afin de faire passer cette forme dans le repère de l'observateur, c'est à dire que l'affichage de cette forme dépend maintenant de la caméra. On doit ensuite passer à l'étape où la forme à proprement parlé est calculé.
 
 Ainsi nous arrivons ensuite dans le dernier shader, le fragment shader, le principe de ce shader est de calculer la couleur final de chaque pixel qui est affiché à l'écran. Dans ce shader on utilise une fonction de distance entre le \gls{frag} en cours de traitement et le centre de notre rectangle englobant afin de savoir si chaque pixel de ce rectangle fait parti ou non de la forme souhaité. Les fonctions de distance utilisés sont tirées du papier de Nicolas Rougier \cite{Rougier}. On calcul cette fonction distance différemment pour chaque forme puis si la distance est trop grande on se défausse du \gls{frag}. On génère donc notre forme de manière procédurale.
 
 Cette implémentation à été choisi car grâce à ça nous n'avons besoin que d'un seul sommet pour réaliser des formes complexes, tous les traitements sont réalisés coté GPU ce qui permet un énorme gain de performance par rapport à une implémentation où l'on devrait fournir tous les sommets de notre forme avant de devoir l'afficher. C'est un gain particulièrement important pour des formes arrondis nécessitant beaucoup de sommets pour éviter l'aliasing.
-L'avantage du fragment shader c'est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU. 
+L'avantage du fragment shader c'est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU.
 
 \subsection{Implémentation des marques ligne}
+\subsubsection{Les shaders utilisés}
+Pour cette marque nous avons utilisé trois types de shaders OpenGL, qui sont les même que ceux de la rubrique précédente.
+
+Pour l’implémentation de cette marque le vertex shader sert seulement à envoyer
+ les données vers le geometry shader, de ce fait il y a peu à dire sur ce shader.
+ Le vertex shader reçoit donc et envoie donc les données utiles pour l’affichage
+ d’une sous ligne de la polyligne, de fait elle reçoit comme information la position
+ d’origine et de fin de la sous-ligne en question, de plus elle reçoit les information
+ de position du point précédent la sous-ligne et celle du point suivant la sous-ligne
+ (nous expliquerons plus en détail pourquoi nous avons besoins de ces informations).
+ Le fragment shader sert exclusivement à appliquer la couleur de la ligne sur les fragments.
+
+Pour afficher une ligne à largeur variable nous avons deux possibilités :
+\begin{itemize}
+\item soit utiliser la primitive openGL « GL\_LINES » ce qui demanderait un nombre de primitive dépendant de la largeur de la ligne, ce qui ne serait pas très efficace
+\item soit utiliser une des primitives openGL servant à afficher des triangles comme par exemple « GL\_TRIANGLE\_STRIP » pour afficher le quadrilatère (donc avec quatre sommets) correspondant à une sous-ligne, dont le nombre de primitive utilisé ne dépend pas en complexité de la taille ou de la largeur de la ligne.
+\end{itemize}
+
+Nous avons utilisé la deuxième possibilité, qui semble meilleure en terme de performance.
+Considérant le fait qu’il faille diminuer au maximum le coût du calcul côté GPU, les quatre sommets du quadrilatère seront calculés sur le GPU et donc avec l’unique shader capable de faire ce genre d’opératio­n, c’est-à-dire le geometry shader, avec la primitive « GL\_TRIANGLE\_STRIP ».
+
+\subsubsection{Liaison entre les sous-lignes}
+Simplement afficher des rectangles représentant les sous-lignes est possible pour une polyligne formée de seulement deux points, mais pour plus de points, il faut gérer la liaison entre les sous-lignes sinon l'on a une jonction entre les deux sous-lignes peu attrayante et pour cela il y a plusieurs façon de faire comme le montre ce schéma~\ref{fig:joint}.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/line-joints}
+  \caption{Schéma de la géométrie de la ligne}
+  \label{fig:joint}
+\end{figure}
+
+La solution la plus simple en terme de performance se trouve être le « bevel join » vu que cette liaison peut-être réalisé juste en changeant l’inclinaison du bout de chaque sous-ligne et donc on garde le fait de n’avoir à afficher qu’un quadritère par sous-ligne alors que la solution de la liaison  « round joint » n’est pas aussi simple et demande de retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la fonction discard d’openGL dans le fragment shader diminue les performances pour la plupart des hardware[1]).
+
+Pour faire la liaison choisie il nous faut le voisinage des points formant une sous-ligne de façon à avoir une inclinaison des extrémités de sous-ligne s’accordant. Pour expliquer plus facilement comment est formé cette liaison voici un schéma~\ref{fig:geom_line}.
+
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/line_geom}
+  \caption{Schéma de la géométrie de la ligne}
+  \label{fig:geom_line}
+\end{figure}
+
+Dans ce schéma les vecteurs miter1 et miter2 sont ce que j’appelle précédemment l’inclinaison des extrémité. Les vecteurs t0, t1, et t2 sont respectivement les vecteurs directeurs des segments [P0,P1], [P1,P2], [P2,P3] et n1, n2 et n3 leurs normales. De ce fait le miter n’est en fait que l’addition des vecteurs normaux des segments correspondant. Il faut aussi calculer la valeur d’écart de par rapport au point d’origine pour avoir une ligne avec une largeur correcte, pour cela on prend la largeur voulue de la ligne et on le divise par le produit scalaire de la normale de la ligne précédente ou suivante suivant l’extrémité et du miter correspondant. Une fois que l’on a le miter il suffit de créer des points décalées de la valeur précédemment créé le long du vecteur miter normalisé.
+
+\subsubsection{Résultat}
+Et finalement voici le résultat~\ref{fig:line}.
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.8]{images/line_example}
+  \caption{Example d'affichage de ligne}
+  \label{fig:line}
+\end{figure}
+
 
 \subsection{Implémentation des marques texte}
 
@@ -298,7 +352,7 @@ un calque de profondeur 0 apparaîtront devant des marques appartenant à un cal
 \end{figure}
 
 La figure~\ref{fig:calque-ex} représente deux captures d'écran de marques.
-Ces marques ont la même position et la même couleur dans les deux cas, mais nous avons échangé le calque 
+Ces marques ont la même position et la même couleur dans les deux cas, mais nous avons échangé le calque
 de la marque rouge avec celui de la marque bleue dans la deuxième capture, mettant ainsi la marque bleue
 au premier plan.
 
@@ -310,8 +364,8 @@ La \href{https://doc.rust-lang.org/std/collections/index.html}{documentation} de
 vecteur et la hashmap sont à utiliser dans la plupart des cas et que ces deux collections sont très
 performantes.
 De plus, nous souhaitons pouvoir être capable de récupérer une marque en O(1) et ajouter une marque en
-O(1) (bien que l'ajout n'est pas dans tous les cas en temps constant, par exemple dans le cas où le 
-vecteur a besoin d'être réalloué pour augmenter sa taille). Ces contraintes nous confortent dans notre 
+O(1) (bien que l'ajout n'est pas dans tous les cas en temps constant, par exemple dans le cas où le
+vecteur a besoin d'être réalloué pour augmenter sa taille). Ces contraintes nous confortent dans notre
 choix du vecteur.
 
 Nous n'avons pas mentionné la suppression des marques volontairement. La raison est que nous ne supprimons
@@ -333,22 +387,22 @@ marque invalide à cet index par une nouvelle marque valide.
 
 Ce mécanisme, bien que performant, complexifie légèrement l'ajout de nouvelle marque. Il ne suffit pas de
 push une marque dans le vecteur, il faut d'abord vérifier s'il y a des marques invalides qui peuvent être
-remplacées. 
-De plus, une marque ne pouvant pas être dans deux calques à la fois, lorsque l'on souhaite ajouter une 
+remplacées.
+De plus, une marque ne pouvant pas être dans deux calques à la fois, lorsque l'on souhaite ajouter une
 marque dans un calque et que celle-ci était déjà dans un autre calque, il faut nécessairement :
 \begin{itemize}
 \item cloner la marque de l'ancien calque
 \item invalider la marque de l'ancien calque
 \item ajouter correctement le clone de la marque dans le nouveau calque
 \end{itemize}
-Pour cloner la marque, le nouveau calque a besoin de connaître les autres calques. C'est pourquoi un 
-calque a un pointeur vers \textit{contrast}. Cela permet à un calque d'accéder aux autres calques et d'en 
-récupérer les  marques. C'est également la raison pour laquelle le code des calques contient une zone 
-\gls{unsafe}. Nous avons besoin de déréférencer le pointeur de \textit{contrast} pour accéder aux calques et à 
+Pour cloner la marque, le nouveau calque a besoin de connaître les autres calques. C'est pourquoi un
+calque a un pointeur vers \textit{contrast}. Cela permet à un calque d'accéder aux autres calques et d'en
+récupérer les  marques. C'est également la raison pour laquelle le code des calques contient une zone
+\gls{unsafe}. Nous avons besoin de déréférencer le pointeur de \textit{contrast} pour accéder aux calques et à
 leurs marques.
 
 Nous avons également ajouté deux fonctions utilitaires permettant d'appliquer des modifications à toutes
-les marques d'un calque. L'une permet de faire bouger les marques d'une certaine distance, l'autre prend 
+les marques d'un calque. L'une permet de faire bouger les marques d'une certaine distance, l'autre prend
 en paramètre une fonction définie par l'utilisateur, et applique cette fonction aux marques. L'utilisateur
 peut ainsi appliquer n'importe quelle modification à l'ensemble des marques d'un calque.
 
@@ -358,7 +412,7 @@ peut ainsi appliquer n'importe quelle modification à l'ensemble des marques d'u
 Une marque animée est une marque dont le changement de propriété se fait progressivement.
 Si l'on change la position d'une marque animée, on verra la marque se déplacer de manière fluide vers la
 nouvelle position. Si l'on change la forme d'un marque de type point, nous verrons la transformation en la nouvelle forme progressivement.
-La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme \og Astérisque \fg vers une 
+La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme \og Astérisque \fg vers une
 forme \og Trèfle \fg.
 
 \begin{figure}[htp]
@@ -378,34 +432,34 @@ Notre structure de marque doit contenir autant d'\textit{AnimationAttribute} qu'
 type paramamétré sera celui de la propriété.
 Cette structure permet de stocker :
 \begin{itemize}
-\item La valeur de l'attribut qu'avait la marque avant le début de l'animation, que nous appelerons l'\og 
+\item La valeur de l'attribut qu'avait la marque avant le début de l'animation, que nous appelerons l'\og
 \textit{ancienne valeur} \fg.
 \item La valeur qu'aura l'attribut de la marque à la fin de l'animation, la \og \textit{valeur cible} \fg
 \item Le temps au moment où l'animation a commencé, le \og \textit{temps de début} \fg.
 \end{itemize}
 
-Pour effectuer une animation d'une propriété, nous utilisons la fonction 
+Pour effectuer une animation d'une propriété, nous utilisons la fonction
 \textit{\href{https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/mix.xhtml}{mix}} de GLSL, qui effectue une
-interpolation linéaire entre deux valeurs. 
-Elle prend 3 paramètres : 
+interpolation linéaire entre deux valeurs.
+Elle prend 3 paramètres :
 \begin{itemize}
 \item le début de la plage dans laquelle interpoler, \og \textit{x} \fg
 \item la fin de la plage dans laquelle interpoler, \og \textit{y} \fg
 \item la valeur à utiliser pour interpoler entre x et y, \og \textit{a} \fg.
 \end{itemize}
 
-\textit{x} correspond à l'\textit{ancienne valeur} de la propriété et \textit{y} correspond à la 
+\textit{x} correspond à l'\textit{ancienne valeur} de la propriété et \textit{y} correspond à la
 \textit{valeur cible}.
 Pour obtenir une animation propre et fluide, il faudrait que \textit{a} croisse lentement de 0 à 1.
-Pour revenir à l'exemple d'animation de forme précédent, 0 correspondrait à la première marque, 0.5 
+Pour revenir à l'exemple d'animation de forme précédent, 0 correspondrait à la première marque, 0.5
 correspondrait à la troisième, et 1 correspondrait à la dernière.
 
 Le \textit{temps de début} est récupéré grâce à un timer que nous lançons au démarrage du programme.
 En passant ce timer aux shaders en tant qu'\gls{uniform}, nous sommes donc capable d'obtenir une croissance
 de \textit{a} nous garantissant une animation fluide, en utilisant la formule suivante :
-\textit{valeur interpolée = mix(ancienne valeur , valeur cible , min(t - temps de début , 1.0))} où t est 
+\textit{valeur interpolée = mix(ancienne valeur , valeur cible , min(t - temps de début , 1.0))} où t est
 le temps  écoulé depuis le lancement de l'application.
-Nous utilisons la fonction minimum pour s'assurer que \textit{a} se dépasse jamais 1. Une valeur de 
+Nous utilisons la fonction minimum pour s'assurer que \textit{a} se dépasse jamais 1. Une valeur de
 \textit{a} supérieure à 1 donne lieu à des formes très étranges et fausse.
 
 Jusqu'ici, les animations fonctionnent. Seulement, rien n'empêche l'utilisateur de modifier une propriété pendant une animation, donnant lieu à des comportements confus.
@@ -416,34 +470,34 @@ On notera également que cette implémentation permet d'animer plusieurs propri�
 
 \subsubsection{Difficultés rencontrées}
 
-La première difficulté a été de trouver comment implémenter les animations sans modifier l'architecture 
-principale. La solution a été de modifier directement les structures des 
-marques en elles-mêmes et de ne pas toucher à la structure principale. La partie précédente décrit plus en 
+La première difficulté a été de trouver comment implémenter les animations sans modifier l'architecture
+principale. La solution a été de modifier directement les structures des
+marques en elles-mêmes et de ne pas toucher à la structure principale. La partie précédente décrit plus en
 détails l'implémentation de cette solution.
 
 La deuxième difficulté a été d'implémenter les animations dans \textit{contrast}.
 En effet, dans un premier temps, nous les avions implémenté de manière indépendante à \textit{contrast} et avec une seule marque. Cette implémentation marchait certes correctement mais l'adapter à \textit{contrast} n'a pas été trivial.
-Dans cette implémentation, nous détections la fin d'une animation de manière différente. Nous vérifions 
-dans la boucle principale si l'animation était terminée pour chaque marque, et nous la mettions à jour si 
+Dans cette implémentation, nous détections la fin d'une animation de manière différente. Nous vérifions
+dans la boucle principale si l'animation était terminée pour chaque marque, et nous la mettions à jour si
 c'était le cas.
-Mais imaginons cette mécanique avec plus de 200 000 marques : si elles étaient toutes animées en même 
+Mais imaginons cette mécanique avec plus de 200 000 marques : si elles étaient toutes animées en même
 temps, l'application ne pourrait jamais atteindre les 60 images par seconde.
 Nous avons donc enlevé cette vérification quand nous avons implémenté les animations dans \textit{contrast}
 pour des raisons évidentes de performances.
-À la place, nous vérifions si une animation est finie seulement lorsque que l'on souhaite modifier la 
+À la place, nous vérifions si une animation est finie seulement lorsque que l'on souhaite modifier la
 marque, donc dans les setters.
 
 \subsection{Bibliothèques externes utilisées}
 \subsubsection{lazy\_static}
-Nous utilisons cette bibliothèque \cite{lazy-static} une seule fois dans 
-\textit{contrast} : pour déclarer le timer. Nous avons besoin qu'il soit valide pendant 
+Nous utilisons cette bibliothèque \cite{lazy-static} une seule fois dans
+\textit{contrast} : pour déclarer le timer. Nous avons besoin qu'il soit valide pendant
 toute la durée du programme et nous voulons qu'il soit accessible partout dans le code.
-C'est ce que cette bibliothèque permet de faire : déclarer facilement des variables 
+C'est ce que cette bibliothèque permet de faire : déclarer facilement des variables
 statiques en Rust.
 
 \subsubsection{rand}
-C'est une bibliothèque \cite{rand} permettant de générer des nombres aléatoirement. Nous 
-l'utilisons dans le but de fournir une fonction permettant de retourner une forme 
+C'est une bibliothèque \cite{rand} permettant de générer des nombres aléatoirement. Nous
+l'utilisons dans le but de fournir une fonction permettant de retourner une forme
 aléatoire.
 
 \textbf{TODO: les autres crates}
@@ -452,11 +506,11 @@ aléatoire.
 % a ranger plus tard si possible
 \subsection{Les identifiants de marques}
 
-L'utilisateur manipule des marques. Mais pour retrouver une marque existante et y 
+L'utilisateur manipule des marques. Mais pour retrouver une marque existante et y
 appliquer des modifications, nous avons besoin de son identifiant.
 
-La structure représentant un identifiant de marque comprend toutes les données dont nous 
-avons besoin pour retrouver une marque, c'est-à-dire l'index du calque où elle est 
+La structure représentant un identifiant de marque comprend toutes les données dont nous
+avons besoin pour retrouver une marque, c'est-à-dire l'index du calque où elle est
 stockée et l'index de la marque en elle-même dans le conteneur de marques du calque.
 Que se passe t-il alors lorsque l'on ajoute une marque qui était déjà dans un calque à
 un autre calque ? L'identifiant auquel a accès l'utilisateur deviendra faux car les index
@@ -469,34 +523,34 @@ poserait pas.
 
 Il y avait deux méthodes qui aurait permis d'avoir accès au réel identifiant :
 \begin{itemize}
-\item en utilisant des pointeurs : la méthode \textit{get\_id()} renverrait un pointeur 
+\item en utilisant des pointeurs : la méthode \textit{get\_id()} renverrait un pointeur
 vers le véritable identifiant et le problème serait résolu. Cependant, il y avait un gros
 inconvénient à cette méthode, que nous avons rencontré quand nous avons tenté
 d'implémenter cette solution : à chaque fois que devions déréférencer ce pointeur, nous
-devions mettre le code dans une zone non sûre. Cela générait beaucoup de zones non sûres 
-et nous faisait dévier de l'un des principes de Rust qui est de faire du code sûr. Nous 
-avons donc décider d'abandonner 
+devions mettre le code dans une zone non sûre. Cela générait beaucoup de zones non sûres
+et nous faisait dévier de l'un des principes de Rust qui est de faire du code sûr. Nous
+avons donc décider d'abandonner
 cette idée.
-\item en utilisant une référence : une référence étant grossièrement, en Rust, un 
-pointeur safe, nous pourrions résoudre le problème. La méthode \textit{get\_id()} 
-retournerait ainsi une référence pointant vers le réel identifiant. 
+\item en utilisant une référence : une référence étant grossièrement, en Rust, un
+pointeur safe, nous pourrions résoudre le problème. La méthode \textit{get\_id()}
+retournerait ainsi une référence pointant vers le réel identifiant.
 
-En utilisant un concept de Rust, nous nous heurtons à un autre problème lié à Rust : 
-l'ownership. Le but ici n'étant pas d'expliquer tous les paradigmes de Rust, nous 
+En utilisant un concept de Rust, nous nous heurtons à un autre problème lié à Rust :
+l'ownership. Le but ici n'étant pas d'expliquer tous les paradigmes de Rust, nous
 définirons simplement l'ownership en disant que c'est le moyen qu'utilise Rust pour gérer la mémoire.
 
 Récupérer une référence signifie que l'on emprunte l'objet vers lequel la référence
-pointe. L'objet en question étant dans un conteneur qui lui-même appartient à une 
-structure (la structure principale), emprunter cet objet revient à emprunter toute la 
-structure. 
+pointe. L'objet en question étant dans un conteneur qui lui-même appartient à une
+structure (la structure principale), emprunter cet objet revient à emprunter toute la
+structure.
 
-Nous pouvons emprunter plusieurs fois la structure tant que nous faisons des 
+Nous pouvons emprunter plusieurs fois la structure tant que nous faisons des
 emprunts immutables, c'est-à-dire que nous promettons à Rust de ne jamais modifier cette
 structure. Nous ne pouvons cependant emprunter mutablement qu'une seule fois dans un scope, empêchant donc l'utilisateur de modifier les marques comme il le souhaite.
 Cette idée a donc elle aussi était mis de côté.
 \end{itemize}
 
-Notre solution est donc que \textit{get\_id()} renvoie une copie du réel identifiant. A chaque 
+Notre solution est donc que \textit{get\_id()} renvoie une copie du réel identifiant. A chaque
 fois que l'utilisateur souhaite modifier une marque, il doit passer une référence mutable
 de la copie dont il dispose pour que nous puissions la mettre à jour en même temps que
 le réel identifiant.
@@ -510,8 +564,8 @@ Cependant ce que nous offrons est assez limité. Nous fournissons en effet 3 fon
 \item une fonction prenant en paramètre seulement la touche qui déclenchera l'action.
 Cette fonction permet principalement de récupérer des marques ou des calques pour
 afficher leurs propriétés
-\item une fonction prenant en paramètre la touche et un identifiant de marque. Celle-ci 
-permet d'appliquer des modifications en temps réelle à la marque représentée par cet 
+\item une fonction prenant en paramètre la touche et un identifiant de marque. Celle-ci
+permet d'appliquer des modifications en temps réelle à la marque représentée par cet
 identifiant.
 \item une fonction prenant en paramètre la touche et une liste d'identifiants, permettant de modifier les marques représentées par ces derniers.
 \end{itemize}
@@ -535,13 +589,13 @@ On pourrait représenter cette solution avec une syntaxe de ce type
     \label{lst:ex-closure}
 \end{listing}
 
-Le problème apparaît si l'utilisateur utilise la variable \textit{contrast} dans la 
-closure. Le comportement des closures fait qu'elle sera capturée et empruntée 
-mutablement une seconde fois (la première fois étant lors de la déclaration de la 
+Le problème apparaît si l'utilisateur utilise la variable \textit{contrast} dans la
+closure. Le comportement des closures fait qu'elle sera capturée et empruntée
+mutablement une seconde fois (la première fois étant lors de la déclaration de la
 variable \textit{contrast}). Hors comme précédemment indiqué, on ne peut emprunter une
 variable qu'une seule fois.
 
-C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de 
+C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de
 partie.
 
 \section{Analyse du fonctionnement du logiciel}
@@ -560,5 +614,5 @@ partie.
 %\nocite{*}
 \printglossaries
 \printbibliography
- 
+
 \end{document}
