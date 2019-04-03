@@ -197,9 +197,28 @@ aux exigences de vitesse qui nous sont fixés.
 
 \section{Description du logiciel}
 %% Parler des problèmes rencontrés au sain de l'archi
-\subsection{Description de l'architecture}
+\subsection{Organisation de l'architecture}
 
-L'architecture est composé d'une structure principale contenant tous les calques. Les calques contiennent
+Notre bibliothèque est composé de 2 parties principales :
+\begin{itemize}
+\item la partie bas niveau, contenu dans le dossier \textit{contrast}
+\item la partie haut niveau, contenu dans le dossier  \textit{contrast-renderer}.
+\end{itemize}
+
+La partie bas niveau est elle-même séparée en plusieurs dossiers ;
+\begin{itemize}
+\item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
+\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque
+\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
+\end{itemize}
+
+\textbf{TODO: expliquer les différents shaders, justifiez le choix rust / geometry shader}
+
+\textbf{TODO: pourquoi on développe en Rust (je ne sais pas où mettre cette partie)}
+
+\subsection{Architecture bas niveau}
+
+L'architecture bas niveau est composé d'une structure principale contenant tous les calques. Les calques contiennent
 chacun leurs marques.
 
 La figure~\ref{fig:arch} décrit de manière simplifiée l'architecture.
@@ -227,26 +246,7 @@ de données des marques. Cela permet de stocker nos marques plus facilement et d
 
 Côté GLSL, nous disposons de shaders différents pour chaque type de marque. Toutes nos marques utilisent un vertex shader, un \gls{geom} et un \gls{frag} shader à l'exception du texte qui n'utilise pas de geometry shader.
 
-\subsection{Organisation de l'architecture}
-
-Notre bibliothèque est composé de 2 parties principales :
-\begin{itemize}
-\item la partie bas niveau, contenu dans le dossier \textit{contrast}
-\item la partie haut niveau, contenu dans le dossier  \textit{contrast-renderer}.
-\end{itemize}
-
-La partie bas niveau est elle-même séparée en plusieurs dossiers ;
-\begin{itemize}
-\item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
-\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque
-\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
-\end{itemize}
-
-\textbf{TODO: expliquer les différents shaders, justifiez le choix rust / geometry shader}
-
-\textbf{TODO: pourquoi on développe en Rust (je ne sais pas où mettre cette partie)}
-
-\subsection{Schéma du pipeline}
+\subsection{Schéma du pipeline} %va peut être disparaitre
 
 Cette figure~\ref{fig:pipe} présente la décomposition des différents éléments nécessaire au \gls{pipeline}
 graphique pour chaque marque. Le pipeline peut être externe à notre bibliothèque, il doit juste demander
@@ -258,7 +258,7 @@ Le renderer n'est actuellement pas présent dans notre diagramme de l'architectu
 raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand une marque demande
 à être affiché, elle notifie le renderer qui va récupérer ses canaux et construire le VBO.
 
-
+\subsection{Architecture haut niveau}
 
 
 \begin{figure}[htp]
@@ -409,7 +409,7 @@ comme clef. C'est pour eviter tout problème mémoire lié à Rust. Ainsi quand 
 vérifier si elle est présente et procéder. Acessoirement cela permet à l'utilisateur de changer la taille de police d'une font, il suffit qu'il enregistre un nouveau couple font et police
 sous une autre clef et il pourra s'en servir.
 
-\subsubsection{Petit subtilitée}
+\subsubsection{Petites subtilitées}
 
 Il faut savoir que quand FreeType rasterise un glyphe, le bitmap qu'il produit à son axe Y inversé à celui de contrast. Par défaut donc les glyphes sont dessinés la tête en bas.
 Ce n'est pas pratique à lire vous en conviendrez. Pour ne pas compliquer les calculs de nos shaders, nous avons décidé d'inverser directement les bitmaps produit avant de les envoyer
