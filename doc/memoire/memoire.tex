@@ -296,15 +296,15 @@ Pour l’implémentation de cette marque le vertex shader sert seulement à envo
 
 Pour afficher une ligne à largeur variable nous avons deux possibilités :
 \begin{itemize}
-\item soit utiliser la primitive openGL « GL\_LINES » ce qui demanderait un nombre de primitive dépendant de la largeur de la ligne, ce qui ne serait pas très efficace
-\item soit utiliser une des primitives openGL servant à afficher des triangles comme par exemple « GL\_TRIANGLE\_STRIP » pour afficher le quadrilatère (donc avec quatre sommets) correspondant à une sous-ligne, dont le nombre de primitive utilisé ne dépend pas en complexité de la taille ou de la largeur de la ligne.
+\item soit utiliser la primitive OpenGL \og GL\_LINES \fg{} ce qui demanderait un nombre de primitive dépendant de la largeur de la ligne, ce qui ne serait pas très efficace
+\item soit utiliser une des primitives OpenGL servant à afficher des triangles comme par exemple \og GL\_TRIANGLE\_STRIP \fg{} pour afficher le quadrilatère (donc avec quatre sommets) correspondant à une sous-ligne, dont le nombre de primitive utilisé ne dépend pas en complexité de la taille ou de la largeur de la ligne.
 \end{itemize}
 
 Nous avons utilisé la deuxième possibilité, qui semble meilleure en terme de performance.
-Considérant le fait qu’il faille diminuer au maximum le coût du calcul côté GPU, les quatre sommets du quadrilatère seront calculés sur le GPU et donc avec l’unique shader capable de faire ce genre d’opératio­n, c’est-à-dire le geometry shader, avec la primitive « GL\_TRIANGLE\_STRIP ».
+Considérant le fait qu’il faille diminuer au maximum le coût du calcul côté GPU, les quatre sommets du quadrilatère seront calculés sur le GPU et donc avec l’unique shader capable de faire ce genre d’opératio­n, c’est-à-dire le geometry shader, avec la primitive \og GL\_TRIANGLE\_STRIP \fg{}.
 
 \subsubsection{Liaison entre les sous-lignes}
-Simplement afficher des rectangles représentant les sous-lignes est possible pour une polyligne formée de seulement deux points, mais pour plus de points, il faut gérer la liaison entre les sous-lignes sinon l'on a une jonction entre les deux sous-lignes peu attrayante et pour cela il y a plusieurs façon de faire comme le montre ce schéma~\ref{fig:joint}.
+Simplement afficher des rectangles représentant les sous-lignes est possible pour une polyligne formée de seulement deux points, mais pour plus de points, il faut gérer la liaison entre les sous-lignes sinon l'on a une jonction entre les deux sous-lignes peu attrayante et pour cela il y a plusieurs façon de faire comme le montre la figure~\ref{fig:joint}.
 
 \begin{figure}[htp]
   \centering
@@ -313,9 +313,9 @@ Simplement afficher des rectangles représentant les sous-lignes est possible po
   \label{fig:joint}
 \end{figure}
 
-La solution la plus simple en terme de performance se trouve être le « bevel join » vu que cette liaison peut-être réalisé juste en changeant l’inclinaison du bout de chaque sous-ligne et donc on garde le fait de n’avoir à afficher qu’un quadritère par sous-ligne alors que la solution de la liaison  « round joint » n’est pas aussi simple et demande de retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la fonction discard d’openGL dans le fragment shader diminue les performances pour la plupart des hardware[1]).
+La solution la plus simple en terme de performance se trouve être le \og bevel join \fg{} vu que cette liaison peut-être réalisé juste en changeant l’inclinaison du bout de chaque sous-ligne et donc on garde le fait de n’avoir à afficher qu’un quadritère par sous-ligne alors que la solution de la liaison  \og round joint \fg{} n’est pas aussi simple et demande de retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la fonction discard d’OpenGL dans le fragment shader diminue les performances pour la plupart des hardware[1]).
 
-Pour faire la liaison choisie il nous faut le voisinage des points formant une sous-ligne de façon à avoir une inclinaison des extrémités de sous-ligne s’accordant. Pour expliquer plus facilement comment est formé cette liaison voici un schéma~\ref{fig:geom_line}.
+Pour faire la liaison choisie il nous faut le voisinage des points formant une sous-ligne de façon à avoir une inclinaison des extrémités de sous-ligne s’accordant. Pour expliquer plus facilement comment est formé cette liaison voici la figure~\ref{fig:geom_line}.
 
 
 \begin{figure}[htp]
@@ -328,7 +328,7 @@ Pour faire la liaison choisie il nous faut le voisinage des points formant une s
 Dans ce schéma les vecteurs miter1 et miter2 sont ce que j’appelle précédemment l’inclinaison des extrémité. Les vecteurs t0, t1, et t2 sont respectivement les vecteurs directeurs des segments [P0,P1], [P1,P2], [P2,P3] et n1, n2 et n3 leurs normales. De ce fait le miter n’est en fait que l’addition des vecteurs normaux des segments correspondant. Il faut aussi calculer la valeur d’écart de par rapport au point d’origine pour avoir une ligne avec une largeur correcte, pour cela on prend la largeur voulue de la ligne et on le divise par le produit scalaire de la normale de la ligne précédente ou suivante suivant l’extrémité et du miter correspondant. Une fois que l’on a le miter il suffit de créer des points décalées de la valeur précédemment créé le long du vecteur miter normalisé.
 
 \subsubsection{Résultat}
-Et finalement voici le résultat~\ref{fig:line}.
+Et finalement voici le résultat figure~\ref{fig:line}.
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.8]{images/line_example}
@@ -382,7 +382,7 @@ C'est d'ailleurs un des intérèt de pas charger tout les caractères possibles 
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.8]{images/font-atlas}
-  \caption{Font atlas}
+  \caption{Example de font atlas en police 72}
   \label{fig:atlas}
 \end{figure}
 
