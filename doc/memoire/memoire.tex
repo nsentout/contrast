@@ -135,13 +135,13 @@ L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque per
     Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point, Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 
 Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini et Flèche.
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
-    peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
+    peuvent être des segments, des polylignes ou des courbes. Elles peuvent aussi avoir différents types
     (continu, tirets, pointillés...).
     \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
-    polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
+    polygone dont seulement les contours sont dessinés. La couleur de remplissage du polygone plein peut être
     différente de la couleur des contours.
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
-    \cite{VegaMarks}. Ces aires doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
+    \cite{VegaMarks}. Elles doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
     visualisation de données. Ces types de marque ne sont pas le plus prioritaire à implémenter.
     \item Texte : utilisable pour représenter du texte et peut avoir différentes propriétés : italique,
     gras, centré, aligné à droite, en haut, etc.
@@ -209,16 +209,6 @@ ce besoin, plusieurs choix ont été fait:
 		\item Des benchmark devront être réalisés pour comparer les performances de notre programme aux logiciels déjà existants, principalement FATuM.
 
 	\end{itemize}
-Le niveau de priorité de chaque besoin est le suivant :
-\begin{itemize}
-	\item Marque Point
-	\item Marque Ligne
-	\item Calques
-	\item Animations
-	\item Marque Texte
-	\item Marque Polygone
-	\item Marque Aire
-\end{itemize}
 
 Pour l'API, l'utilisateur devra décrire les diverses propriétés de chaque marque de la façon suivante :
 \begin{itemize}
@@ -364,15 +354,15 @@ C'est pour cette raison qu'on essaie d'afficher le plus de primitives en seul ap
 un rendu. Cette méthode s'appelle le batching, c'est-à-dire le dessin par lot.
 
 Ainsi la couche bas niveau de \textit{contrast} possède un shader program et un format de vertex par type de marque qui seront transmis à la couche haut niveau pour afficher les marques.
-Pour rappel, c'est la partie haut niveau qui s'occupe d'OpenGL, car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique. Pour résumer voir figure~\ref{fig:pipe}.
-Les vertices que nous avons défini dans nos shaders sont complètement génériques pour fonctionner sur une autre implémentation.
+Pour rappel, c'est la partie haut niveau qui s'occupe d'OpenGL, car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique. Pour résumer, voir figure~\ref{fig:pipe}. Les vertices que nous avons
+défini dans nos shaders sont complètement génériques pour fonctionner sur une autre implémentation.
 
 \subsection{Architecture haut niveau}
 
 L'architecture haut niveau est chargé de ce que nous appelons le \og renderer \fg{}. Il dépend entièrement de l'API graphique que nous allons utiliser ainsi que la bibliothèque
 de fenêtrage qui gère aussi les événements clavier/souris. Cette couche haut niveau contient \textit{contrast} et masque toute la partie rendu.
-Nous avons implémenté un renderer avec la crate \textbf{luminance} \cite{luminance}, comme demandé par notre client dans un de ses besoins.
-Luminance utilise OpenGL mais ne nous donne pas accès directement à toutes ses fonctions, il nous a fallu respecter la nomenclature et l'API de Luminance.
+Nous avons implémenté un renderer avec la crate \textit{luminance} \cite{luminance}, comme demandé par notre client dans un de ses besoins.
+\textit{Luminance} utilise OpenGL mais ne nous donne pas accès directement à toutes ses fonctions, il nous a fallu respecter la nomenclature et l'API de \textit{luminance}.
 
 Notre architecture haut niveau est donc intrésequement liée à \textit{luminance}. La seule implémentation intéressante dans cette partie est comment nous avons mis à jour les VBOs que \textit{luminance} cache
 en réalité derrière ce qu'elle appelle un \og Tess \fg{}. C'est en réalité un VBO + VAO.
@@ -1054,6 +1044,14 @@ sont animées
 \item La technique qu'utilise FATuM pour les animations, le triple buffering
 \item Des calques pouvant gérer plusieurs types de marques.
 \end{itemize}
+
+Nous pensons avoir développé une biblothèque stable. Il y a bien sur des améliorations mais nous pensons
+qu'il est tout à fait possible de continuer le développement dessus et rajouter des fonctionnalités sans
+tout détruire.
+
+Pour conclure, nous dirions que ce projet nous a appris à nous organiser.
+Nous avons pu approfondir nos connaissances en programmation en apprenant le fonctionnement de Rust, OpenGL et
+GLSL.
 
 %\nocite{*}
 \printglossaries
