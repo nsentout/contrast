@@ -258,17 +258,40 @@ de données des marques. Cela permet de stocker nos marques plus facilement et d
 
 Côté GLSL, nous disposons de shaders différents pour chaque type de marque. Toutes nos marques utilisent un vertex shader, un \gls{geom} et un \gls{frag} shader à l'exception du texte qui n'utilise pas de geometry shader.
 
-\subsection{Schéma du pipeline} %va peut être disparaitre
+\subsection{Pipeline graphique}
 
-Cette figure~\ref{fig:pipe} présente la décomposition des différents éléments nécessaire au \gls{pipeline}
-graphique pour chaque marque. Le pipeline peut être externe à notre bibliothèque, il doit juste demander
-les canaux, autrement dit les vertices (\gls{vertex}), contenu dans le \gls{VBO} et les \gls{uniform}
-du \gls{shader} à notre bibliothèque\cite{Semi}.
-Dans notre cas, c'est \textit{luminance} \cite{luminance} qui est en charge du pipeline.
+Le pipeline graphique est la succession des opérations généralement réalisées par une carte graphique nécessaires au rendu d’un lot de données. Nous allons essayer de vous décrire en détails comment
+fonctionne celui de Contrast. Nous allons nous appuyez sur OpenGL comme exemple mais c'est quelque d'assez générique à toute les API graphiques. Ce seront donc les mêmes concepts pour
+Vulkan ou DirectX seulement probablement sous un autre dénomination.
 
-Le renderer n'est actuellement pas présent dans notre diagramme de l'architecture pour des
-raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand une marque demande
-à être affiché, elle notifie le renderer qui va récupérer ses canaux et construire le VBO.
+OpenGL ne sait dessiner que des primitives de dessins très simple comme le point (literalement un pixel) ou le triangle. Toute forme complexe est impossible sans traitement.
+Ces primitives sont définies par des vertices, se sont des sommets qui portent différents attributs. Nous avons par exemple deux attributs très utilisés qui sont la position et
+la couleur mais toutes autres informations est imaginable. Ce qui est certains, c'est qu'il faut 3 vertices pour dessiner un triangle.
+
+En réalité les attributs d'un vertex sont des flottants ou même des tableaux de flotants, c'est ce qu'ont peut appeler un vecteur. L'ensemble de ces vertices sont stocké dans ce
+que OpenGL appelle un \gls{VBO}, c'est-à-dire un énorme buffer présent dans la mémoire du GPU. La description des attributs d'un vertex est fait par le \gls{VAO}.
+C'est lui qui va décrire combien il y a d'attributs par vertex et si se sont des vecteurs de une à quatre dimension.
+Cette description permet au shader program de pouvoir accéder à ses vecteurs et les manipuler.
+
+Le shader program est un programme écris en GLSL qui est exécuté sur le GPU. Il est découpé en plusieurs passes, voici les trois essentiel dans l'ordre d'execution :
+\begin{itemize}
+    \item Le vertex shader permet de définir en sortie la position du vertex sur l'écran. C'est par lui qu'arrive l'ensemble
+des attributs mais il peuvent atteindre les autres étages, si le vertex shader leur transmet en sortie.
+    \item Le geometry shader permet d'emettre davantage de vertices qu'il en a initialement reçu du VBO, il permet donc de modifier la géometrie de notre primitive de dessin.
+    \item Le fragment shader permet de définir la couleur de sortie des pixels (appelé fragments) de notre primitive.
+\end{itemize}
+
+Pour résumer, pour afficher un triangle. Une fois que notre est remplis VBO, notre VAO défini et que notre shader program écris. Il faut dire à OpenGL d'afficher la primitive.
+C'est un appels \og draw \fg{} qui s'occupe de cette tâche, il prend en paramètre le type de la primitive de dessin et combien il faut en dessiner.
+
+La quantité de primitive à dessiner est très importante. C'est une optimisation primordiale à maximiser. Il faut diminuer le plus possible la communication entre le CPU et le GPU pour
+qu'au final le GPU soit quasiment autonome et puisse sous-traiter le plus possible le travail du CPU pour que celui-ci se concentre sur des tâches plus importantes.
+C'est pour cette raison qu'on essaye d'afficher le plus de primitives d'un seul appels pour que le CPU n'est seulement à communiquer ses appels draw à chaque frame pour dessiner entièrement
+un rendu. Cette méthode s'appelle le batching, c'est-à-dire le dessins par lot.
+
+Ainsi la couche bas niveau de Contrast possède un shader program et un format de vertex par type de marque qui seront transmis à la couche haut niveau pour afficher les marques.
+Pou rappel, c'est la partie haut niveau qui s'occupe d'OpenGL car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique si besoin. Les vertices que nous avons
+défini dans nos shaders sont complètement générique pour fonctionner sur une autre implémentation.
 
 \subsection{Architecture haut niveau}
 
