@@ -211,7 +211,7 @@ Le niveau de priorité de chaque besoin est le suivant :
 %% Parler des problèmes rencontrés au sain de l'archi
 \subsection{Organisation de l'architecture}
 
-Notre bibliothèque est composé de 2 parties principales :
+Notre bibliothèque est composée de 2 parties principales :
 \begin{itemize}
 \item la partie bas niveau, contenu dans le dossier \textit{contrast}
 \item la partie haut niveau, contenu dans le dossier  \textit{contrast-renderer}.
@@ -220,17 +220,13 @@ Notre bibliothèque est composé de 2 parties principales :
 La partie bas niveau est elle-même séparée en plusieurs dossiers ;
 \begin{itemize}
 \item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
-\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque
-\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
+\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisées par la bibliothèque
+\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale gérant les marques et les shaders pour tous les types de marques.
 \end{itemize}
-
-\textbf{TODO: expliquer les différents shaders, justifiez le choix rust / geometry shader}
-
-\textbf{TODO: pourquoi on développe en Rust (je ne sais pas où mettre cette partie)}
 
 \subsection{Architecture bas niveau}
 
-L'architecture bas niveau est composé d'une structure principale contenant tous les calques. Les calques contiennent
+L'architecture bas niveau est composée d'une structure principale contenant tous les calques. Les calques contiennent
 chacun leurs marques.
 
 La figure~\ref{fig:arch} décrit de manière simplifiée l'architecture.
@@ -247,7 +243,7 @@ Elles ont toutes une identifiant, font parties d'un calque et ont une couleur.
 La solution venant directement à l'esprit pour représenter de telles structures est celle de l'héritage.
 Toutes nos marques hériteraient d'une structure qui contient ces propriétés communes ainsi que certaines
 méthodes communes.
-Cependant, Rust n'a pas d'héritage. Nous devons donc utiliser des solutions propres à Rust pour régler
+Cependant, Rust ne supporte pas l'héritage. Nous devons donc utiliser des solutions propres à Rust pour régler
 ce problème.
 Nous avons donc utilisé une macro procédurale. C'est une macro permettant de générer du code à la
 compilation. Elle permet de fournir une implémentation par défaut à un trait. Nos structures peuvent
@@ -260,61 +256,60 @@ Côté GLSL, nous disposons de shaders différents pour chaque type de marque. T
 
 \subsection{Pipeline graphique}
 
-Le pipeline graphique est la succession des opérations généralement réalisées par une carte graphique nécessaires au rendu d’un lot de données. Nous allons essayer de vous décrire en détails comment
-fonctionne celui de Contrast. Appuyons nous sur OpenGL comme exemple mais c'est quelque chose d'assez générique à toute les API graphiques. Ce seront donc les mêmes concepts pour
+Le pipeline graphique est la succession des opérations généralement réalisées par une carte graphique nécessaire au rendu d’un lot de données. Nous allons essayer de vous décrire en détails comment
+fonctionne celui de \textit{contrast}. Nous allons nous appuyer sur OpenGL comme exemple mais c'est quelque chose d'assez générique à toutes les API graphiques. Ce seront donc les mêmes concepts pour
 Vulkan ou DirectX seulement probablement sous une autre dénomination.
 
-OpenGL ne sait dessiner que des primitives de dessins très simple comme le point (literalement un pixel) ou le triangle. Toute forme complexe est impossible sans traitement.
-Ces primitives sont définies par des vertices, se sont des sommets qui portent différents attributs. Nous avons par exemple deux attributs très utilisés qui sont la position et
-la couleur mais toutes autres informations est imaginable. Ce qui est certains, c'est qu'il faut 3 vertices pour dessiner un triangle.
+OpenGL ne sait dessiner que des primitives de dessins très simples comme le point (litteralement un pixel) ou le triangle. Toute forme complexe est impossible sans traitement.
+Ces primitives sont définies par des vertices, qui sont des sommets qui portent différents attributs. Nous avons par exemple deux attributs très utilisés qui sont la position et
+la couleur, mais toute autre information est imaginable. Ce qui est certain, c'est qu'il faut 3 vertices pour dessiner un triangle.
 
-En réalité les attributs d'un vertex sont des flottants ou même des tableaux de flotants, c'est ce qu'ont peut appeler un vecteur. L'ensemble de ces vertices sont stocké dans ce
+En réalité les attributs d'un vertex sont des flottants ou même des tableaux de flottants. C'est ce qu'on peut appeler un vecteur. L'ensemble de ces vertices est stocké dans ce
 que OpenGL appelle un \gls{VBO}, c'est-à-dire un énorme buffer présent dans la mémoire du GPU. La description des attributs d'un vertex est fait par le \gls{VAO}.
-C'est lui qui va décrire combien il y a d'attributs par vertex et si se sont des vecteurs de une à quatre dimension.
+C'est lui qui va décrire combien il y a d'attributs par vertex et si ce sont des vecteurs de une à quatre dimension.
 Cette description permet au shader program de pouvoir accéder à ses vecteurs et les manipuler.
 
-Le shader program est un programme écris en \gls{GLSL} qui est exécuté sur le GPU. Il est découpé en plusieurs passes, voici les trois essentiel dans l'ordre d'execution :
+Le shader program est un programme écrit en \gls{GLSL} qui est exécuté sur le GPU. Il est découpé en plusieurs passes, voici les trois essentiel dans l'ordre d'exécution :
 \begin{itemize}
     \item Le vertex shader permet de définir en sortie la position du vertex sur l'écran. C'est par lui qu'arrive l'ensemble
-des attributs mais il peuvent atteindre les autres étages, si le vertex shader leur transmet en sortie.
-    \item Le geometry shader permet d'emettre davantage de vertices qu'il en a initialement reçu du VBO, il permet donc de modifier la géometrie de notre primitive de dessin.
+des attributs mais ils peuvent toujours atteindre les autres étages si le vertex shader leur transmet en sortie.
+    \item Le geometry shader permet d'émettre davantage de vertices qu'il en a initialement reçu du VBO. Il permet donc de modifier la géometrie de notre primitive de dessin.
     \item Le fragment shader permet de définir la couleur de sortie des pixels (appelé fragments) de notre primitive.
 \end{itemize}
 
-Pour résumer, pour afficher un triangle. Une fois que notre est remplis VBO, notre VAO défini et que notre shader program écris. Il faut dire à OpenGL d'afficher la primitive.
-C'est un appels \og draw \fg{} qui s'occupe de cette tâche, il prend en paramètre le type de la primitive de dessin et combien il faut en dessiner.
+Pour résumer, pour afficher un triangle, une fois que notre VBO est rempli, notre VAO défini et que notre shader program écrit, il faut dire à OpenGL d'afficher la primitive.
+C'est un appel \og draw \fg{} qui s'occupe de cette tâche, il prend en paramètre le type de la primitive de dessin et combien il faut en dessiner.
 
-La quantité de primitive à dessiner est très importante. C'est une optimisation primordiale à maximiser. Il faut diminuer le plus possible la communication entre le CPU et le GPU pour
-qu'au final le GPU soit quasiment autonome et puisse sous-traiter le plus possible le travail du CPU pour que celui-ci se concentre sur des tâches plus importantes.
-C'est pour cette raison qu'on essaye d'afficher le plus de primitives d'un seul appels pour que le CPU n'est seulement à communiquer ses appels draw à chaque frame pour dessiner entièrement
+La quantité de primitives à dessiner est très importante. C'est une optimisation primordiale à maximiser. Il faut diminuer le plus possible la communication entre le CPU et le GPU pour
+qu'au final, le GPU soit quasiment autonome et puisse sous-traiter le plus possible le travail du CPU pour que celui-ci se concentre sur des tâches plus importantes.
+C'est pour cette raison qu'on essaie d'afficher le plus de primitives en seul appel : pour que le CPU n'est seulement à communiquer ses appels draw à chaque frame pour dessiner entièrement
 un rendu. Cette méthode s'appelle le batching, c'est-à-dire le dessin par lot.
 
-Ainsi la couche bas niveau de Contrast possède un shader program et un format de vertex par type de marque qui seront transmis à la couche haut niveau pour afficher les marques.
-Pour rappel, c'est la partie haut niveau qui s'occupe d'OpenGL car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique. Les vertices que nous avons
-défini dans nos shaders sont complètement générique pour fonctionner sur une autre implémentation.
+Ainsi la couche bas niveau de \textit{contrast} possède un shader program et un format de vertex par type de marque qui seront transmis à la couche haut niveau pour afficher les marques.
+Pour rappel, c'est la partie haut niveau qui s'occupe d'OpenGL, car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique. Les vertices que nous avons
+défini dans nos shaders sont complètement génériques pour fonctionner sur une autre implémentation.
 
 \subsection{Architecture haut niveau}
 
 L'architecture haut niveau est chargé de ce que nous appelons le \og renderer \fg{}. Il dépend entièrement de l'API graphique que nous allons utiliser ainsi que la bibliothèque
-de fenêtrage qui gère aussi les événements clavier/souris. Cette couche haut niveau contient Contrast et masque toute la partie rendu.
-Nous avons implémenter un renderer avec la crate \textbf{luminance} \cite{luminance}, comme demandé par notre client dans un de ses besoins.
-Luminance utilise OpenGL mais ne nous donne pas accès directement à toutes ses fonctions, il nous a falu respecter la nomenclature et l'utilisation de l'API de Luminance.
+de fenêtrage qui gère aussi les événements clavier/souris. Cette couche haut niveau contient \textit{contrast} et masque toute la partie rendu.
+Nous avons implémenté un renderer avec la crate \textbf{luminance} \cite{luminance}, comme demandé par notre client dans un de ses besoins.
+Luminance utilise OpenGL mais ne nous donne pas accès directement à toutes ses fonctions, il nous a fallu respecter la nomenclature et l'API de Luminance.
 
-Notre architecture haut niveau est donc intrésequement lié à Luminance. La seule implémentation interessante dans cette partie est comment nous avons mis à jour les VBOs que Luminance cache
+Notre architecture haut niveau est donc intrésequement liée à \textit{luminance}. La seule implémentation intéressante dans cette partie est comment nous avons mis à jour les VBOs que \textit{luminance} cache
 en réalité derrière ce qu'elle appelle un \og Tess \fg{}. C'est en réalité un VBO + VAO.
 
-Le tess de Luminance prend à sa création une taille fixe de vertices (la capacité du VBO). Cette taille ne peut pas être modifié par la suite. Comment faire dans ce cas pour afficher davantage
-de marque lors de l'exécution ?
+Le tess de \textit{luminance} prend à sa création une taille fixe de vertices (la capacité du VBO). Cette taille ne peut pas être modifiée par la suite. Comment faire dans ce cas pour afficher davantage
+de marques lors de l'exécution ?
 
-Nous avons réglé le problème plustôt simplement, il nous a suffit d'allouer un tess de grande taille, initialisé completement à zéro. Les vertices des marques à afficher sont ajouter
-progressivement dans le tess et pour afficher nous appelons le \og draw \fg{} du batching uniquement sur la partie remplis du tess. Nous n'avons pas poussé la gestion de la mémoire très loin.
-Si par exemple on veut supprimer une marque, nous demandons à Contrast l'intégralité des vertices de ce type de marque et nous les recopions en tête de tableau. Reste à prendre en compte la
-nouvelle taille et la mise à jour est terminé. Nous avons choisi de faire la même chose pour l'ajout, la suppresion ou simplement pour mettre à jour une marque. C'est essentiellement à cause d'un
-manque de temps et par facilité d'implémentation. Contrast peut prevenir notre renderer à l'aide de flags pour savoir qu'elle tess il doit mettre à jour.
+Nous avons réglé le problème plutôt simplement. Il nous a suffi d'allouer un tess de grande taille, initialisé completement à zéro. Les vertices des marques à afficher sont ajoutés
+progressivement dans le tess et pour afficher, nous appelons le \og draw \fg{} du batching uniquement sur la partie remplie du tess. Nous n'avons pas poussé la gestion de la mémoire très loin.
+Si par exemple, on souhaite supprimer une marque, nous demandons à \textit{contrast} l'intégralité des vertices de ce type de marque et nous les recopions en tête de tableau. Reste à prendre en compte la
+nouvelle taille et la mise à jour est terminée. Nous avons choisi de faire la même chose pour l'ajout, la suppresion ou simplement pour mettre à jour une marque. C'est essentiellement à cause d'un
+manque de temps et par facilité d'implémentation. \textit{contrast} peut prévenir notre renderer à l'aide de flags pour savoir quel tess il doit mettre à jour.
 
-Malheureusement il peut arriver que la taille du tess soit dépassé. Dans ce cas nous n'avons plus le choix, le tess doit être détruit et re-allouer en conséquence d'une dimension plus convenable.
+Malheureusement, il peut arriver que la taille du tess soit dépassée. Dans ce cas nous n'avons plus le choix, le tess doit être détruit et ré-alloué en conséquence avec une dimension plus convenable.
 
-%TODO NICOLAS il faut PARLER => "bind juste des actions à des touches"
 
 %% TODO ce schema doit être mis à jour
 \begin{figure}[htp]
@@ -324,20 +319,35 @@ Malheureusement il peut arriver que la taille du tess soit dépassé. Dans ce ca
   \label{fig:pipe}
 \end{figure}
 
-%% Parler des problèmes rencontrés au sain de l'archi
+\subsection{Implémentation des marques de type point}
 
-\subsection{Imlémentation des marques point}
+Nous avons utilisé trois shaders en OpenGL afin de réaliser l'implémentation de ces marques. Tout d'abord le vertex shader, il 
+permet de manipuler les vertices, ici nous avons un seul vertex pour chaque marque. Dans une version sans animation des marques 
+points il faut simplement transmettre la position, la couleur, la taille, la rotation et le type de forme au shader suivant du 
+pipeline graphique. Ce nouveau shader est appelé geometry shader, ce shader permet de générer des nouveaux sommets permettant 
+de créer des nouvelles formes.
 
-Nous avons utilisé trois shaders en OpenGL afin de réaliser l'implémentation de ces marques. Tout d'abord le vertex shader, il permet de manipuler les vertices ici nous avons un seul vertex pour chaque marque. Dans une version sans animation des marques points il faut simplement transmettre la position, la couleur, la taille, la rotation et le type de forme au shader suivant du pipeline graphique. Ce nouveau shader est appelé geometry shader, ce shader permet de générer des nouveaux sommets permettant de créer des nouvelles formes.
+Dans notre cas, le geometry shader permet de générer un rectangle englobant dans lequel sera contenu notre forme. Nous avons 
+donc crée six sommet, soit deux triangles, chacun étant une moitié de notre rectangle englobant. C'est lors de la création de 
+ces sommets que nous appliquons la rotation à notre forme et que nous lui appliquons une matrice de projection afin de faire 
+passer cette forme dans le repère de l'observateur, c'est à dire que l'affichage de cette forme dépend maintenant de la caméra. 
+On doit ensuite passer à l'étape où la forme à proprement parler est calculée.
 
-Dans notre cas, le geometry shader permet de générer un rectangle englobant dans lequel sera contenu notre forme. Nous avons donc crée six sommet sois deux triangles, chacun étant une moitié de notre rectangle englobant. C'est lors de la création de ces sommets que nous appliquons la rotation à notre forme et que nous lui appliquons une matrice de projection afin de faire passer cette forme dans le repère de l'observateur, c'est à dire que l'affichage de cette forme dépend maintenant de la caméra. On doit ensuite passer à l'étape où la forme à proprement parlé est calculé.
+Ainsi, nous arrivons ensuite dans le dernier shader, le fragment shader, le principe de ce shader est de calculer la couleur 
+finale de chaque pixel qui est affiché à l'écran. Dans ce shader, on utilise une fonction de distance entre le \gls{frag} en 
+cours de traitement et le centre de notre rectangle englobant afin de savoir si chaque pixel de ce rectangle fait parti ou non 
+de la forme souhaitée. Les fonctions de distance utilisées sont tirées du papier de Nicolas Rougier \cite{Rougier}. On calcule 
+cette fonction distance différemment pour chaque forme, puis si la distance est trop grande, on se défausse du \gls{frag}. On 
+génère donc notre forme de manière procédurale.
 
-Ainsi nous arrivons ensuite dans le dernier shader, le fragment shader, le principe de ce shader est de calculer la couleur final de chaque pixel qui est affiché à l'écran. Dans ce shader on utilise une fonction de distance entre le \gls{frag} en cours de traitement et le centre de notre rectangle englobant afin de savoir si chaque pixel de ce rectangle fait parti ou non de la forme souhaité. Les fonctions de distance utilisés sont tirées du papier de Nicolas Rougier \cite{Rougier}. On calcul cette fonction distance différemment pour chaque forme puis si la distance est trop grande on se défausse du \gls{frag}. On génère donc notre forme de manière procédurale.
+Cette implémentation à été choisie car elle nous permet de n'avoir besoin que d'un seul sommet pour réaliser des formes complexes.
+Tous les traitements sont réalisés coté GPU, ce qui permet un énorme gain de performances par rapport à une implémentation où 
+l'on devrait fournir tous les sommets de notre forme avant de devoir l'afficher. C'est un gain particulièrement important pour 
+des formes arrondies nécessitant beaucoup de sommets pour éviter l'aliasing.
+L'avantage du fragment shader est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte 
+parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU.
 
-Cette implémentation à été choisi car grâce à ça nous n'avons besoin que d'un seul sommet pour réaliser des formes complexes, tous les traitements sont réalisés coté GPU ce qui permet un énorme gain de performance par rapport à une implémentation où l'on devrait fournir tous les sommets de notre forme avant de devoir l'afficher. C'est un gain particulièrement important pour des formes arrondis nécessitant beaucoup de sommets pour éviter l'aliasing.
-L'avantage du fragment shader c'est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU.
-
-On retrouve toutes les formes pouvant être générés par nos shaders des marques point dans la figure~\ref{fig:point-marks}.
+On retrouve toutes les formes pouvant être générées par nos shaders des marques point dans la figure~\ref{fig:point-marks}.
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.5]{images/point_mark}
@@ -345,30 +355,31 @@ On retrouve toutes les formes pouvant être générés par nos shaders des marqu
   \label{fig:point-marks}
 \end{figure}
 
-\subsection{Implémentation des marques ligne}
+\subsection{Implémentation des marques de type ligne}
 \subsubsection{Les shaders utilisés}
-Pour cette marque nous avons utilisé trois types de shaders OpenGL, qui sont les même que ceux de la rubrique précédente.
+Pour cette marque, nous avons utilisé trois types de shaders OpenGL, qui sont les mêmes que ceux de la rubrique précédente.
 
-Pour l’implémentation de cette marque le vertex shader sert seulement à envoyer
- les données vers le geometry shader, de ce fait il y a peu à dire sur ce shader.
- Le vertex shader reçoit donc et envoie donc les données utiles pour l’affichage
- d’une sous ligne de la polyligne, de fait elle reçoit comme information la position
- d’origine et de fin de la sous-ligne en question, de plus elle reçoit les information
- de position du point précédent la sous-ligne et celle du point suivant la sous-ligne
- (nous expliquerons plus en détail pourquoi nous avons besoins de ces informations).
- Le fragment shader sert exclusivement à appliquer la couleur de la ligne sur les fragments.
+Le vertex shader sert seulement à envoyer les données vers le geometry shader. De ce fait, il y a peu à dire sur ce shader.
+Le vertex shader reçoit et envoie donc les données utiles pour l’affichage
+d’une sous ligne de la polyligne, de fait elle reçoit comme information la position
+d’origine et de fin de la sous-ligne en question. De plus, elle reçoit les informations
+de position du point précédent de la sous-ligne et celle du point suivant la sous-ligne
+(nous expliquerons plus en détail pourquoi nous avons besoins de ces informations).
+Le fragment shader sert exclusivement à appliquer la couleur de la ligne sur les fragments.
 
 Pour afficher une ligne à largeur variable nous avons deux possibilités :
 \begin{itemize}
-\item soit utiliser la primitive OpenGL \og GL\_LINES \fg{} ce qui demanderait un nombre de primitive dépendant de la largeur de la ligne, ce qui ne serait pas très efficace
-\item soit utiliser une des primitives OpenGL servant à afficher des triangles comme par exemple \og GL\_TRIANGLE\_STRIP \fg{} pour afficher le quadrilatère (donc avec quatre sommets) correspondant à une sous-ligne, dont le nombre de primitive utilisé ne dépend pas en complexité de la taille ou de la largeur de la ligne.
+\item soit utiliser la primitive OpenGL \og GL\_LINES \fg{}, ce qui demanderait un nombre de primitives dépendants de la largeur de la ligne, ce qui ne serait pas très efficace
+\item soit utiliser une des primitives OpenGL servant à afficher des triangles comme par exemple \og GL\_TRIANGLE\_STRIP \fg{} pour afficher le quadrilatère (donc avec quatre sommets) correspondant à une sous-ligne, dont le nombre de primitives utilisés ne dépend pas en complexité de la taille ou de la largeur de la ligne.
 \end{itemize}
 
 Nous avons utilisé la deuxième possibilité, qui semble meilleure en terme de performance.
-Considérant le fait qu’il faille diminuer au maximum le coût du calcul côté GPU, les quatre sommets du quadrilatère seront calculés sur le GPU et donc avec l’unique shader capable de faire ce genre d’opératio­n, c’est-à-dire le geometry shader, avec la primitive \og GL\_TRIANGLE\_STRIP \fg{}.
+Considérant le fait qu’il faille diminuer au maximum le coût du calcul côté GPU, les quatre sommets du quadrilatère seront 
+calculés sur le GPU et donc avec l’unique shader capable de faire ce genre d’opératio­n, c’est-à-dire le geometry shader, avec 
+la primitive \og GL\_TRIANGLE\_STRIP \fg{}.
 
 \subsubsection{Liaison entre les sous-lignes}
-Simplement afficher des rectangles représentant les sous-lignes est possible pour une polyligne formée de seulement deux points, mais pour plus de points, il faut gérer la liaison entre les sous-lignes sinon l'on a une jonction entre les deux sous-lignes peu attrayante et pour cela il y a plusieurs façon de faire comme le montre la figure~\ref{fig:joint}.
+Simplement afficher des rectangles représentant les sous-lignes est possible pour une polyligne formée de seulement deux points. Mais pour plus de points, il faut gérer la liaison entre les sous-lignes, sinon nous aurons une jonction entre les deux sous-lignes peu attrayante. Il y a plusieurs façon de faire pour gérer cette liaison, comme le montre la figure~\ref{fig:joint}.
 
 \begin{figure}[htp]
   \centering
@@ -377,10 +388,13 @@ Simplement afficher des rectangles représentant les sous-lignes est possible po
   \label{fig:joint}
 \end{figure}
 
-La solution la plus simple en terme de performance se trouve être le \og bevel join \fg{} vu que cette liaison peut-être réalisé juste en changeant l’inclinaison du bout de chaque sous-ligne et donc on garde le fait de n’avoir à afficher qu’un quadritère par sous-ligne alors que la solution de la liaison  \og round joint \fg{} n’est pas aussi simple et demande de retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la fonction discard d’OpenGL dans le fragment shader diminue les performances pour la plupart des hardware[1]).
+La solution la plus simple en terme de performances se trouve être le \og bevel join \fg{}, étant donné que cette liaison peut-être réalisée juste en changeant l’inclinaison du bout de chaque sous-ligne. On garde ainsi le fait de n’avoir à afficher qu’un 
+quadritère par sous-ligne alors que la solution de la liaison  \og round joint \fg{} n’est pas aussi simple et demande de 
+retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la 
+fonction discard d’OpenGL dans le fragment shader diminue les performances pour la plupart des hardwares[1]).
 
-Pour faire la liaison choisie il nous faut le voisinage des points formant une sous-ligne de façon à avoir une inclinaison des extrémités de sous-ligne s’accordant. Pour expliquer plus facilement comment est formé cette liaison voici la figure~\ref{fig:geom_line}.
-
+Pour faire la liaison choisie, il nous faut le voisinage des points formant une sous-ligne de façon à avoir une inclinaison des 
+extrémités de sous-ligne s’accordant. Pour expliquer plus facilement comment est formée cette liaison voici la figure~\ref{fig:geom_line}.
 
 \begin{figure}[htp]
   \centering
@@ -389,7 +403,11 @@ Pour faire la liaison choisie il nous faut le voisinage des points formant une s
   \label{fig:geom_line}
 \end{figure}
 
-Dans ce schéma les vecteurs miter1 et miter2 sont ce que j’appelle précédemment l’inclinaison des extrémité. Les vecteurs t0, t1, et t2 sont respectivement les vecteurs directeurs des segments [P0,P1], [P1,P2], [P2,P3] et n1, n2 et n3 leurs normales. De ce fait le miter n’est en fait que l’addition des vecteurs normaux des segments correspondant. Il faut aussi calculer la valeur d’écart de par rapport au point d’origine pour avoir une ligne avec une largeur correcte, pour cela on prend la largeur voulue de la ligne et on le divise par le produit scalaire de la normale de la ligne précédente ou suivante suivant l’extrémité et du miter correspondant. Une fois que l’on a le miter il suffit de créer des points décalées de la valeur précédemment créé le long du vecteur miter normalisé.
+Dans ce schéma, les vecteurs miter1 et miter2 sont ce que j’appelle précédemment l’inclinaison des extrémités. Les vecteurs t0, 
+t1, et t2 sont respectivement les vecteurs directeurs des segments [P0,P1], [P1,P2], [P2,P3] et n1, n2 et n3 leurs normales. De 
+ce fait, le miter n’est en fait que l’addition des vecteurs normaux des segments correspondants. Il faut aussi calculer la 
+valeur d’écart par rapport au point d’origine pour avoir une ligne avec une largeur correcte. Pour cela, on prend la largeur 
+voulue de la ligne et on le divise par le produit scalaire de la normale de la ligne précédente ou suivante suivant l’extrémité et le miter correspondant. Une fois que l’on a le miter, il suffit de créer des points décalés de la valeur précédemment créé le long du vecteur miter normalisé.
 
 \subsubsection{Résultat}
 Et finalement voici le résultat figure~\ref{fig:line}.
@@ -401,7 +419,7 @@ Et finalement voici le résultat figure~\ref{fig:line}.
 \end{figure}
 
 
-\subsection{Implémentation des marques texte}
+\subsection{Implémentation des marques de type texte}
 
 Un texte est une marque qui permet d'afficher une chaîne de caractère dont le contenu, la police, la taille de police ainsi que la position et couleur sont définis par l'utilisateur.
 
@@ -600,8 +618,8 @@ peut ainsi appliquer n'importe quelle modification à l'ensemble des marques d'u
 Une marque animée est une marque dont le changement de propriété se fait progressivement.
 Si l'on change la position d'une marque animée, on verra la marque se déplacer de manière fluide vers la
 nouvelle position. Si l'on change la forme d'un marque de type point, nous verrons la transformation en la nouvelle forme progressivement.
-La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme \og Astérisque \fg vers une
-forme \og Trèfle \fg.
+La figure~\ref{fig:anim-ex} illustre la transformation d'une marque ayant la forme \og Astérisque \fg{} vers une
+forme \og Trèfle \fg{}.
 
 \begin{figure}[htp]
   \centering
@@ -621,9 +639,9 @@ type paramamétré sera celui de la propriété.
 Cette structure permet de stocker :
 \begin{itemize}
 \item La valeur de l'attribut qu'avait la marque avant le début de l'animation, que nous appelerons l'\og
-\textit{ancienne valeur} \fg.
-\item La valeur qu'aura l'attribut de la marque à la fin de l'animation, la \og \textit{valeur cible} \fg
-\item Le temps au moment où l'animation a commencé, le \og \textit{temps de début} \fg.
+\textit{ancienne valeur} \fg{}.
+\item La valeur qu'aura l'attribut de la marque à la fin de l'animation, la \og \textit{valeur cible} \fg{}
+\item Le temps au moment où l'animation a commencé, le \og \textit{temps de début} \fg{}.
 \end{itemize}
 
 Pour effectuer une animation d'une propriété, nous utilisons la fonction
@@ -631,9 +649,9 @@ Pour effectuer une animation d'une propriété, nous utilisons la fonction
 interpolation linéaire entre deux valeurs.
 Elle prend 3 paramètres :
 \begin{itemize}
-\item le début de la plage dans laquelle interpoler, \og \textit{x} \fg
-\item la fin de la plage dans laquelle interpoler, \og \textit{y} \fg
-\item la valeur à utiliser pour interpoler entre x et y, \og \textit{a} \fg.
+\item le début de la plage dans laquelle interpoler, \og \textit{x} \fg{}
+\item la fin de la plage dans laquelle interpoler, \og \textit{y} \fg{}
+\item la valeur à utiliser pour interpoler entre x et y, \og \textit{a} \fg{}.
 \end{itemize}
 
 \textit{x} correspond à l'\textit{ancienne valeur} de la propriété et \textit{y} correspond à la
@@ -741,7 +759,6 @@ variable qu'une seule fois.
 C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de
 partie.
 
-\section{Problème général rencontré}
 \subsection{Les identifiants de marques}
 
 L'utilisateur manipule des marques. Mais pour retrouver une marque existante et y
