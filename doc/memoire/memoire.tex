@@ -116,90 +116,121 @@ Finalement notre client nous a aussi donner un proof of concept de ce que nous d
 
 \section{Analyse des besoins}
 %% Etoffer la partie analyse des besoins
-\section{Analyse des besoins fonctionnels}
+\subsection{Analyse des besoins fonctionnels}
 
 L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque permettant d'afficher des
-\gls{marque}s \cite{VegaMarks}. Il doit notamment être capable de préciser des \gls{canaux} associés à
-ces marques : la position de la marque, sa taille, sa rotation, sa profondeur, sa couleur, sa forme,
-l'épaisseur et la couleur de son contour, son contraste, sa luminance, son rayon, ses angles, etc.
-\textit{Contrast} offrira la possibilité d'afficher les marques suivantes :
-\begin{itemize}
-    \item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
-    distance calculée en GLSL. Les marques de type Points peuvent prendre différentes formes (triangle, rectangle, diamant, trèfle, astérisque, etc.).
+\gls{marque}s \cite{VegaMarks}. Les divers types de marque sont les suivants:
+	\begin{itemize}
+	\item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
+    distance calculée en GLSL. Nous reprendrons les mêmes marques que celles du proof of concept de notre client.
+    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche. 
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
-    (continu, tirets, pointillés...).
-    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
+    (continu, tirets, pointillés...). 
+    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un 
     polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
-    différente de la couleur des contours.
+    différente de la couleur des contours. 
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
-    \cite{VegaMarks}.
+    \cite{VegaMarks}. Ces aires doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
+    visualisation de données. Ces types de marque ne sont pas le plus prioritaire à implémenter.
     \item Texte : utilisable pour représenter du texte et peut avoir différentes propriétés : italique,
     gras, centré, aligné à droite, en haut, etc.
-\end{itemize}
-
-Pour tester cette fonctionnalité, il devra y avoir des tests permettant d'afficher des marques de façon
-contrôlée et de ce fait vérifier si les marques s'affichent bien suivant leurs \gls{canaux} associés.
-
-\textit{Contrast} devra également être capable de gérer des calques, c'est-à-dire que l'utilisateur pourra
+    \end{itemize}
+\begin{itemize}
+\item L'utilisateur doit notamment être capable de préciser des \gls{canaux} associés à
+ces marques : la position de la marque, sa taille, sa rotation, sa profondeur, sa couleur, sa forme,
+l'épaisseur et la couleur de son contour, son contraste, sa luminance, son rayon, ses angles, etc.
+\item \textit{Contrast} devra également être capable de gérer des calques, c'est-à-dire que l'utilisateur pourra
 décider de placer une marque sur un certain calque et une autre marque sur un différent calque. Si ces
 marques ont la même position, l'une des deux marques cachera la seconde. Cet exemple utilise deux calques
 mais il peut y en avoir autant que l'utilisateur le souhaite.
-
-Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
+\item Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
 de translation, le seul paramètre qu'elle prend en compte est un niveau de zoom ainsi que la taille
 de la fenêtre d'affichage.
+\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau. 
+		Le bas-niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut-niveau nous
+		fournissons le moteur de rendu.
+		\begin{itemize}
+			\item Pour simplifier le rendu en OpenGL nous utiliserons \textit{luminance} \cite{luminance}, nous avons choisi cette bibliothèque
+			premièrement elle nous a été proposé par notre client et de plus c'est une des seules bibliothèque de rendu OpenGL sur Rust et celle-ci est
+			très souvent mise à jour.
+		\end{itemize}
+\item Les marques devront être animées de façon similaire à FATuM.
+	\begin{itemize}
+	\item Pour ce faire nous utiliserons un double tampon pour la visualisation, un tampon servant de tampon avant et un tampon servant de tampon arrière.
+	Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise
+	à jour est finie (c'est-à dire que l'on a une autre image à afficher).
+	\item Les deux tampons peuvent être échangés par différentes techniques notamment un simple échange : le tampon arrière devient le tampon avant et
+	inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée
+	que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu
+	lisible.
+	\item Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une
+	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
+	\end{itemize}
+\end{itemize}  
 
-Ces marques pourront également être animées. La gestion des animations sera implémentée de manière similaire
-à FATuM, c'est-à-dire avec un double tampon pour la visualisation, un tampon servant de tampon avant et un tampon servant de tampon arrière. Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise à jour est finie (c'est-à-dire que l'on a une autre image à afficher). Les deux tampons peuvent être échangés par différentes techniques notamment un simple échange : le tampon arrière devient le tampon avant et inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu lisible. Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
 
-Dans un premier temps la bibliothèque ainsi développée devra être capable d'afficher,
-à 50 images par seconde, au moins 10 fois plus d’éléments que la librairie JavaScript D3.js.
-Le but final étant que \textit{contrast} ait de meilleures performances que FATuM.
 
-\section{Analyse des besoins non fonctionnels}
+\subsection{Analyse des besoins non fonctionnels}
 
-Selon le client, il serait préférable d'implémenter les marques dans l'ordre suivant :
+L'objectif principal de ce projet est avant tout les performances.Le but est de dépasser les performances de la bibliothèque FATuM.Pour garantir
+ce besoin plusieurs choix ont été fait:
+	\begin{itemize}
+		\item Le client nous a demandé de réaliser le projet avec le langage Rust \cite{rust}, l'intérêt de ce langage est qu'il offre de très bonnes
+		performances pour l'application, comparable à du C mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
+		sans fuite mémoire ni erreur de segmentation.
+		\begin{itemize}
+			\item Nous serons obligés de réaliser du code \gls{unsafe} pour cette bibliothèques mais l'objectif et d'en faire le moins possible.
+			\begin{itemize}
+				\item Il faudra donc mettre en place une batterie de tests importante pour ces parties particulièrement sensibles.
+			\end{itemize}
+			\item Nos devrons écrire des macros afin d'éviter les doublons dans le code.
+		\end{itemize}
+		\item Le client nous demande aussi de réaliser la partie GPU à l'aide d'OpenGL. Le but est de réaliser le maximum des algorithmes de génération de 		nos marques sur GPU et donc en OpenGL afin d'épargner un maximum de calcul au processeur.
+		\begin{itemize}
+			\item Nous devrons utiliser un \gls{geom} en glsl pour les marques afin de limiter le nombre de vertices passées au GPU.
+			\item Il faudra séparer les \gls{shader}s de chaque type de marque dans plusieurs fichiers différents.
+			\item Notre client souhaite que nous utilisons une crate Rust pour compiler
+			nos shaders en GLSL, afin de construire et nous assurer de leur bonne conformité.
+			La crate en question porte le même nom que GLSL\cite{GLSL}.
+		\end{itemize}
+		\item Des benchmark devront être réaliser pour comparer les performances de notre programme aux logiciels déjà existant, principalement FATuM.
+	
+	\end{itemize}
+Le niveau de priorité de chaque besoin est le suivant :
 \begin{itemize}
-    \item Points
-    \item Lignes
-    \item Polygones
-    \item Aires
-    \item Texte
+	\item Marque Point
+	\item Marque Ligne
+	\item Calques
+	\item Animations
+	\item Marque Texte
+	\item Marque Polygone
+	\item Marque Aire
 \end{itemize}
-
-Concernant l'API de \textit{contrast}, l'utilisateur n'aura pas accès aux
-couches inférieures à la bibliothèque. Il n'aura pas accès aux types des marques,
-il décrira seulement les propriétés de la marque et \textit{contrast} déterminera
-s'il s'agit d'une marque de type point, ligne, texte, etc.
-Voici un exemple de syntaxe pour ajouter une marque de type Texte :
-
-%|addMark().set_center(0.5,0.5).set_color(Color.Blue)|\newline
-%|.set_font("ComicSansMS").set_font_size(20).text("Bonjour").show()|
-
-Notons que cette syntaxe n'est pas définitive mais cela donne une idée de la façon
-dont l'utilisateur manipule les marques.
-
-Notre client souhaite que nous utilisons une crate Rust pour compiler
-nos shaders en GLSL, afin de construire et nous assurer de leur bonne conformité.
-La crate en question porte le même nom que GLSL\cite{GLSL}.
-
-Pour atteindre les demandes de performances imposées par le client, nous allouerons les données au maximum possible sur la pile.
-La consommation mémoire n'est pas une contrainte importante pour le développement de \textit{contrast}. Tant
-que la vitesse est satisfaisante, nous n'aurons pas à optimiser au mieux la gestion de la mémoire.
-
-Nous devrons mettre en place une batterie de tests importants car ce genre de bibliothèque impose de faire
-du code \og non stable \fg{}.
-C'est-à-dire du code qui désactive les garanties de sécurité comme celle citée dans l'introduction.
-Ces tests permettront en outre de valider nos structures de données.
-Nous allons également réaliser des tests de performance afin de nous assurer que notre solution réponde bien
-aux exigences de vitesse qui nous sont fixés.
-
 \section{Description du logiciel}
 %% Parler des problèmes rencontrés au sain de l'archi
-\subsection{Description de l'architecture}
+\subsection{Organisation de l'architecture}
 
-L'architecture est composé d'une structure principale contenant tous les calques. Les calques contiennent
+Notre bibliothèque est composé de 2 parties principales :
+\begin{itemize}
+\item la partie bas niveau, contenu dans le dossier \textit{contrast}
+\item la partie haut niveau, contenu dans le dossier  \textit{contrast-renderer}.
+\end{itemize}
+
+La partie bas niveau est elle-même séparée en plusieurs dossiers ;
+\begin{itemize}
+\item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
+\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque
+\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
+\end{itemize}
+
+\textbf{TODO: expliquer les différents shaders, justifiez le choix rust / geometry shader}
+
+\textbf{TODO: pourquoi on développe en Rust (je ne sais pas où mettre cette partie)}
+
+\subsection{Architecture bas niveau}
+
+L'architecture bas niveau est composé d'une structure principale contenant tous les calques. Les calques contiennent
 chacun leurs marques.
 
 La figure~\ref{fig:arch} décrit de manière simplifiée l'architecture.
@@ -227,38 +258,42 @@ de données des marques. Cela permet de stocker nos marques plus facilement et d
 
 Côté GLSL, nous disposons de shaders différents pour chaque type de marque. Toutes nos marques utilisent un vertex shader, un \gls{geom} et un \gls{frag} shader à l'exception du texte qui n'utilise pas de geometry shader.
 
-\subsection{Organisation de l'architecture}
+\subsection{Pipeline graphique}
 
-Notre bibliothèque est composé de 2 parties principales :
+Le pipeline graphique est la succession des opérations généralement réalisées par une carte graphique nécessaires au rendu d’un lot de données. Nous allons essayer de vous décrire en détails comment
+fonctionne celui de Contrast. Nous allons nous appuyez sur OpenGL comme exemple mais c'est quelque d'assez générique à toute les API graphiques. Ce seront donc les mêmes concepts pour
+Vulkan ou DirectX seulement probablement sous un autre dénomination.
+
+OpenGL ne sait dessiner que des primitives de dessins très simple comme le point (literalement un pixel) ou le triangle. Toute forme complexe est impossible sans traitement.
+Ces primitives sont définies par des vertices, se sont des sommets qui portent différents attributs. Nous avons par exemple deux attributs très utilisés qui sont la position et
+la couleur mais toutes autres informations est imaginable. Ce qui est certains, c'est qu'il faut 3 vertices pour dessiner un triangle.
+
+En réalité les attributs d'un vertex sont des flottants ou même des tableaux de flotants, c'est ce qu'ont peut appeler un vecteur. L'ensemble de ces vertices sont stocké dans ce
+que OpenGL appelle un \gls{VBO}, c'est-à-dire un énorme buffer présent dans la mémoire du GPU. La description des attributs d'un vertex est fait par le \gls{VAO}.
+C'est lui qui va décrire combien il y a d'attributs par vertex et si se sont des vecteurs de une à quatre dimension.
+Cette description permet au shader program de pouvoir accéder à ses vecteurs et les manipuler.
+
+Le shader program est un programme écris en GLSL qui est exécuté sur le GPU. Il est découpé en plusieurs passes, voici les trois essentiel dans l'ordre d'execution :
 \begin{itemize}
-\item la partie bas niveau, contenu dans le dossier \textit{contrast}
-\item la partie haut niveau, contenu dans le dossier  \textit{contrast-renderer}.
+    \item Le vertex shader permet de définir en sortie la position du vertex sur l'écran. C'est par lui qu'arrive l'ensemble
+des attributs mais il peuvent atteindre les autres étages, si le vertex shader leur transmet en sortie.
+    \item Le geometry shader permet d'emettre davantage de vertices qu'il en a initialement reçu du VBO, il permet donc de modifier la géometrie de notre primitive de dessin.
+    \item Le fragment shader permet de définir la couleur de sortie des pixels (appelé fragments) de notre primitive.
 \end{itemize}
 
-La partie bas niveau est elle-même séparée en plusieurs dossiers ;
-\begin{itemize}
-\item \textit{mark\_macro\_derive}, qui contient l'implémentation de la macro procédurale
-\item \textit{properties}, qui contient l'implémentation de plusieurs propriétés utilisés par la bibliothèque
-\item \textit{src}, le code source principal de la partie bas niveau, contenant l'implémentation des structures de données pour stocker les marques, la structure principale pour stocker toutes les marques et les shaders pour tous les types de marques.
-\end{itemize}
+Pour résumer, pour afficher un triangle. Une fois que notre est remplis VBO, notre VAO défini et que notre shader program écris. Il faut dire à OpenGL d'afficher la primitive.
+C'est un appels \og draw \fg{} qui s'occupe de cette tâche, il prend en paramètre le type de la primitive de dessin et combien il faut en dessiner.
 
-\textbf{TODO: expliquer les différents shaders, justifiez le choix rust / geometry shader}
+La quantité de primitive à dessiner est très importante. C'est une optimisation primordiale à maximiser. Il faut diminuer le plus possible la communication entre le CPU et le GPU pour
+qu'au final le GPU soit quasiment autonome et puisse sous-traiter le plus possible le travail du CPU pour que celui-ci se concentre sur des tâches plus importantes.
+C'est pour cette raison qu'on essaye d'afficher le plus de primitives d'un seul appels pour que le CPU n'est seulement à communiquer ses appels draw à chaque frame pour dessiner entièrement
+un rendu. Cette méthode s'appelle le batching, c'est-à-dire le dessins par lot.
 
-\textbf{TODO: pourquoi on développe en Rust (je ne sais pas où mettre cette partie)}
+Ainsi la couche bas niveau de Contrast possède un shader program et un format de vertex par type de marque qui seront transmis à la couche haut niveau pour afficher les marques.
+Pou rappel, c'est la partie haut niveau qui s'occupe d'OpenGL car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique si besoin. Les vertices que nous avons
+défini dans nos shaders sont complètement générique pour fonctionner sur une autre implémentation.
 
-\subsection{Schéma du pipeline}
-
-Cette figure~\ref{fig:pipe} présente la décomposition des différents éléments nécessaire au \gls{pipeline}
-graphique pour chaque marque. Le pipeline peut être externe à notre bibliothèque, il doit juste demander
-les canaux, autrement dit les vertices (\gls{vertex}), contenu dans le \gls{VBO} et les \gls{uniform}
-du \gls{shader} à notre bibliothèque\cite{Semi}.
-Dans notre cas, c'est \textit{luminance} \cite{luminance} qui est en charge du pipeline.
-
-Le renderer n'est actuellement pas présent dans notre diagramme de l'architecture pour des
-raisons techniques. Son rôle est d'indexer les marques de chaque type. Quand une marque demande
-à être affiché, elle notifie le renderer qui va récupérer ses canaux et construire le VBO.
-
-
+\subsection{Architecture haut niveau}
 
 
 \begin{figure}[htp]
@@ -280,6 +315,14 @@ Ainsi nous arrivons ensuite dans le dernier shader, le fragment shader, le princ
 
 Cette implémentation à été choisi car grâce à ça nous n'avons besoin que d'un seul sommet pour réaliser des formes complexes, tous les traitements sont réalisés coté GPU ce qui permet un énorme gain de performance par rapport à une implémentation où l'on devrait fournir tous les sommets de notre forme avant de devoir l'afficher. C'est un gain particulièrement important pour des formes arrondis nécessitant beaucoup de sommets pour éviter l'aliasing.
 L'avantage du fragment shader c'est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU.
+
+On retrouve toutes les formes pouvant être générés par nos shaders des marques point dans la figure~\ref{fig:point-marks}.
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.5]{images/point_mark}
+  \caption{Affichage de toutes les marques de type point}
+  \label{fig:point-marks}
+\end{figure}
 
 \subsection{Implémentation des marques ligne}
 \subsubsection{Les shaders utilisés}
@@ -332,31 +375,33 @@ Et finalement voici le résultat figure~\ref{fig:line}.
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.8]{images/line_example}
-  \caption{Example d'affichage de ligne}
+  \caption{Exemple d'affichage de ligne}
   \label{fig:line}
 \end{figure}
 
 
 \subsection{Implémentation des marques texte}
 %TODO ceci n'est pas complet
-Un texte est une marque qui permet d'afficher une chaîne de caractère dont le contenu, la font, la taille de police ainsi que la position et couleur est défini par l'utilisateur.
+Un texte est une marque qui permet d'afficher une chaîne de caractère dont le contenu, la police, la taille de police ainsi que la position et couleur sont définis par l'utilisateur.
 
 \subsubsection{Généralité}
 
-Pour afficher du texte en fonction d'une véritable font généralement vectorielle, il faut avant toute chose rasteriser les caractères utilisés en bitmap.
-C'est une opération complexe et c'est pourquoi nous utilisons la bibliothèque \textbf{FreeType} \cite{freetype-rs} spécialisé dans cette fonction.
-FreeType va prendre en entrée un fichier de font et la taille de police qui correspond en réalité à la hauteur en pixel d'un caractère, la largeur est calculé automatiquement
-par la bibliothèque pour respecter la proportionnalité. En sortie, nous obtenons ce que FreeType appelle une font face qui est propre à notre configuration font et police.
-À partir de cette face nous allons pouvoir charger chaque caractères que nous allons utiliser un par un, il ne sont pas tous charger car cela pourrait gâcher de la mémoire.
-Un caractère rasteriser donne un glyphe, c'est une représentation graphique d'un signe typographique. Pour FreeType c'est aussi une structure contenant toutes les métriques
-du glyphe ainsi que le bitmap associé, c'est évidemment un format binaire car la couleur ne dépend pas de la font.
+Pour afficher du texte en fonction d'une véritable font (police), généralement vectorielle, il faut avant toute chose rastériser les caractères utilisés en bitmap.
+C'est une opération complexe et c'est pourquoi nous utilisons la bibliothèque \textbf{FreeType} \cite{freetype-rs}, spécialisée dans cette fonction.
 
-Une fois que nous avons rasteriser chacun des caractères de notre chaîne de caractères, nous pouvons transformer les bitmaps en texture OpenGL pour ensuite les plaquer
-sur des rectangles alignés bout à bout afin de construire une chaîne de caractères lisible. C'est rectangles sont les boites englobantes de chaque glyphe qui dépendent
-de leur métriques qui eux même sont calculés grâce à la police.
-Notez que nous parlons de glyphe car ils sont forcément associé à une taille de police ainsi qu'à une font alors que ce n'est pas le cas pour un caractère.
-La métrique d'un glyphe \cite{metrics} contient entre autre la hauteur et largeur du bitmap et d'autre information nécessaire à son bon placement pour former un mot typographiquement correct.
-C'est le cas par example du \textit{BearingY} qui sert à positioner la hampe du caractère ou encore d'\textit{Advance} qui est l'espacement, que l'ont peut voir sur la figure~\ref{fig:metrics}.
+FreeType va prendre en entrée un fichier de font et la taille de police qui correspond en réalité à la hauteur en pixel d'un caractère. La largeur est calculée automatiquement
+par la bibliothèque pour respecter la proportionnalité. En sortie, nous obtenons ce que FreeType appelle une \og font face\fg{} qui est propre à notre configuration font et police.
+À partir de cette face, nous allons pouvoir charger chaque caractère que nous allons utiliser un par un. Il ne sont pas tous chargés car cela pourrait gâcher de la mémoire.
+
+Un caractère rastérisé donne un glyphe. C'est une représentation graphique d'un signe typographique. Pour FreeType, c'est aussi une structure contenant toutes les métriques
+du glyphe ainsi que le bitmap associé : c'est évidemment un format binaire car la couleur ne dépend pas de la font.
+
+Une fois que nous avons rastérisé chacun des caractères de notre chaîne de caractères, nous pouvons transformer les bitmaps en texture OpenGL pour ensuite les plaquer
+sur des rectangles alignés bout à bout afin de construire une chaîne de caractères lisible. Ces rectangles sont les boîtes englobantes de chaque glyphe qui dépendent
+de leur métriques qui eux même sont calculées grâce à la police.
+Notez que nous parlons de glyphe car ils sont forcément associés à une taille de police ainsi qu'à une font alors que ce n'est pas le cas pour un caractère.
+La métrique d'un glyphe \cite{metrics} contient entre autre la hauteur et largeur du bitmap, et d'autres informations nécessaire à son bon placement pour former un mot typographiquement correct.
+C'est le cas par example du \textit{bearingY} qui sert à positionner la hampe du caractère ou encore d'\textit{advance} qui est l'espacement, que l'on peut voir sur la figure~\ref{fig:metrics}.
 
 \begin{figure}[htp]
   \centering
@@ -365,54 +410,56 @@ C'est le cas par example du \textit{BearingY} qui sert à positioner la hampe du
   \label{fig:metrics}
 \end{figure}
 
-Pour des raisons d'optimisation, nous ne pouvons mamheureusement pas créer une texture par bitmap. Le moyen le plus simple d'optimiser un rendu en OpenGL et de faire du dessin par lot,
-c'est-à-dire du Batching. Nous reviendrons probablement dessus dans la section dédié à la couche au niveau mais pour résumer brièvement, c'est le principe d'afficher le plus
-possible de vertices en un seul appels d'OpenGL (en l'occurence un draw) en utilisant des tableaux de vertices.
+Pour des raisons d'optimisations, nous ne pouvons malheureusement pas créer de textures par bitmap. Le moyen le plus simple d'optimiser un rendu en OpenGL et de faire du dessin par lot,
+c'est-à-dire du batching. Nous reviendrons probablement dessus dans la section dédiée à la couche haut-niveau mais pour résumer brièvement, c'est le principe d'afficher le plus
+de vertices possible en un seul appel d'OpenGL (en l'occurence un draw) en utilisant des tableaux de vertices.
 
-Utiliser une seule texture par bitmap nous forcerez à devoir changer la texture courante (sous-entendez texture bind) entre chaque caractère dessiné puisque que le nombre de texture
-courante est limité par OpenGL. Cela détruirait tout effort de Batching car il faudrait appeler OpenGL entre chaque changement de texture.
+Utiliser une seule texture par bitmap nous forcerait à devoir changer la texture courante (sous-entendu texture bind) entre chaque caractère dessiné puisque que le nombre de textures
+courantes est limité par OpenGL. Cela détruirait tout effort de batching car il faudrait appeler OpenGL entre chaque changement de texture.
 Pour y rémédier, nous avons fait le choix de rassembler l'ensemble des bitmaps de la même font face dans une seule et même texture.
-C'est ce que l'ont appelle une texture atlas, voir figure~\ref{fig:atlas}.
-Les glyphes et donc les bitmaps n'ont pas tous la même boite englobante ce qui complique l'emballage de tout les glyphes dans la même texture.
-C'est pourquoi nous utilisons une seconde bibliothèque pour \og packer \fg{} comme le dise les anglophones nos différentes boites englobantes, evidemment des rectangles, dans la même très grande boite
-englobante qui est notre texture atlas. La bibliothèque en question est \textbf{rect\_packer} \cite{rect-packer}, elle utilise une heuristique Skyline. Dans notre cas toute les textures atlas
-ont pour dimensions 1024 pixels, elle ne peuvent donc pas contenir toute les tailles de police possible mais c'est très largement suffisant pour la pluspart des utilisation standard.
-C'est d'ailleurs un des intérèt de pas charger tout les caractères possibles d'une font mais seulement ceux utilisés ou qui ont une très forte chance de l'être comme l'ASCII.
+C'est ce que l'on appelle une texture atlas, voir figure~\ref{fig:atlas}.
+
+Les glyphes et donc les bitmaps n'ont pas toutes la même boite englobante ce qui complique l'emballage de tous les glyphes dans la même texture.
+C'est pourquoi nous utilisons une seconde bibliothèque pour \og packer \fg{}, comme le disent les anglophones, nos différentes boites englobantes (des rectangles) dans la même très grande boite
+englobante qui est notre texture atlas. La bibliothèque en question est \textbf{rect\_packer} \cite{rect-packer}, qui utilise une heuristique Skyline. Dans notre cas, toutes les textures atlas
+ont pour dimensions 1024 pixels, elle ne peuvent donc pas contenir toute les tailles de police possible mais c'est très largement suffisant pour la plupart des utilisations standard.
+C'est d'ailleurs l'un des intérêts de ne pas charger tous les caractères possibles d'une font mais seulement ceux utilisés ou qui ont une très forte chance de l'être comme l'ASCII.
 
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.8]{images/font-atlas}
-  \caption{Example de font atlas en police 72}
+  \caption{Exemple de font atlas en police 72}
   \label{fig:atlas}
 \end{figure}
 
-Désormais nous avons uniquement besoin de changer de texture courante quand on change de font face. C'est parfait puisqu'en moyenne nous utilisons pas plus de deux font à la fois.
+Désormais, nous avons uniquement besoin de changer de texture courante quand on change de font face. C'est parfait puisqu'en moyenne nous utilisons pas plus de deux font à la fois.
 
-Il y a tout de même un prix à payer pour l'utilisation de la texture atlas et celui-ci c'est fait sur la mémoire. En effet il faut maintenant rajouter un attribut à chacun de nos vertices
-pour stocker la coordonnée de texture (U,V) afin de définir la sous région dans la texture correspondant au glyphe. Pour résumer nos vertices contiennent la position, calculé à partir de
+Il y a tout de même un prix à payer pour l'utilisation de la texture atlas et celui-ci s'est fait sur la mémoire. En effet il faut maintenant rajouter un attribut à chacun de nos vertices
+pour stocker la coordonnée de texture (U,V) afin de définir la sous région dans la texture correspondant au glyphe. Pour résumer, nos vertices contiennent la position, calculée à partir de
 la métrique de la glyphe et la texcoord pour plaquer la bonne sous région de la texture atlas.
 
 \subsubsection{Implémentation}
 
 Les fameux rectangles de chaque glyphe sont en réalité composé de deux triangles car la primitive de dessin rectangle n'existe pas. Il faut donc 6 vertices pour afficher un seul caractère.
 Nous aurions pu indexer les vertices pour n'afficher un rectangle qu'avec 4 vertices mais nous n'avons pas eu le temps.
-Mais que deviens donc la couleur ? La couleur est effectivement pas stocké dans les vertices, c'est une redondance qui pèserait un poid non négligeable en mémoire. La couleur est une variable
-commune à beaucoup de caractères, nous avons décidé d'envoyer au shader la couleur du texte avec une variable dite \og uniform \fg{}, sorte de variable globale, de cet fait il n'y a pas de redondance.
-Cette même économie de mémoire pourrait nous être reproché de casser le batching. C'est vrai que si la couleur la change comme avec les textures, il faut mettre à jour la variable de la couleur
-dans le shader. Mais généralement un texte lisible est de couleur uni. De plus la couleur s'applique à une chaîne de caractères entière et non au caractères. Nous pensons vraiment que nos utilisateurs
-ne vont pas essayer d'afficher un texte bariolé des couleurs de l'arc-en-ciel, qui de toute façon pour voir le jour, devrait contenir une marque texte pour chaque caractère de cet artistique texte.
-Comme nous venons de le dire plus haut, la couleur s'applique à une marque texte entière, c'est une situation qui devrait pas arriver.
 
-Pour en revenir sur l'implémentation dans contrast, une marque texte contient uniquement la position, la couleur, le contenu du texte et pour finir une référence (sous forme
-de chaîne de caractère). Toute les fonts faces (FaceCache) sont stockés dans un cache (FontCache) contenu dans contrast. Elles sont indexées dans un tableau associatif (HashMap) avec la référence
-comme clef. C'est pour eviter tout problème mémoire lié à Rust. Ainsi quand contrast fabrique les vertices des marques textes, il a juste à récupérer la clef correspondant à la font face,
-vérifier si elle est présente et procéder. Acessoirement cela permet à l'utilisateur de changer la taille de police d'une font, il suffit qu'il enregistre un nouveau couple font et police
+Mais que devient donc la couleur ? La couleur n'est effectivement pas stockée dans les vertices, c'est une redondance qui pèserait un poids non négligeable en mémoire. La couleur est une variable
+commune à beaucoup de caractères. Nous avons décidé d'envoyer aux shaders la couleur du texte avec une variable dite \og uniform \fg{}, sorte de variable globale, de ce fait il n'y a pas de redondance.
+Cette même économie de mémoire pourrait nous être reprochée de casser le batching. C'est vrai que si la couleur la change comme avec les textures, il faut mettre à jour la variable de la couleur
+dans le shader. Mais généralement un texte lisible est de couleur uni. De plus, la couleur s'applique à une chaîne de caractères entière et non au caractère. Nous sommes convaincus que nos utilisateurs
+n'essaieront pas d'afficher un texte bariolé des couleurs de l'arc-en-ciel, qui de toute façon, pour voir le jour, devrait contenir une marque texte pour chaque caractère de cet artistique texte.
+Comme nous venons de le dire plus haut, la couleur s'applique à une marque texte entière, c'est une situation qui ne devrait pas arriver.
+
+Pour en revenir sur l'implémentation dans \textit{contrast}, une marque texte contient uniquement la position, la couleur, le contenu du texte et pour finir une référence (sous forme
+de chaîne de caractères). Toutes les fonts faces (FaceCache) sont stockés dans un cache (FontCache) contenu dans \textit{contrast}. Elles sont indexées dans un tableau associatif (HashMap) avec la référence
+comme clef. C'est pour éviter tout problème mémoire lié à Rust. Ainsi, quand \textit{contrast} fabrique les vertices des marques textes, il a juste à récupérer la clef correspondant à la font face,
+vérifier si elle est présente, et procéder. Accessoirement, cela permet à l'utilisateur de changer la taille de police d'une font, il suffit qu'il enregistre un nouveau couple font et police
 sous une autre clef et il pourra s'en servir.
 
-\subsubsection{Petit subtilitée}
+\subsubsection{Petites subtilitées}
 
-Il faut savoir que quand FreeType rasterise un glyphe, le bitmap qu'il produit à son axe Y inversé à celui de contrast. Par défaut donc les glyphes sont dessinés la tête en bas.
-Ce n'est pas pratique à lire vous en conviendrez. Pour ne pas compliquer les calculs de nos shaders, nous avons décidé d'inverser directement les bitmaps produit avant de les envoyer
+Il faut savoir que lorsque FreeType rastérise un glyphe, le bitmap qu'il produit a son axe Y inversé par rapport à celui de \textit{contrast}. Par défaut donc, les glyphes sont dessinés la tête en bas.
+Ce n'est pas pratique à lire vous en conviendrez. Pour ne pas compliquer les calculs de nos shaders, nous avons décidé d'inverser directement les bitmaps produits avant de les envoyer
 dans la texture atlas.
 
 À noter, il n'existe pas de glyphe pour le caractère espace. Par conséquent l'espace est simplement un déplacement de la taille de l'advance d'un point d'exclamation.
@@ -684,9 +731,23 @@ partie.
 
 \subsection{Tests et résultats}
 
-\subsection{Benchmark}
+Nous avons intensivement testé la structure principale, \textit{contrast}, ainsi que toutes ses méthodes.
+L'ajout de marque dans les calques et le système d'invalidation des marques ont également subi beaucoup de tests.
+
+Les structures de données des marques ont peu voir aucun test car leur comportement
+est plutôt trivial.
 
 \subsection{Les bugs}
+
+A notre connaissance, il n'y a pas de bugs dans notre implémentation.
+
+Cependant, le comportement des calques n'est pas vraiment celui souhaité.
+Nos calques ont la capacité de comporter plusieurs type de marques mais ils ne 
+fonctionneront pas correctement. C'est-à-dire qu'une marque point à la couche 0 (qui 
+doit être tout devant) pourra se retrouver derrière une marque ligne qui est à la couche 1.
+La raison pour cela est que nous affichons les marques type par type puis calque par
+calque.
+Les  calques marchent cependant correctement s'ils comportent seulement des marques du même type.
 
 \section{Conclusion}
 %\nocite{*}

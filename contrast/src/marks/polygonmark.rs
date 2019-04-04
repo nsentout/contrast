@@ -1,6 +1,5 @@
 use crate::MarkMacro;
 use properties::position::Position;
-use properties::size::Size;
 use properties::color::Color;
 use properties::markid::MarkId;
 use mark_macro_derive::MarkMacro;
@@ -115,6 +114,10 @@ impl PolygonMark {
     pub fn set_empty(&mut self) -> &mut Self {
         self.fill = false;
         self
+    }
+
+    pub fn get_stroke_width(&self) -> f32 {
+        self.stroke_width
     }
 
     pub(crate) fn get_points_mut(&mut self) -> &mut Vec<Position> {

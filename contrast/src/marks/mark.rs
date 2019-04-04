@@ -277,7 +277,6 @@ impl MarkMacro for Mark  {
 mod tests {
     use super::*;
     use crate::marks::pointmark::Shape;
-    use crate::MarkMacro;
 
     #[test]
     fn as_point_mark() {
@@ -333,5 +332,175 @@ mod tests {
     fn as_point_mark_mut_unchecked_panic() {
         let mut mark = Mark::Line(LineMark::new());
         mark.as_point_mark_mut_unchecked().set_shape(Shape::Triangle);
+    }
+    
+    #[test]
+    fn as_line_mark() {
+        let mark = Mark::Line(LineMark::new());
+        assert!(mark.as_line_mark().is_some());
+        mark.as_line_mark().unwrap().get_thickness();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_line_mark_panic() {
+        let mark = Mark::Point(PointMark::new());
+        assert!(mark.as_line_mark().is_none());
+        mark.as_line_mark().unwrap().get_thickness();
+    }
+
+    #[test]
+    fn as_line_mark_mut() {
+        let mut mark = Mark::Line(LineMark::new());
+        assert!(mark.as_line_mark_mut().is_some());
+        mark.as_line_mark_mut().unwrap().set_thickness(42.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_line_mark_mut_panic() {
+        let mut mark = Mark::Point(PointMark::new());
+        assert!(mark.as_line_mark_mut().is_none());
+        mark.as_line_mark_mut().unwrap().set_thickness(42.0);
+    }
+
+    #[test]
+    fn as_line_mark_unchecked() {
+        let mark = Mark::Line(LineMark::new());
+        mark.as_line_mark_unchecked().get_thickness();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_line_mark_unchecked_panic() {
+        let mark = Mark::Point(PointMark::new());
+        mark.as_line_mark_unchecked().get_thickness();
+    }
+
+    #[test]
+    fn as_line_mark_mut_unchecked() {
+        let mut mark = Mark::Line(LineMark::new());
+        mark.as_line_mark_mut_unchecked().set_thickness(42.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_line_mark_mut_unchecked_panic() {
+        let mut mark = Mark::Point(PointMark::new());
+        mark.as_line_mark_mut_unchecked().set_thickness(42.0);
+    }
+
+    #[test]
+    fn as_polygon_mark() {
+        let mark = Mark::Polygon(PolygonMark::new());
+        assert!(mark.as_polygon_mark().is_some());
+        mark.as_polygon_mark().unwrap().get_stroke_width();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_polygon_mark_panic() {
+        let mark = Mark::Point(PointMark::new());
+        assert!(mark.as_polygon_mark().is_none());
+        mark.as_polygon_mark().unwrap().get_stroke_width();
+    }
+
+    #[test]
+    fn as_polygon_mark_mut() {
+        let mut mark = Mark::Polygon(PolygonMark::new());
+        assert!(mark.as_polygon_mark_mut().is_some());
+        mark.as_polygon_mark_mut().unwrap().set_stroke_width(33.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_polygon_mark_mut_panic() {
+        let mut mark = Mark::Point(PointMark::new());
+        assert!(mark.as_polygon_mark_mut().is_none());
+        mark.as_polygon_mark_mut().unwrap().set_stroke_width(33.0);
+    }
+
+    #[test]
+    fn as_polygon_mark_unchecked() {
+        let mark = Mark::Polygon(PolygonMark::new());
+        mark.as_polygon_mark_unchecked().get_stroke_width();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_polygon_mark_unchecked_panic() {
+        let mark = Mark::Point(PointMark::new());
+        mark.as_polygon_mark_unchecked().get_stroke_width();
+    }
+
+    #[test]
+    fn as_polygon_mark_mut_unchecked() {
+        let mut mark = Mark::Polygon(PolygonMark::new());
+        mark.as_polygon_mark_mut_unchecked().set_stroke_width(33.0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_polygon_mark_mut_unchecked_panic() {
+        let mut mark = Mark::Point(PointMark::new());
+        mark.as_polygon_mark_mut_unchecked().set_stroke_width(33.0);
+    }
+
+
+
+    #[test]
+    fn as_text_mark() {
+        let mark = Mark::Text(TextMark::new());
+        assert!(mark.as_text_mark().is_some());
+        mark.as_text_mark().unwrap().get_text();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_text_mark_panic() {
+        let mark = Mark::Point(PointMark::new());
+        assert!(mark.as_text_mark().is_none());
+        mark.as_text_mark().unwrap().get_text();
+    }
+
+    #[test]
+    fn as_text_mark_mut() {
+        let mut mark = Mark::Text(TextMark::new());
+        assert!(mark.as_text_mark_mut().is_some());
+        mark.as_text_mark_mut().unwrap().set_text("test123");
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_text_mark_mut_panic() {
+        let mut mark = Mark::Point(PointMark::new());
+        assert!(mark.as_text_mark_mut().is_none());
+        mark.as_text_mark_mut().unwrap().set_text("test123");
+    }
+
+    #[test]
+    fn as_text_mark_unchecked() {
+        let mark = Mark::Text(TextMark::new());
+        mark.as_text_mark_unchecked().get_text();
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_text_mark_unchecked_panic() {
+        let mark = Mark::Point(PointMark::new());
+        mark.as_text_mark_unchecked().get_text();
+    }
+
+    #[test]
+    fn as_text_mark_mut_unchecked() {
+        let mut mark = Mark::Text(TextMark::new());
+        mark.as_text_mark_mut_unchecked().set_text("test123");
+    }
+
+    #[test]
+    #[should_panic]
+    fn as_text_mark_mut_unchecked_panic() {
+        let mut mark = Mark::Point(PointMark::new());
+        mark.as_text_mark_mut_unchecked().set_text("test123");
     }
 }

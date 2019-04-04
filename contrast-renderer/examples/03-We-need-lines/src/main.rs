@@ -5,7 +5,6 @@
 
 use contrast_renderer::LumiRenderer;
 use contrast::properties::Position;
-use contrast::marks::linemark::LineMode;
 use contrast::MarkMacro;
 
 const WINDOW_WIDTH : u32 = 800;
@@ -25,8 +24,7 @@ fn main()
         .add_point((pos1.x + 100.0, pos1.y + 100.0, pos1.z))
         .add_point((pos1.x, pos1.y + 200.0, pos1.z))
         .set_thickness(1.0)
-        .set_color((1.0, 0.0, 0.0, 1.0))
-        .set_mode(LineMode::Linear);
+        .set_color((1.0, 0.0, 0.0, 1.0));
 
     let pos2 = Position { x : 400.0, y : 250.0, z : 0.0 };
 
@@ -37,8 +35,7 @@ fn main()
         .add_point((pos2.x + 20.0, pos2.y - 100.0, pos2.z))
         .add_point((pos2.x, pos2.y + 200.0, pos2.z))
         .set_thickness(10.0)
-        .set_color((1.0, 1.0, 0.0, 1.0))
-        .set_mode(LineMode::Linear);
+        .set_color((1.0, 1.0, 0.0, 1.0));
 
     contrast.mark_dirty_all();
     renderer.run();

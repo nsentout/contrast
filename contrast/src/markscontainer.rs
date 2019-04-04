@@ -277,6 +277,7 @@ impl Contrast {
     }
 
     /// Useful only for the tests.
+    #[allow(dead_code)]
     pub(crate) fn get_pointer(&mut self) -> *mut Contrast {
         self as *mut Contrast
     }
@@ -322,7 +323,7 @@ mod tests {
         c.init();
 
         assert_eq!(c.layers.len(), 1);
-
+        
     }
 
     #[test]
@@ -354,9 +355,9 @@ mod tests {
 
         assert_eq!(c.get_pointmarks_properties().len(), 1);
 
-        let mut m3 = c.add_point_mark().get_id();
+        let mut _m3 = c.add_point_mark().get_id();
         let mut m4 = c.add_point_mark().get_id();
-        let mut m5 = c.add_point_mark().get_id();
+        let mut _m5 = c.add_point_mark().get_id();
 
         c.remove_mark(&mut m2);
         c.remove_mark(&mut m4);
@@ -391,15 +392,15 @@ mod tests {
         let mut c = Contrast::new();
         c.init();
 
-        let m1 = c.add_line_mark().get_id();
+        c.add_line_mark().get_id();
 
         assert_eq!(c.get_linemarks_properties().len(), 0);
         let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
-        let m2 = c.add_line_mark().add_point(pos1)
-        .add_point((pos1.x + 100.0, pos1.y, pos1.z))
-        .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
-        .add_point((pos1.x, pos1.y + 30.0, pos1.z))
-        .get_id();
+        c.add_line_mark().add_point(pos1)
+            .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+            .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+            .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+            .get_id();
 
         assert_eq!(c.get_linemarks_properties().len(), 3);
     }
@@ -414,25 +415,27 @@ mod tests {
 
         assert_eq!(c.get_linemarks_properties().len(), 0);
         c.remove_mark(&mut m1);
+
         let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
         assert_eq!(c.get_linemarks_properties().len(), 0);
-        let mut m2 = c.add_line_mark()
-        .add_point((pos1.x + 100.0, pos1.y, pos1.z))
-        .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
-        .add_point((pos1.x, pos1.y + 30.0, pos1.z))
-        .get_id();
 
+       c.add_line_mark()
+            .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+            .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+            .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+            .get_id();
         let mut m3 = c.add_line_mark()
-        .add_point((pos1.x + 100.0, pos1.y, pos1.z))
-        .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
-        .add_point((pos1.x, pos1.y + 30.0, pos1.z))
-        .get_id();
+                    .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+                    .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+                    .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+                    .get_id();
+
         c.remove_mark(&mut m3);
-        let mut m4 = c.add_line_mark().get_id();
-        let mut m5 = c.add_line_mark().get_id();
+
+        c.add_line_mark().get_id();
+        c.add_line_mark().get_id();
+
         assert_eq!(c.get_linemarks_properties().len(), 2);
-
-
     }
 
     #[test]
@@ -443,7 +446,7 @@ mod tests {
         c.add_layers(1);
 
         let mut m1 = c.add_point_mark().get_id();
-        let mut m2 = c.add_point_mark().get_id();
+        let m2 = c.add_point_mark().get_id();
 
         assert_eq!(m1, c.get_layer(0).unwrap().marks.get(0).unwrap().get_id());
         assert_eq!(m2, c.get_layer(0).unwrap().marks.get(1).unwrap().get_id());
@@ -471,7 +474,7 @@ mod tests {
     {
         let mut c = Contrast::new();
         c.init();
-
+        
         assert_eq!(c.layers.len(), 1);
         c.add_layers(3);
         assert_eq!(c.layers.len(), 4);
@@ -563,32 +566,31 @@ mod tests {
         let mut c = Contrast::new();
         c.init();
 
-        let mut m1 = c.add_polygon_mark()
-                        .set_color(Color::red())
-                        .add_point((1.0, 2.0, 3.0))
-                        .add_point((-10.3, 25.7, 3.9))
-                        .set_stroke_width(3.0)
-                        .get_id();
+        let m1 = c.add_polygon_mark()
+                    .set_color(Color::red())
+                    .add_point((1.0, 2.0, 3.0))
+                    .add_point((-10.3, 25.7, 3.9))
+                    .set_stroke_width(3.0)
+                    .get_id();
 
-        let mut m2 = c.add_point_mark()
-                        .set_color(Color::blue())
-                        .set_shape(Shape::Point)
-                        .get_id();
+        let m2 = c.add_point_mark()
+                    .set_color(Color::blue())
+                    .set_shape(Shape::Point)
+                    .get_id();
 
-        let mut m3 = c.add_text_mark()
-                        .set_text("Test123")
-                        .set_position((10.0, 20.5, 0.0))
-                        .get_id();
+        let m3 = c.add_text_mark()
+                    .set_text("Test123")
+                    .set_position((10.0, 20.5, 0.0))
+                    .get_id();
 
-        let mut m4 = c.add_line_mark()
-                        .add_point((5.0, 5.0, 5.0))
-                        .set_thickness(12.0)
-                        .get_id();
+        let m4 = c.add_line_mark()
+                    .add_point((5.0, 5.0, 5.0))
+                    .set_thickness(12.0)
+                    .get_id();
 
-        let expected_m1 = PolygonMark {
+        let expected_m1 = PolygonMark { 
             markid : MarkId { mark_index : 0, layer_index : 0, valid : true },
             color : Color::red(),
-            size : Size::default(),
             rotation : 0.0,
             points : vec!(Position { x : 1.0, y : 2.0, z : 3.0 }, Position { x : -10.3, y : 25.7, z : 3.9 }),
             stroke_width : 3.0,
@@ -624,13 +626,13 @@ mod tests {
             },
             is_displayed : false
         };
-
+        
         let expected_m3 = TextMark{
                 markid : MarkId { mark_index : 2, layer_index : 0, valid : true },
-                color : Color::default(),
-                face : String::from(""),
+                color : Color::default(), 
+                face : String::from(""), 
                 text : String::from("Test123"),
-                pos : Position { x : 10.0, y : 20.5, z : 0.0}
+                pos : Position { x : 10.0, y : 20.5, z : 0.0} 
         };
 
         let expected_m4 = LineMark {
@@ -652,32 +654,31 @@ mod tests {
         let mut c = Contrast::new();
         c.init();
 
-        let mut m1 = c.add_polygon_mark()
-                        .set_color(Color::red())
-                        .add_point((1.0, 2.0, 3.0))
-                        .add_point((-10.3, 25.7, 3.9))
-                        .set_stroke_width(3.0)
-                        .get_id();
+        let m1 = c.add_polygon_mark()
+                    .set_color(Color::red())
+                    .add_point((1.0, 2.0, 3.0))
+                    .add_point((-10.3, 25.7, 3.9))
+                    .set_stroke_width(3.0)
+                    .get_id();
 
-        let mut m2 = c.add_point_mark()
-                        .set_color(Color::blue())
-                        .set_shape(Shape::Point)
-                        .get_id();
+        let m2 = c.add_point_mark()
+                    .set_color(Color::blue())
+                    .set_shape(Shape::Point)
+                    .get_id();
 
-        let mut m3 = c.add_text_mark()
-                        .set_text("Test123")
-                        .set_position((10.0, 20.5, 0.0))
-                        .get_id();
+        let m3 = c.add_text_mark()
+                    .set_text("Test123")
+                    .set_position((10.0, 20.5, 0.0))
+                    .get_id();
 
-        let mut m4 = c.add_line_mark()
-                        .add_point((5.0, 5.0, 5.0))
-                        .set_thickness(12.0)
-                        .get_id();
+        let m4 = c.add_line_mark()
+                    .add_point((5.0, 5.0, 5.0))
+                    .set_thickness(12.0)
+                    .get_id();
 
-        let expected_m1 = PolygonMark {
+        let expected_m1 = PolygonMark { 
             markid : MarkId { mark_index : 0, layer_index : 0, valid : true },
             color : Color::red(),
-            size : Size::default(),
             rotation : 0.0,
             points : vec!(Position { x : 1.0, y : 2.0, z : 3.0 }, Position { x : -10.3, y : 25.7, z : 3.9 }),
             stroke_width : 3.0,
@@ -713,20 +714,20 @@ mod tests {
             },
             is_displayed : false
         };
-
+        
         let expected_m3 = TextMark{
                 markid : MarkId { mark_index : 2, layer_index : 0, valid : true },
-                color : Color::default(),
-                face : String::from(""),
+                color : Color::default(), 
+                face : String::from(""), 
                 text : String::from("Test123"),
-                pos : Position { x : 10.0, y : 20.5, z : 0.0}
+                pos : Position { x : 10.0, y : 20.5, z : 0.0} 
         };
 
         let expected_m4 = LineMark {
             markid : MarkId { mark_index : 3, layer_index : 0, valid : true },
             color : Color::default(),
             points : vec!(Position { x : 5.0, y : 5.0, z : 5.0 }),
-            thickness : 12.0,
+            thickness : 12.0
         };
 
         assert_eq!(*c.get_mark_mut(&m1).unwrap().as_polygon_mark_unchecked(), expected_m1);
@@ -736,12 +737,70 @@ mod tests {
     }
 
     #[test]
+    fn contrast()
+    {
+        // Insert and remove marks of a contrast structure
+        let mut c = Contrast::new();
+        c.init();
+        c.add_layers(2);
+
+        let mut p1 = c.add_point_mark().set_position((30.0, 12.7, 0.0)).set_shape(Shape::Triangle).get_id();
+        let mut t1 = c.add_text_mark().set_position((10.0, 13.0, 1.0)).set_text("this is a text").get_id();
+        let t2 = c.add_text_mark().set_text("this is another text").get_id();
+
+        c.set_current_layer(2);
+
+        let poly1 = c.add_polygon_mark().set_stroke_width(3.5).get_id();
+        c.remove_mark(&mut t1);
+        let mut p2 = c.add_point_mark().set_color(Color::blue()).get_id();
+        c.remove_mark(&mut p1);
+        c.remove_mark(&mut p2);
+        let l1 = c.add_line_mark().add_point((12.0, 12.0, 12.0)).add_point((22.0, 22.0, 22.0)).get_id();
+
+        // Test if the state in which is the contrast structure is correct
+        let mut expected_heap_0 = BinaryHeap::new();
+        expected_heap_0.push(t1.mark_index);
+        expected_heap_0.push(p1.mark_index);
+
+        let mut expected_heap_2 = BinaryHeap::new();
+        expected_heap_2.push(p2.mark_index);
+
+        let expected_layer_0 = Layer {
+            marks : vec!(c.get_mark(&t2).unwrap().clone()),
+            depth : 0,
+            invalid_indexes : expected_heap_0,
+            contrast : c.get_pointer()
+        };
+
+        let expected_layer_1 = Layer {
+            marks : Vec::new(),
+            depth : 1,
+            invalid_indexes : BinaryHeap::new(),
+            contrast : c.get_pointer()
+        };
+
+        let expected_layer_2 = Layer {
+            marks : vec!(c.get_mark(&poly1).unwrap().clone(), c.get_mark(&l1).unwrap().clone()),
+            depth : 2,
+            invalid_indexes : expected_heap_2,
+            contrast : c.get_pointer()
+        };
+
+        // Check the content of the contrast struct
+        assert_eq!(*c.layers.get(0).unwrap(), expected_layer_0);
+        assert_eq!(*c.layers.get(1).unwrap(), expected_layer_1);
+        assert_eq!(*c.layers.get(2).unwrap(), expected_layer_2);
+        assert_eq!(c.current_layer_index, 2);
+        assert_eq!(c.update, HashSet::new());
+    }
+
+    #[test]
     fn get_id()
     {
         let mut c = Contrast::new();
         c.init();
 
-        let mut m1 = c.add_text_mark().get_id();
+        let m1 = c.add_text_mark().get_id();
         let mut m2 = c.add_text_mark().get_id();
 
         let expected_m1_id = MarkId { mark_index : 0, layer_index : 0, valid : true };
