@@ -123,13 +123,13 @@ L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque per
 	\begin{itemize}
 	\item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
     distance calculée en GLSL. Nous reprendrons les mêmes marques que celles du proof of concept de notre client.
-    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche. 
+    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche.
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
-    (continu, tirets, pointillés...). 
-    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un 
+    (continu, tirets, pointillés...).
+    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
     polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
-    différente de la couleur des contours. 
+    différente de la couleur des contours.
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
     \cite{VegaMarks}. Ces aires doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
     visualisation de données. Ces types de marque ne sont pas le plus prioritaire à implémenter.
@@ -147,7 +147,7 @@ mais il peut y en avoir autant que l'utilisateur le souhaite.
 \item Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
 de translation, le seul paramètre qu'elle prend en compte est un niveau de zoom ainsi que la taille
 de la fenêtre d'affichage.
-\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau. 
+\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau.
 		Le bas-niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut-niveau nous
 		fournissons le moteur de rendu.
 		\begin{itemize}
@@ -167,7 +167,7 @@ de la fenêtre d'affichage.
 	\item Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une
 	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
 	\end{itemize}
-\end{itemize}  
+\end{itemize}
 
 
 
@@ -195,7 +195,7 @@ ce besoin plusieurs choix ont été fait:
 			La crate en question porte le même nom que GLSL\cite{GLSL}.
 		\end{itemize}
 		\item Des benchmark devront être réaliser pour comparer les performances de notre programme aux logiciels déjà existant, principalement FATuM.
-	
+
 	\end{itemize}
 Le niveau de priorité de chaque besoin est le suivant :
 \begin{itemize}
@@ -352,8 +352,8 @@ Pour cette marque nous avons utilisé trois types de shaders OpenGL, qui sont le
 Pour l’implémentation de cette marque le vertex shader sert seulement à envoyer
  les données vers le geometry shader, de ce fait il y a peu à dire sur ce shader.
  Le vertex shader reçoit donc et envoie donc les données utiles pour l’affichage
- d’une sous ligne de la polyligne, de fait elle reçoit comme information la position
- d’origine et de fin de la sous-ligne en question, de plus elle reçoit les information
+ d’une sous ligne de la polyligne, de fait il reçoit comme information la position
+ d’origine et de fin de la sous-ligne en question et de plus il reçoit les informations
  de position du point précédent la sous-ligne et celle du point suivant la sous-ligne
  (nous expliquerons plus en détail pourquoi nous avons besoins de ces informations).
  Le fragment shader sert exclusivement à appliquer la couleur de la ligne sur les fragments.
@@ -377,7 +377,8 @@ Simplement afficher des rectangles représentant les sous-lignes est possible po
   \label{fig:joint}
 \end{figure}
 
-La solution la plus simple en terme de performance se trouve être le \og bevel join \fg{} vu que cette liaison peut-être réalisé juste en changeant l’inclinaison du bout de chaque sous-ligne et donc on garde le fait de n’avoir à afficher qu’un quadritère par sous-ligne alors que la solution de la liaison  \og round joint \fg{} n’est pas aussi simple et demande de retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la fonction discard d’OpenGL dans le fragment shader diminue les performances pour la plupart des hardware[1]).
+La solution la plus simple en terme de performance se trouve être le \og bevel join \fg{} vu que cette liaison peut-être réalisé juste en changeant l’inclinaison du bout de chaque sous-ligne et donc on garde le fait de n’avoir à afficher qu’un quadritère par sous-ligne alors que la solution de la liaison  \og round joint \fg{} n’est pas aussi simple et demande de retirer des pixels au bord d’un quadrilatère un peu de la façon de l’implémentation de la marque point (de plus utiliser la fonction discard d’OpenGL dans le fragment shader diminue les performances pour la plupart des hardware
+\cite{FragmentDiscard}).
 
 Pour faire la liaison choisie il nous faut le voisinage des points formant une sous-ligne de façon à avoir une inclinaison des extrémités de sous-ligne s’accordant. Pour expliquer plus facilement comment est formé cette liaison voici la figure~\ref{fig:geom_line}.
 
@@ -389,7 +390,7 @@ Pour faire la liaison choisie il nous faut le voisinage des points formant une s
   \label{fig:geom_line}
 \end{figure}
 
-Dans ce schéma les vecteurs miter1 et miter2 sont ce que j’appelle précédemment l’inclinaison des extrémité. Les vecteurs t0, t1, et t2 sont respectivement les vecteurs directeurs des segments [P0,P1], [P1,P2], [P2,P3] et n1, n2 et n3 leurs normales. De ce fait le miter n’est en fait que l’addition des vecteurs normaux des segments correspondant. Il faut aussi calculer la valeur d’écart de par rapport au point d’origine pour avoir une ligne avec une largeur correcte, pour cela on prend la largeur voulue de la ligne et on le divise par le produit scalaire de la normale de la ligne précédente ou suivante suivant l’extrémité et du miter correspondant. Une fois que l’on a le miter il suffit de créer des points décalées de la valeur précédemment créé le long du vecteur miter normalisé.
+Dans ce schéma les vecteurs miter1 et miter2 sont ce que j’appelle précédemment l’inclinaison des extrémité. Les vecteurs t0, t1, et t2 sont respectivement les vecteurs directeurs des segments [P0,P1], [P1,P2], [P2,P3] et n1, n2 et n3 leurs normales. De ce fait le miter n’est en fait que l’addition des vecteurs normaux des segments correspondant. Il faut aussi calculer la valeur d’écart de par rapport au point d’origine pour avoir une ligne avec une largeur correcte, pour cela on prend la largeur voulue de la ligne et on le divise par le produit scalaire de la normale de la ligne précédente ou suivante suivant l’extrémité et du miter correspondant (c'est-à-dire le projeté d'un miter par rapport à la normale correspondante). Une fois que l’on a le miter il suffit de créer des points décalées de la valeur précédemment créé le long du vecteur miter normalisé.
 
 \subsubsection{Résultat}
 Et finalement voici le résultat figure~\ref{fig:line}.
@@ -399,6 +400,82 @@ Et finalement voici le résultat figure~\ref{fig:line}.
   \caption{Exemple d'affichage de ligne}
   \label{fig:line}
 \end{figure}
+
+
+
+\subsection{Implémentation des marques polygone}
+
+Un polygone est défini par une liste de points relié cycliquement par des segments,
+nous avons choisi de définir le polygone voulu par l'utilisateur comme étant la suite
+ordonnée en fonction du temps par l'utilisateur.
+
+\subsubsection{Un problème compliqué}
+Il y a néanmoins plusieurs type de polygone qui ne sont pas forcément affiché de la même manière,
+en effet un polygone peut être auto-sécant ou non, convexe
+(c'est à dire que pour tout couple de points sur le contour, le segment les reliants est contenu dans le polygone),
+concave c'est-à-dire non convexe.
+OpenGL permet surtout d'afficher des triangles et la décomposition en triangle d'un polygone semble
+une étape obligatoire. Ce qui pose problème c'est qu'il n'y a pas en Rust une bibliothèque implémentant
+des algorithmes de triangulation vraiment efficace à l'image de ce que propose triangle \cite{Triangle} pour le
+C++ par exemple, certaines crates implémentant ce genre d'opérations ne sont plus à jour depuis longtemps
+et ne peuvent plus être utilisée correctement comme par exemple \cite{rtriangulate}. De plus il y a dans notre projet,
+une obligation à diminuer au maximum le calcul côté CPU, le problème c'est que pour faire les opérations
+permettant la triangulation d'un polygone, il faut tout le contexte du polygone ce qui n'est pas possible
+côté GPU (on traite un nombre de vertex limité à chaque fois) et de plus on ne pourrait pas se permettre
+d'implémenter des algorithmes avec une complexité trop forte comme par exemple la méthode des oreilles \cite{earClipping} qui est de plus un algorithme sous optimal. Il y a aussi la question de l'implémentation
+des animations qui se pose, en effet comment gérer efficacement des animations lorsque les triangles
+formant le polygone sont en nombre non défini même pour un même nombre de points formant le polygone
+(par exemple avec une décomposition en chaîne monotone).
+Après de long tatonnement nous avons déduit qu'il serait plus simple de gérer qu'une définition restrainte
+des polygones, c'est-à-dire les polygones convexe pouvant être facilement découpé en triangle.
+
+\subsubsection{Une triangulation pas convaincante}
+Le plus simple pour trianguler un polygone convexe c'est de prendre un point de ce polygone et de former
+tout les triangles contenant celui-ci avec les autres points du polygone comme le montre le schéma ~\ref{fig:triang_poly_conv}.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.2]{images/simple_triangulation_polygon}
+  \caption{Exemple de triangulation simple d'un polygone convexe}
+  \label{fig:triang_poly_conv}
+\end{figure}
+
+Le gros problème de cette triangulation c'est qu'elle ne permet pas de gérer les règles de remplissage,
+c'est-à-dire si l'on veut que le polygone soit rempli ou pas. Il faudrait pour ça retirer des fragments
+des triangles et comme dit dans la partie sur l'implémentation de la ligne ce n'est pas optimal.
+
+\subsubsection{Utilisation du concept de ligne}
+Pour gérer les contours il faut savoir où est le centre pour ne pas agrandir l'intérieur du polygone
+mais aller vers l'intérieur. Pour cela on calcule la moyenne de tout les points du polygone, ce qui
+correspond en géometrie au centre de masse.
+De cette manière nous pouvons former des lignes comme dans la partie sur les marques lignes mais contrairement à celle-ci nous ne centrons pas la ligne sur le point. De cette manière nous n'avons pas
+de beaucoup de calcul à faire sur le CPU (le calcul du centre de masse se faisant en 0(n)) et nous pouvons
+choisir la largeur du contour facilement.
+
+\subsubsection{Résultat}
+
+Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_non_fill}, en haut à gauche, deux polygones définis par les mêmes points mais dont le z du polygone ayant la largeur de contour la moins épaisse est la plus haute.
+En haut à droite on peut voir un polygone auto-sécant qui n'est pas affiché correctement.
+En bas à gauche, un carré affiché correctement. Et finalement en bas à droite un polygone non convexe et donc affiché de manière non correcte.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.5]{images/polygon_capture}
+  \caption{Exemple d'affichage de polygones vides}
+  \label{fig:capture_polygon_non_fill}
+\end{figure}
+
+
+Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_fill} les deux polygones correct précédent mais cette fois si remplis.
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.5]{images/polygon_fill}
+  \caption{Exemple d'affichage de polygones remplis}
+  \label{fig:capture_polygon_fill}
+\end{figure}
+
+
+
 
 
 \subsection{Implémentation des marques texte}
@@ -773,8 +850,8 @@ est plutôt trivial.
 A notre connaissance, il n'y a pas de bugs dans notre implémentation.
 
 Cependant, le comportement des calques n'est pas vraiment celui souhaité.
-Nos calques ont la capacité de comporter plusieurs type de marques mais ils ne 
-fonctionneront pas correctement. C'est-à-dire qu'une marque point à la couche 0 (qui 
+Nos calques ont la capacité de comporter plusieurs type de marques mais ils ne
+fonctionneront pas correctement. C'est-à-dire qu'une marque point à la couche 0 (qui
 doit être tout devant) pourra se retrouver derrière une marque ligne qui est à la couche 1.
 La raison pour cela est que nous affichons les marques type par type puis calque par
 calque.
