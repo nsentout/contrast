@@ -16,7 +16,7 @@ La toolchain comporte entre autre :
 * **rustc** (compilateur)
 * **cargo** (gestionnaire de paquets)
 
-> Attention : sous windows vous devrez probablement installer FreeType manuellement.
+> Attention : sous Windows, vous devrez probablement installer FreeType manuellement.
 
 ### Compilation
 C'est avec *cargo* que se compile le projet. Pour cela rien de plus simple, il suffit de vous
@@ -38,7 +38,7 @@ Le projet est découpé en deux crates principales :
 * *contrast* : la couche bas niveau qui représente le cœur de notre implémentation.
 * *contrast-renderer* : la couche haut niveau qui dépend de *contrast* et *luminance* en charge du rendu.
 
-L'ensemble des programmes de démonstration de *contrast* sont présent dans le dossier **contrast-renderer/examples**.
+L'ensemble des programmes de démonstration de *contrast* sont présents dans le dossier **contrast-renderer/examples**.
 
 ### Hello Triangle
 

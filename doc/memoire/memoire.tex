@@ -12,15 +12,11 @@
 \usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
 \usepackage[xindy]{glossaries}
 \usepackage[hidelinks]{hyperref}
-%\graphicspath{ {images/} }
 
 \parskip=5pt plus2pt minus 1pt
 \frenchbsetup{ReduceListSpacing=false}
 
 \definecolor{back}{HTML}{ebebe0}
-
-%\catcode`\|=13
-%\def|#1|{\texttt{\detokenize{#1}}}
 
 \addbibresource{bibli.bib}
 \makeglossaries
@@ -45,37 +41,44 @@
     description={Les marques sont les éléments basiques, c'est à dire des formes primitives dont les
     propriétés peuvent être gérées par des données liées}
 }
+
 \newglossaryentry{canaux}
 {
     name=canaux,
     description={Caractéristique d'une marque; ex: position, taille, rotation, profondeur, couleur, etc}
 }
+
 \newglossaryentry{crate}
 {
     name=crate,
     description={Une crate est une collection de code source Rust}
 }
+
 \newglossaryentry{shader}
 {
     name=shader,
     description={Programme GLSL}
 }
+
 \newglossaryentry{vertex}
 {
     name=vertex,
     description={Point d'informations graphiques}
 }
+
 \newglossaryentry{uniform}
 {
     name=uniform,
     description={Un uniform est une variable globale GLSL}
 }
+
 \newglossaryentry{pipeline}
 {
     name=pipeline,
     description={Succession des opérations généralement réalisées par une carte graphique nécessaires au
     rendu d'un lot de données}
 }
+
 \newglossaryentry{geom}
 {
     name={geometry shader},
@@ -88,7 +91,6 @@
     description={Un ensemble d'information destiné à devenir un pixel}
 }
 
-
 \newglossaryentry{unsafe}
 {
     name={unsafe},
@@ -99,23 +101,23 @@
 \tableofcontents
 \newpage
 
-\section{Abstract}
+\section{Résumé}
 
-De nos jours le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels tant en maintenant un nombre d'image par seconde satisfaisant.
-C'est dans ce contexte que Romain Giot a proposé de réaliser un moteur de rendu en Rust gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieurs à celles de bibliothèques similaires.
+De nos jours, le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels tout en maintenant un nombre d'image par seconde satisfaisant.
+C'est dans ce contexte que Romain Giot a proposé de réaliser un moteur de rendu en Rust, gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieures à celles de bibliothèques similaires.
 
 
 \section{Travaux précédents}
 
 Nous nous sommes basés sur deux bibliothèques afin de réaliser ce projet.
-Premièrement la bibliothèque FATuM, une bibliothèque C++ qui se veux être un compromis entre le heut et le bas niveau, la bibliothèques donne la possibilité d'autres bibliothèques dont l'interface serait plus adapté pour une utilisation de haut niveau sans avoir à ce soucier de la vitesse de rendu.
+Premièrement la bibliothèque FATuM \cite{FATuM}, une bibliothèque C++ qui se veut être un compromis entre le haut et le bas niveau. La bibliothèque donne la possibilité d'utiliser d'autres bibliothèques dont l'interface serait plus adaptée pour une utilisation de haut niveau sans avoir à se soucier de la vitesse de rendu.
 
-La seconde bibliothèques, vega écrite en javascript est une bibliothèque visant à donner divers outils de dessin pour des bibliothèques de plus haut niveau.
+La seconde bibliothèque, Vega\cite{VegaMarks}, écrite en JavaScript, est une bibliothèque visant à donner divers outils de dessin pour des bibliothèques de plus haut niveau.
 
-Finalement notre client nous a aussi donner un proof of concept de ce que nous devions implémenter. Écrite en Rust, cette bibliothèque propose l'affichage de plusieurs type de forme que nous devions nous aussi être capable d'afficher.
+Finalement, notre client nous a aussi donné un proof of concept de ce que nous devions implémenter. Écrite en Rust, cette bibliothèque propose l'affichage de plusieurs types de formes que nous devions nous aussi être capable d'afficher.
 
 \section{Analyse des besoins}
-%% Etoffer la partie analyse des besoins
+
 \subsection{Analyse des besoins fonctionnels}
 
 L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque permettant d'afficher des
@@ -123,19 +125,20 @@ L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque per
 	\begin{itemize}
 	\item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
     distance calculée en GLSL. Nous reprendrons les mêmes marques que celles du proof of concept de notre client.
-    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche. 
+    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point, Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini et Flèche.
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
-    (continu, tirets, pointillés...). 
-    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un 
+    (continu, tirets, pointillés...).
+    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
     polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
-    différente de la couleur des contours. 
+    différente de la couleur des contours.
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
     \cite{VegaMarks}. Ces aires doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
     visualisation de données. Ces types de marque ne sont pas le plus prioritaire à implémenter.
     \item Texte : utilisable pour représenter du texte et peut avoir différentes propriétés : italique,
     gras, centré, aligné à droite, en haut, etc.
     \end{itemize}
+
 \begin{itemize}
 \item L'utilisateur doit notamment être capable de préciser des \gls{canaux} associés à
 ces marques : la position de la marque, sa taille, sa rotation, sa profondeur, sa couleur, sa forme,
@@ -147,47 +150,45 @@ mais il peut y en avoir autant que l'utilisateur le souhaite.
 \item Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
 de translation, le seul paramètre qu'elle prend en compte est un niveau de zoom ainsi que la taille
 de la fenêtre d'affichage.
-\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau. 
-Le bas-niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut-niveau
-nous fournissons le moteur de rendu.
+\item La bibliothèque devra être implémentée de deux façons différentes : une implémentation bas niveau et une implémentation haut niveau.
+		Le bas niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut niveau nous
+		fournissons un moteur de rendu.
 		\begin{itemize}
-			\item Pour simplifier le rendu en OpenGL nous utiliserons \textit{luminance} \cite{luminance}, nous avons choisi cette bibliothèque
-			premièrement elle nous a été proposé par notre client et de plus c'est une des seules bibliothèque de rendu OpenGL sur Rust et celle-ci est
-			très souvent mise à jour.
+			\item Pour simplifier le rendu en OpenGL, nous utiliserons \textit{luminance} \cite{luminance}. Nous avons choisi cette bibliothèque
+			premièrement car elle nous a été proposée par notre client, et de plus c'est une des seules bibliothèques de rendu OpenGL sur Rust. De plus, elle a l'air très prometteuse, la version 1.0 devant arriver sous peu.
 			\item En haut-niveau nous aurons aussi besoin de gérer les événements clavier.
 		\end{itemize}
 \item Les marques devront être animées de façon similaire à FATuM.
 	\begin{itemize}
-	\item Pour ce faire nous utiliserons un double tampon pour la visualisation, un tampon servant de tampon avant et un tampon servant de tampon arrière.
+	\item Pour ce faire nous utiliserons un double tampon pour la visualisation, un tampon avant et un tampon arrière.
 	Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise
-	à jour est finie (c'est-à dire que l'on a une autre image à afficher).
-	\item Les deux tampons peuvent être échangés par différentes techniques notamment un simple échange : le tampon arrière devient le tampon avant et
+	à jour est finie (c'est-à dire quand l'on a une autre image à afficher).
+	\item Les deux tampons peuvent être échangés par différentes techniques : le tampon arrière devient le tampon avant et
 	inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée
 	que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu
-	lisible.
+	lisibles.
 	\item Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une
 	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
 	\end{itemize}
-\end{itemize}  
-
+\end{itemize}
 
 
 \subsection{Analyse des besoins non fonctionnels}
 
-L'objectif principal de ce projet est avant tout les performances.Le but est de dépasser les performances de la bibliothèque FATuM.Pour garantir
-ce besoin plusieurs choix ont été fait:
+L'objectif principal de ce projet est avant tout les performances. Le but est de dépasser les performances de la bibliothèque FATuM. Pour garantir
+ce besoin, plusieurs choix ont été fait:
 	\begin{itemize}
-		\item Le client nous a demandé de réaliser le projet avec le langage Rust \cite{rust}, l'intérêt de ce langage est qu'il offre de très bonnes
-		performances pour l'application, comparable à du C mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
+		\item Le client nous a demandé de réaliser le projet avec le langage Rust \cite{rust}. L'intérêt de ce langage est qu'il offre de très bonnes
+		performances pour l'application, comparable à du C++, mais aussi un système de sécurité de la gestion de mémoire permettant de garantir un programme
 		sans fuite mémoire ni erreur de segmentation.
 		\begin{itemize}
-			\item Nous serons obligés de réaliser du code \gls{unsafe} pour cette bibliothèques mais l'objectif et d'en faire le moins possible.
+			\item Nous serons obligés de réaliser du code \gls{unsafe} pour cette bibliothèque mais l'objectif et d'en faire le moins possible.
 			\begin{itemize}
 				\item Il faudra donc mettre en place une batterie de tests importante pour ces parties particulièrement sensibles.
 			\end{itemize}
 			\item Nos devrons écrire des macros afin d'éviter les doublons dans le code.
 		\end{itemize}
-		\item Le client nous demande aussi de réaliser la partie GPU à l'aide d'OpenGL. Le but est de réaliser le maximum des algorithmes de génération de 		nos marques sur GPU et donc en OpenGL afin d'épargner un maximum de calcul au processeur.
+		\item Le client nous demande aussi de réaliser la partie GPU à l'aide d'OpenGL. Le but est de réaliser le maximum des algorithmes de génération de nos marques sur GPU et donc en OpenGL afin d'épargner un maximum de calcul au processeur.
 		\begin{itemize}
 			\item Nous devrons utiliser un \gls{geom} en glsl pour les marques afin de limiter le nombre de vertices passées au GPU.
 			\item Il faudra séparer les \gls{shader}s de chaque type de marque dans plusieurs fichiers différents.
@@ -195,8 +196,8 @@ ce besoin plusieurs choix ont été fait:
 			nos shaders en GLSL, afin de construire et nous assurer de leur bonne conformité.
 			La crate en question porte le même nom que GLSL\cite{GLSL}.
 		\end{itemize}
-		\item Des benchmark devront être réaliser pour comparer les performances de notre programme aux logiciels déjà existant, principalement FATuM.
-	
+		\item Des benchmark devront être réalisés pour comparer les performances de notre programme aux logiciels déjà existants, principalement FATuM.
+
 	\end{itemize}
 Le niveau de priorité de chaque besoin est le suivant :
 \begin{itemize}
@@ -209,25 +210,29 @@ Le niveau de priorité de chaque besoin est le suivant :
 	\item Marque Aire
 \end{itemize}
 
-Pour l'API l'utilisateur devra décrire les divers propriété de chaque marque de la façon suivante:
+Pour l'API, l'utilisateur devra décrire les divers propriétés de chaque marque de la façon suivante :
 \begin{itemize}
     \item Pour les marques point :
-    
+
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
-    contrast.add_point_mark().set_position(100.0,50.0,0.0).set_size(size)
-    .set_color(1.0,1.0,0.0,0.0).set_shape(Spade);
+    contrast.add_point_mark()
+	.set_position(100.0,50.0,0.0)
+	.set_size(size)
+    .set_color(1.0,1.0,0.0,0.0)
+	.set_shape(Spade);
     \end{minted}
-    
-    \item Pour les marques ligne il faudra pouvoir préciser plusieurs points pour les polylignes :
+
+    \item Pour les marques ligne, il faudra pouvoir préciser plusieurs points pour les polylignes :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
-    contrast.add_line_mark().add_point(pos)
+    contrast.add_line_mark()
+		.add_point(pos)
         .add_point((50.0,50.0,0.0))
         .add_point(pos2)
         .set_thickness(20.0)
         .set_color((1.0, 0.0, 0.0, 1.0))
         .get_id();
     \end{minted}
-    \item Pour les marques texte il faut avant charger des font dans \textit{Contrast} puis les utiliser :
+    \item Pour les marques texte, il faut avant charger des font dans \textit{contrast} pour les utiliser :
      \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
      contrast.register_font("helvetica", helvetica_font_file, 120);
      contrast.add_text_mark()
@@ -238,13 +243,11 @@ Pour l'API l'utilisateur devra décrire les divers propriété de chaque marque 
     \end{minted}
     \item Voici maintenant un exemple d'utilisation des calques :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
-     // On créer un marque m
-     
-     contrast.add_layers(2);
-     let layer_0=contrast.get_layer(0);
+     // On crée un marque m
+     let layer_0 = contrast.get_layer(0);
      layer_0.add_mark(m);
     \end{minted}
-    \item Pour la gestion du clavier on aura deux fonction, une qui permet une action sur une marque spécifique, une autre qui le permet sur un ensemble 
+    \item Pour la gestion du clavier, on aura deux fonctions, une qui permet une action sur une marque spécifique, une autre qui le permet sur un ensemble 
     de marques :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     // m1 est une marque
@@ -252,26 +255,27 @@ Pour l'API l'utilisateur devra décrire les divers propriété de chaque marque 
     // marks est un vecteur de plusieurs marques 
     renderer.(Key::F, action2, marks);
     \end{minted}
-    \item Il faut aussi notifier à contrast de se mettre à jour lorsque de nouvelles marques sont ajoutés, pour cela nous utiliserons :
+    \item Il faut aussi notifier à \textit{contrast} de se mettre à jour lorsque de nouvelles marques sont ajoutées, pour cela nous utiliserons :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     contrast.mark_dirty_all();
     \end{minted}
-    \item En haut-niveau il faudra initialiser notre moteur de rendu :
+    \item En haut niveau, il faudra initialiser notre moteur de rendu :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
-    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Titre");
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "contrast renderer");
     \end{minted}
     \item Il faudra aussi récupérer le contrast du renderer et l'initialiser de la façon suivante :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     let contrast = renderer.get_contrast_mut();
     \end{minted}
-    \item Toujours en haut-niveau il faudra lancer une boucle de rendu avec 
+    \item Toujours en haut niveau, il faudra lancer une boucle de rendu avec 
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     renderer.run();
     \end{minted}
-    
+
 \end{itemize}
+
 \section{Description du logiciel}
-%% Parler des problèmes rencontrés au sain de l'archi
+
 \subsection{Organisation de l'architecture}
 
 Notre bibliothèque est composée de 2 parties principales :
@@ -494,35 +498,37 @@ Et finalement voici le résultat figure~\ref{fig:line}.
 
 
 
-\subsection{Implémentation des marques polygone}
+\subsection{Implémentation des marques de type polygone}
 
-Un polygone est défini par une liste de points relié cycliquement par des segments,
-nous avons choisi de définir le polygone voulu par l'utilisateur comme étant la suite
+Un polygone est défini par une liste de points reliés cycliquement par des segments.
+Nous avons choisi de définir le polygone voulu par l'utilisateur comme étant la suite
 ordonnée en fonction du temps par l'utilisateur.
 
 \subsubsection{Un problème compliqué}
-Il y a néanmoins plusieurs type de polygone qui ne sont pas forcément affiché de la même manière,
-en effet un polygone peut être auto-sécant ou non, convexe
-(c'est à dire que pour tout couple de points sur le contour, le segment les reliants est contenu dans le polygone),
-concave c'est-à-dire non convexe.
-OpenGL permet surtout d'afficher des triangles et la décomposition en triangle d'un polygone semble
-une étape obligatoire. Ce qui pose problème c'est qu'il n'y a pas en Rust une bibliothèque implémentant
+
+Il y a néanmoins plusieurs type de polygone qui ne sont pas forcément affiché de la même manière.
+En effet, un polygone peut être auto-sécant, convexe
+(c'est à dire que pour tout couple de points sur le contour, le segment les reliant est contenu dans le polygone) et
+concave, c'est-à-dire non convexe.
+OpenGL permet surtout d'afficher des triangles et la décomposition en triangle d'un polygone semble être
+une étape obligatoire. Ce qui pose problème, c'est qu'il n'y a pas en Rust une bibliothèque implémentant
 des algorithmes de triangulation vraiment efficace à l'image de ce que propose triangle \cite{Triangle} pour le
-C++ par exemple, certaines crates implémentant ce genre d'opérations ne sont plus à jour depuis longtemps
-et ne peuvent plus être utilisée correctement comme par exemple \cite{rtriangulate}. De plus il y a dans notre projet,
-une obligation à diminuer au maximum le calcul côté CPU, le problème c'est que pour faire les opérations
-permettant la triangulation d'un polygone, il faut tout le contexte du polygone ce qui n'est pas possible
-côté GPU (on traite un nombre de vertex limité à chaque fois) et de plus on ne pourrait pas se permettre
-d'implémenter des algorithmes avec une complexité trop forte comme par exemple la méthode des oreilles \cite{earClipping} qui est de plus un algorithme sous optimal. Il y a aussi la question de l'implémentation
-des animations qui se pose, en effet comment gérer efficacement des animations lorsque les triangles
+C++ par exemple. Certaines crates implémentant ce genre d'opérations ne sont plus à jour depuis longtemps
+et ne peuvent plus être utilisées correctement comme par exemple \cite{rtriangulate}. De plus, il y a dans notre projet
+une obligation à diminuer au maximum le calcul côté CPU. Le problème, c'est que pour faire les opérations
+permettant la triangulation d'un polygone, il faut tout le contexte du polygone, ce qui n'est pas possible
+côté GPU (on traite un nombre de vertex limité à chaque fois). De plus, on ne pourrait pas se permettre
+d'implémenter des algorithmes avec une complexité trop forte comme par exemple la méthode des oreilles \cite{earClipping} qui est de plus un algorithme non optimal. Il y a aussi la question de l'implémentation
+des animations qui se pose : comment gérer efficacement des animations lorsque les triangles
 formant le polygone sont en nombre non défini même pour un même nombre de points formant le polygone
-(par exemple avec une décomposition en chaîne monotone).
-Après de long tatonnement nous avons déduit qu'il serait plus simple de gérer qu'une définition restrainte
-des polygones, c'est-à-dire les polygones convexe pouvant être facilement découpé en triangle.
+(par exemple avec une décomposition en chaîne monotone) ?
+Après de longues réflexions, nous avons déduit qu'il serait plus simple de ne gérer qu'une définition restreinte
+des polygones, c'est-à-dire les polygones convexes pouvant être facilement découpés en triangle.
 
 \subsubsection{Une triangulation pas convaincante}
-Le plus simple pour trianguler un polygone convexe c'est de prendre un point de ce polygone et de former
-tout les triangles contenant celui-ci avec les autres points du polygone comme le montre le schéma ~\ref{fig:triang_poly_conv}.
+
+Le plus simple pour trianguler un polygone convexe est de prendre un point de ce polygone et de former
+tous les triangles contenant celui-ci avec les autres points du polygone, comme le montre le schéma ~\ref{fig:triang_poly_conv}.
 
 \begin{figure}[htp]
   \centering
@@ -531,23 +537,24 @@ tout les triangles contenant celui-ci avec les autres points du polygone comme l
   \label{fig:triang_poly_conv}
 \end{figure}
 
-Le gros problème de cette triangulation c'est qu'elle ne permet pas de gérer les règles de remplissage,
-c'est-à-dire si l'on veut que le polygone soit rempli ou pas. Il faudrait pour ça retirer des fragments
-des triangles et comme dit dans la partie sur l'implémentation de la ligne ce n'est pas optimal.
+Le gros problème de cette triangulation est qu'elle ne permet pas de gérer les règles de remplissage,
+c'est-à-dire si l'on veut que le polygone soit rempli ou pas. Il faudrait pour cela retirer des fragments
+des triangles et comme dit dans la partie sur l'implémentation de la ligne, ce n'est pas optimal.
 
 \subsubsection{Utilisation du concept de ligne}
-Pour gérer les contours il faut savoir où est le centre pour ne pas agrandir l'intérieur du polygone
-mais aller vers l'intérieur. Pour cela on calcule la moyenne de tout les points du polygone, ce qui
+
+Pour gérer les contours, il faut savoir où est le centre pour ne pas agrandir l'intérieur du polygone
+mais aller vers l'intérieur. Pour cela, on calcule la moyenne de tous les points du polygone, ce qui
 correspond en géometrie au centre de masse.
-De cette manière nous pouvons former des lignes comme dans la partie sur les marques lignes mais contrairement à celle-ci nous ne centrons pas la ligne sur le point. De cette manière nous n'avons pas
+De cette manière nous pouvons former des lignes comme dans la partie sur les marques lignes mais contrairement à celle-ci nous ne centrons pas la ligne sur le point. De cette manière, nous n'avons pas
 de beaucoup de calcul à faire sur le CPU (le calcul du centre de masse se faisant en 0(n)) et nous pouvons
 choisir la largeur du contour facilement.
 
 \subsubsection{Résultat}
 
-Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_non_fill}, en haut à gauche, deux polygones définis par les mêmes points mais dont le z du polygone ayant la largeur de contour la moins épaisse est la plus haute.
-En haut à droite on peut voir un polygone auto-sécant qui n'est pas affiché correctement.
-En bas à gauche, un carré affiché correctement. Et finalement en bas à droite un polygone non convexe et donc affiché de manière non correcte.
+Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_non_fill} , en haut à gauche, deux polygones définis par les mêmes points mais dont l'axe z du polygone ayant la largeur de contour la moins épaisse est la plus haute.
+En haut à droite, on peut voir un polygone auto-sécant qui n'est pas affiché correctement.
+En bas à gauche, un carré affiché correctement. Et finalement en bas à droite, un polygone non convexe et donc affiché de manière non correcte.
 
 \begin{figure}[htp]
   \centering
@@ -557,16 +564,13 @@ En bas à gauche, un carré affiché correctement. Et finalement en bas à droit
 \end{figure}
 
 
-Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_fill} les deux polygones correct précédent mais cette fois si remplis.
+Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_fill} les deux polygones corrects précédents mais cette fois-ci remplis.
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.5]{images/polygon_fill}
   \caption{Exemple d'affichage de polygones remplis}
   \label{fig:capture_polygon_fill}
 \end{figure}
-
-
-
 
 
 \subsection{Implémentation des marques texte}
@@ -600,7 +604,7 @@ C'est le cas par example du \textit{bearingY} qui sert à positionner la hampe d
 \end{figure}
 
 Pour des raisons d'optimisations, nous ne pouvons malheureusement pas créer de textures par bitmap. Le moyen le plus simple d'optimiser un rendu en OpenGL et de faire du dessin par lot,
-c'est-à-dire du batching. Nous reviendrons probablement dessus dans la section dédiée à la couche haut-niveau mais pour résumer brièvement, c'est le principe d'afficher le plus
+c'est-à-dire du batching. Nous reviendrons probablement dessus dans la section dédiée à la couche haut niveau mais pour résumer brièvement, c'est le principe d'afficher le plus
 de vertices possible en un seul appel d'OpenGL (en l'occurence un draw) en utilisant des tableaux de vertices.
 
 Utiliser une seule texture par bitmap nous forcerait à devoir changer la texture courante (sous-entendu texture bind) entre chaque caractère dessiné puisque que le nombre de textures
