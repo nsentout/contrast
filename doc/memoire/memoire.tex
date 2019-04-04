@@ -102,7 +102,7 @@
 \section{Abstract}
 
 De nos jours le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels tant en maintenant un nombre d'image par seconde satisfaisant.
-C'est dans ce contexte qui nous a été demandé de réaliser un moteur de rendu en Rust gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieurs à celles de bibliothèques similaires.
+C'est dans ce contexte que Romain Giot a proposé de réaliser un moteur de rendu en Rust gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieurs à celles de bibliothèques similaires.
 
 
 \section{Travaux précédents}
@@ -123,13 +123,13 @@ L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque per
 	\begin{itemize}
 	\item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
     distance calculée en GLSL. Nous reprendrons les mêmes marques que celles du proof of concept de notre client.
-    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche.
+    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche. 
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
-    (continu, tirets, pointillés...).
-    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
+    (continu, tirets, pointillés...). 
+    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un 
     polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
-    différente de la couleur des contours.
+    différente de la couleur des contours. 
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
     \cite{VegaMarks}. Ces aires doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
     visualisation de données. Ces types de marque ne sont pas le plus prioritaire à implémenter.
@@ -147,13 +147,14 @@ mais il peut y en avoir autant que l'utilisateur le souhaite.
 \item Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
 de translation, le seul paramètre qu'elle prend en compte est un niveau de zoom ainsi que la taille
 de la fenêtre d'affichage.
-\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau.
-		Le bas-niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut-niveau nous
-		fournissons le moteur de rendu.
+\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau. 
+Le bas-niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut-niveau
+nous fournissons le moteur de rendu.
 		\begin{itemize}
 			\item Pour simplifier le rendu en OpenGL nous utiliserons \textit{luminance} \cite{luminance}, nous avons choisi cette bibliothèque
 			premièrement elle nous a été proposé par notre client et de plus c'est une des seules bibliothèque de rendu OpenGL sur Rust et celle-ci est
 			très souvent mise à jour.
+			\item En haut-niveau nous aurons aussi besoin de gérer les événements clavier.
 		\end{itemize}
 \item Les marques devront être animées de façon similaire à FATuM.
 	\begin{itemize}
@@ -167,7 +168,7 @@ de la fenêtre d'affichage.
 	\item Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une
 	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
 	\end{itemize}
-\end{itemize}
+\end{itemize}  
 
 
 
@@ -177,7 +178,7 @@ L'objectif principal de ce projet est avant tout les performances.Le but est de 
 ce besoin plusieurs choix ont été fait:
 	\begin{itemize}
 		\item Le client nous a demandé de réaliser le projet avec le langage Rust \cite{rust}, l'intérêt de ce langage est qu'il offre de très bonnes
-		performances pour l'application, comparable à du C++ mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
+		performances pour l'application, comparable à du C mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
 		sans fuite mémoire ni erreur de segmentation.
 		\begin{itemize}
 			\item Nous serons obligés de réaliser du code \gls{unsafe} pour cette bibliothèques mais l'objectif et d'en faire le moins possible.
@@ -195,7 +196,7 @@ ce besoin plusieurs choix ont été fait:
 			La crate en question porte le même nom que GLSL\cite{GLSL}.
 		\end{itemize}
 		\item Des benchmark devront être réaliser pour comparer les performances de notre programme aux logiciels déjà existant, principalement FATuM.
-
+	
 	\end{itemize}
 Le niveau de priorité de chaque besoin est le suivant :
 \begin{itemize}
@@ -206,6 +207,68 @@ Le niveau de priorité de chaque besoin est le suivant :
 	\item Marque Texte
 	\item Marque Polygone
 	\item Marque Aire
+\end{itemize}
+
+Pour l'API l'utilisateur devra décrire les divers propriété de chaque marque de la façon suivante:
+\begin{itemize}
+    \item Pour les marques point :
+    
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    contrast.add_point_mark().set_position(100.0,50.0,0.0).set_size(size)
+    .set_color(1.0,1.0,0.0,0.0).set_shape(Spade);
+    \end{minted}
+    
+    \item Pour les marques ligne il faudra pouvoir préciser plusieurs points pour les polylignes :
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    contrast.add_line_mark().add_point(pos)
+        .add_point((50.0,50.0,0.0))
+        .add_point(pos2)
+        .set_thickness(20.0)
+        .set_color((1.0, 0.0, 0.0, 1.0))
+        .get_id();
+    \end{minted}
+    \item Pour les marques texte il faut avant charger des font dans \textit{Contrast} puis les utiliser :
+     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+     contrast.register_font("helvetica", helvetica_font_file, 120);
+     contrast.add_text_mark()
+        .set_position((30.0, 300.0, 1.0))
+        .set_font("helvetica")
+        .set_text("White")
+        .set_color((1.0, 1.0, 1.0, 1.0));
+    \end{minted}
+    \item Voici maintenant un exemple d'utilisation des calques :
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+     // On créer un marque m
+     
+     contrast.add_layers(2);
+     let layer_0=contrast.get_layer(0);
+     layer_0.add_mark(m);
+    \end{minted}
+    \item Pour la gestion du clavier on aura deux fonction, une qui permet une action sur une marque spécifique, une autre qui le permet sur un ensemble 
+    de marques :
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    // m1 est une marque
+    renderer.add_mark_action_on_press(Key::Space, action1, m1);
+    // marks est un vecteur de plusieurs marques 
+    renderer.(Key::F, action2, marks);
+    \end{minted}
+    \item Il faut aussi notifier à contrast de se mettre à jour lorsque de nouvelles marques sont ajoutés, pour cela nous utiliserons :
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    contrast.mark_dirty_all();
+    \end{minted}
+    \item En haut-niveau il faudra initialiser notre moteur de rendu :
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Titre");
+    \end{minted}
+    \item Il faudra aussi récupérer le contrast du renderer et l'initialiser de la façon suivante :
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    let contrast = renderer.get_contrast_mut();
+    \end{minted}
+    \item Toujours en haut-niveau il faudra lancer une boucle de rendu avec 
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    renderer.run();
+    \end{minted}
+    
 \end{itemize}
 \section{Description du logiciel}
 %% Parler des problèmes rencontrés au sain de l'archi
