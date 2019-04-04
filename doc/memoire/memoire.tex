@@ -636,6 +636,72 @@ pour des raisons évidentes de performances.
 À la place, nous vérifions si une animation est finie seulement lorsque que l'on souhaite modifier la
 marque, donc dans les setters.
 
+\subsection{Les actions liées aux touches}
+
+\subsubsection{Implémentation}
+
+Dans la partie haut niveau de \textit{contrast}, nous avons donné la possibilité à 
+l’utilisateur de lier des touches du clavier qu’il aura choisi à des actions.
+
+La boucle de rendu principal de \textit{luminance} s'occupe pour nous d'écouter les 
+évènements utilisateurs : pression de touche, clic de souris, etc.
+Cependant, l'utilisateur n'a pas accès à cette boucle. Nous avons donc ajouté des 
+fonctions permettant, à l'appui d'une touche choisie par l'utilisateur, d'exécuter une
+fonction elle aussi définie par l'utilisateur.
+
+Les signatures des fonctions que l'utilisateur peut lier aux touches sont cependant 
+décidées par la bibliothèque. Nous en avons fournit trois :
+\begin{itemize}
+\item une fonction prenant en paramètre seulement la touche qui déclenchera l'action.
+Cette fonction permet principalement de récupérer des marques ou des calques pour
+afficher leurs propriétés
+\item une fonction prenant en paramètre la touche et un identifiant de marque. Celle-ci
+permet d'appliquer des modifications en temps réelle à la marque représentée par cet
+identifiant.
+\item une fonction prenant en paramètre la touche et une liste d'identifiants, permettant de modifier les marques représentées par ces derniers.
+\end{itemize}
+
+Les fonctions qui seront définies par l'utilisateur sont stockées dans une union de fonction appelée \textit{Callback}.
+
+Nous pouvons stocker des fonctions avec des signatures différentes mais
+comment les lier à des touches ?
+La solution la plus évidente est d'utiliser une hashmap avec la touche du clavier comme clé et un \textit{Callback} comme valeur.
+
+Nous sommes capable à présent, dans la boucle principale du renderer, de vérifier, quand
+une touche a été appuyée, si elle était liée à un \textit{Callback}. Si c'est le cas,
+nous appelons simplement la fonction correspondante.
+
+\subsubsection{Difficultés rencontrées}
+
+Les paramètres sur lesquels influent l'utilisateur sont donc limités car ces fonctions
+doivent obligatoirement respectées les signatures définies par la bibliothèque.
+Une bonne solution aurait été d'utiliser des closures (ou fonctions anonymes). De cette
+manière, l'utilisateur aurait été beaucoup plus libre pour écrire ses actions.
+
+On pourrait représenter cette solution avec une syntaxe de ce type
+(voir listing~\ref{lst:ex-closure}).
+\begin{listing}[H]
+    \caption{Exemple d'un lien touche/action avec l'utilisation d'une closure}
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    [...]
+    let contrast = renderer.get_contrast_mut();
+    [...]
+    renderer.add_action_on_press(Key::A, || {
+        // code de la closure
+    }
+    \end{minted}
+    \label{lst:ex-closure}
+\end{listing}
+
+Le problème apparaît si l'utilisateur utilise la variable \textit{contrast} dans la
+closure. Le comportement des closures fait qu'elle sera capturée et empruntée
+mutablement une seconde fois (la première fois étant lors de la déclaration de la
+variable \textit{contrast}). Hors comme précédemment indiqué, on ne peut emprunter une
+variable qu'une seule fois.
+
+C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de
+partie.
+
 \subsection{Bibliothèques externes utilisées}
 \subsubsection{lazy\_static}
 Nous utilisons cette bibliothèque \cite{lazy-static} une seule fois dans
@@ -656,10 +722,7 @@ C'est le coeur de notre caméra 2D. C'est un calcul tout de même fastidieux alo
 \subsubsection{freetype-rs et rect-packer}
 Ces deux bibliothèques sont indispensable pour implémenter la marque texte et nous l'avons expliqué pourquoi dans la section qui lui est dédié.
 
-\textbf{TODO: les autres crates}
-
 \section{Problèmes généraux rencontrés}
-% a ranger plus tard si possible
 \subsection{Les identifiants de marques}
 
 L'utilisateur manipule des marques. Mais pour retrouver une marque existante et y
@@ -710,49 +773,6 @@ Notre solution est donc que \textit{get\_id()} renvoie une copie du réel identi
 fois que l'utilisateur souhaite modifier une marque, il doit passer une référence mutable
 de la copie dont il dispose pour que nous puissions la mettre à jour en même temps que
 le réel identifiant.
-
-\subsection{Les actions liées aux touches}
-
-Dans la partie haut niveau de \textit{contrast}, nous avons donné la possibilité à
-l'utilisateur de lier des touches du clavier qu'il aura choisi à des actions.
-Cependant ce que nous offrons est assez limité. Nous fournissons en effet 3 fonctions :
-\begin{itemize}
-\item une fonction prenant en paramètre seulement la touche qui déclenchera l'action.
-Cette fonction permet principalement de récupérer des marques ou des calques pour
-afficher leurs propriétés
-\item une fonction prenant en paramètre la touche et un identifiant de marque. Celle-ci
-permet d'appliquer des modifications en temps réelle à la marque représentée par cet
-identifiant.
-\item une fonction prenant en paramètre la touche et une liste d'identifiants, permettant de modifier les marques représentées par ces derniers.
-\end{itemize}
-
-Les paramètres sur lesquels influent l'utilisateur sont donc limités.
-Une bonne solution aurait été d'utiliser des closures (ou fonctions anoynymes). De cette
-manière, l'utilisateur aurait été beaucoup plus libre pour écrire ses actions.
-
-On pourrait représenter cette solution avec une syntaxe de ce type
-(voir listing~\ref{lst:ex-closure}).
-\begin{listing}[H]
-    \caption{Exemple d'un lien touche/action avec l'utilisation d'une closure}
-    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
-    [...]
-    let contrast = renderer.get_contrast_mut();
-    [...]
-    renderer.add_action_on_press(Key::A, || {
-        // code de la closure
-    }
-    \end{minted}
-    \label{lst:ex-closure}
-\end{listing}
-
-Le problème apparaît si l'utilisateur utilise la variable \textit{contrast} dans la
-closure. Le comportement des closures fait qu'elle sera capturée et empruntée
-mutablement une seconde fois (la première fois étant lors de la déclaration de la
-variable \textit{contrast}). Hors comme précédemment indiqué, on ne peut emprunter une
-variable qu'une seule fois.
-
-C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de
-partie.
 
 \section{Analyse du fonctionnement du logiciel}
 
