@@ -63,13 +63,15 @@ void build_line(vec4 position)
   if(dy2 < 0.0){
     dy2 = -dy2;
   }
+
   if( d1 <= dy){
     dy = d1;
   }
   if( d2 <= dy2) {
     dy2 = d2;
   }
-  if (distance(position, vec4(v_centroid[0],0)) > distance(position + vec4(miter,0,0)*dy, vec4(v_centroid[0],0))) {
+
+  if (distance(position, vec4(v_centroid[0],0)) > distance(position + vec4(miter,0,0)*0.001, vec4(v_centroid[0],0))) {
     gl_Position = projection*(position + vec4(miter,0,0)*dy);
     EmitVertex();
 
@@ -88,6 +90,7 @@ void build_line(vec4 position)
 
     gl_Position = projection*(v_target[0]);
     EmitVertex();
+
     gl_Position = projection*(position - vec4(miter,0,0)*dy);
     EmitVertex();
 

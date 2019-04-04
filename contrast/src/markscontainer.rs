@@ -323,7 +323,7 @@ mod tests {
         c.init();
 
         assert_eq!(c.layers.len(), 1);
-        
+
     }
 
     #[test]
@@ -439,6 +439,59 @@ mod tests {
     }
 
     #[test]
+    fn add_polygon_mark()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        c.add_polygon_mark().get_id();
+
+        assert_eq!(c.get_polygonmarks_properties().len(), 0);
+        let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
+        c.add_polygon_mark().add_point(pos1)
+            .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+            .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+            .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+            .get_id();
+
+        assert_eq!(c.get_polygonmarks_properties().len(), 4);
+    }
+
+    #[test]
+    fn remove_polygon_mark()
+    {
+        let mut c = Contrast::new();
+        c.init();
+
+        let mut m1 = c.add_polygon_mark().get_id();
+
+        assert_eq!(c.get_polygonmarks_properties().len(), 0);
+        c.remove_mark(&mut m1);
+
+        let pos1 = Position { x : 200.0, y : 200.0, z : 0.0 };
+        assert_eq!(c.get_polygonmarks_properties().len(), 0);
+
+       c.add_polygon_mark()
+            .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+            .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+            .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+            .get_id();
+
+        let mut m3 = c.add_polygon_mark()
+                    .add_point((pos1.x + 100.0, pos1.y, pos1.z))
+                    .add_point((pos1.x + 70.0, pos1.y + 100.0, pos1.z))
+                    .add_point((pos1.x, pos1.y + 30.0, pos1.z))
+                    .get_id();
+
+        c.remove_mark(&mut m3);
+
+        c.add_polygon_mark().get_id();
+        c.add_polygon_mark().get_id();
+
+        assert_eq!(c.get_polygonmarks_properties().len(), 3);
+    }
+
+    #[test]
     fn set_current_layer()
     {
         let mut c = Contrast::new();
@@ -474,7 +527,7 @@ mod tests {
     {
         let mut c = Contrast::new();
         c.init();
-        
+
         assert_eq!(c.layers.len(), 1);
         c.add_layers(3);
         assert_eq!(c.layers.len(), 4);
@@ -588,7 +641,7 @@ mod tests {
                     .set_thickness(12.0)
                     .get_id();
 
-        let expected_m1 = PolygonMark { 
+        let expected_m1 = PolygonMark {
             markid : MarkId { mark_index : 0, layer_index : 0, valid : true },
             color : Color::red(),
             rotation : 0.0,
@@ -626,13 +679,13 @@ mod tests {
             },
             is_displayed : false
         };
-        
+
         let expected_m3 = TextMark{
                 markid : MarkId { mark_index : 2, layer_index : 0, valid : true },
-                color : Color::default(), 
-                face : String::from(""), 
+                color : Color::default(),
+                face : String::from(""),
                 text : String::from("Test123"),
-                pos : Position { x : 10.0, y : 20.5, z : 0.0} 
+                pos : Position { x : 10.0, y : 20.5, z : 0.0}
         };
 
         let expected_m4 = LineMark {
@@ -676,7 +729,7 @@ mod tests {
                     .set_thickness(12.0)
                     .get_id();
 
-        let expected_m1 = PolygonMark { 
+        let expected_m1 = PolygonMark {
             markid : MarkId { mark_index : 0, layer_index : 0, valid : true },
             color : Color::red(),
             rotation : 0.0,
@@ -714,13 +767,13 @@ mod tests {
             },
             is_displayed : false
         };
-        
+
         let expected_m3 = TextMark{
                 markid : MarkId { mark_index : 2, layer_index : 0, valid : true },
-                color : Color::default(), 
-                face : String::from(""), 
+                color : Color::default(),
+                face : String::from(""),
                 text : String::from("Test123"),
-                pos : Position { x : 10.0, y : 20.5, z : 0.0} 
+                pos : Position { x : 10.0, y : 20.5, z : 0.0}
         };
 
         let expected_m4 = LineMark {

@@ -45,12 +45,14 @@ impl PolygonMark {
     /// of all the points in the polygon
     fn compute_centroid(&self) -> Position {
         let mut centroid = Position { x : 0.0, y : 0.0, z : 0.0 };
-        for point in self.points.clone() {
-            centroid += point;
+        if self.points.len()>2 {
+            for point in self.points.clone() {
+                centroid += point;
+            }
+            centroid = Position { x : centroid.x / self.points.len() as f32,
+                                  y : centroid.y / self.points.len() as f32,
+                                  z : self.points[0].z as f32};
         }
-        centroid = Position { x : centroid.x / self.points.len() as f32,
-                              y : centroid.y / self.points.len() as f32,
-                              z : centroid.z / self.points.len() as f32};
         centroid
     }
 
@@ -90,6 +92,8 @@ impl PolygonMark {
             *self.points[self.points.len()-2].to_array(), *self.points[1].to_array(),
             self.stroke_width, *centroid.to_array(), fill_mode);
             vertex_polygon.push(vr);
+            vertex_polygon.remove(0);
+            vertex_polygon.remove(0);
         }
         vertex_polygon
     }
@@ -116,6 +120,11 @@ impl PolygonMark {
         self
     }
 
+    pub fn set_rotation(&mut self, rotation : f32) -> &mut Self {
+        self.rotation = rotation;
+        self
+    }
+
     pub fn get_stroke_width(&self) -> f32 {
         self.stroke_width
     }
@@ -127,6 +136,32 @@ impl PolygonMark {
     pub fn get_points(&mut self) -> &mut Vec<Position> {
         &mut self.points
     }
-    // TODO : ajouter getter
+
+    pub fn get_fill(&mut self) -> bool {
+        self.fill
+    }
+
+    pub fn get_rotation(&mut self) -> f32 {
+        self.rotation
+    }
+
+}
+
+#[cfg(test)]
+mod tests {
+    /*
+    use super::*;
+    #[test]
+    fn compute_centroid()
+    {
+        let mut c = Contrast::new();
+
+        assert_eq!(c.get_pointmarks_properties().len(), 0);
+        assert_eq!(c.get_linemarks_properties().len(), 0);
+        assert_eq!(c.get_polygonmarks_properties().len(), 0);
+        assert_eq!(c.layers.len(), 0);
+    }*/
+
+
 }
 //TODO : ajouter test compute_centroid
