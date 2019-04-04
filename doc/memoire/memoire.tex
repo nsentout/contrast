@@ -273,7 +273,7 @@ que OpenGL appelle un \gls{VBO}, c'est-à-dire un énorme buffer présent dans l
 C'est lui qui va décrire combien il y a d'attributs par vertex et si se sont des vecteurs de une à quatre dimension.
 Cette description permet au shader program de pouvoir accéder à ses vecteurs et les manipuler.
 
-Le shader program est un programme écris en GLSL qui est exécuté sur le GPU. Il est découpé en plusieurs passes, voici les trois essentiel dans l'ordre d'execution :
+Le shader program est un programme écris en \gls{GLSL} qui est exécuté sur le GPU. Il est découpé en plusieurs passes, voici les trois essentiel dans l'ordre d'execution :
 \begin{itemize}
     \item Le vertex shader permet de définir en sortie la position du vertex sur l'écran. C'est par lui qu'arrive l'ensemble
 des attributs mais il peuvent atteindre les autres étages, si le vertex shader leur transmet en sortie.
@@ -456,6 +456,9 @@ comme clef. C'est pour éviter tout problème mémoire lié à Rust. Ainsi, quan
 vérifier si elle est présente, et procéder. Accessoirement, cela permet à l'utilisateur de changer la taille de police d'une font, il suffit qu'il enregistre un nouveau couple font et police
 sous une autre clef et il pourra s'en servir.
 
+Nous n'allons pas détailler le shader de cette marque, il n'utilise pas de géometrie shader, fonction de distance ou autre sucrerie.
+Il ne represente pas la partie intéressante de l'implémentation. Il ne mérite donc pas que nous nous y attardions.
+
 \subsubsection{Petites subtilitées}
 
 Il faut savoir que lorsque FreeType rastérise un glyphe, le bitmap qu'il produit a son axe Y inversé par rapport à celui de \textit{contrast}. Par défaut donc, les glyphes sont dessinés la tête en bas.
@@ -624,6 +627,13 @@ statiques en Rust.
 C'est une bibliothèque \cite{rand} permettant de générer des nombres aléatoirement. Nous
 l'utilisons dans le but de fournir une fonction permettant de retourner une forme
 aléatoire.
+
+\subsubsection{nalgebra}
+Nous utilisons cette bibliothèque \cite{nalgebra} uniquement pour calculer une matrice de projection orthographique.
+C'est le coeur de notre caméra 2D. C'est un calcul tout de même fastidieux alors nous considérons cette bibliothèque totalement justifiée.
+
+\subsubsection{freetype-rs et rect\_packer}
+Ces deux bibliothèques sont indispensable pour implémenter la marque texte et nous l'avons expliqué pourquoi dans la section qui lui est dédié.
 
 \textbf{TODO: les autres crates}
 
