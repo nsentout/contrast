@@ -4,7 +4,7 @@
 
 Notre projet est programmé en *Rust*. C'est un langage qui évolue très fréquemment.
 Par conséquent, il vous faut la dernière version du compilateur, c'est actuellement la
-version **1.32.0**.
+version **1.33.0**.
 
 
 ### Installation
@@ -16,9 +16,11 @@ La toolchain comporte entre autre :
 * **rustc** (compilateur)
 * **cargo** (gestionnaire de paquets)
 
+> Attention : sous windows vous devrez probablement installer FreeType manuellement.
+
 ### Compilation
 C'est avec *cargo* que se compile le projet. Pour cela rien de plus simple, il suffit de vous
-placer dans le répertoire du projet, c'est-à-dire le dossier qui contient le fichier **Cargo.toml**
+placer dans le répertoire d'un exemple, c'est-à-dire un dossier qui contient un fichier **Cargo.toml**
 et d'exécuter les commandes suivantes :
 * ```cargo build``` pour compiler.
 * ```cargo run``` pour compiler & exécuter l'exemple.
@@ -27,25 +29,44 @@ et d'exécuter les commandes suivantes :
 * ```cargo doc --open``` pour générer la doc et l'ouvrir à l'index dans votre navigateur.
 
 Certaines opérations peuvent prendre du temps...
-
-### Exemple
-Notre projet est le développement d'une bibliothèque mais il y a un programme d'exemple (*main.rs*).
-Si vous l'exécutez, vous devriez voir une fenêtre s'ouvrir contenant 100 000 petits triangles dont 
-la position et la couleur ont été générées aléatoirement.
+Pour la documentation il est plus pertinent de la générer depuis le dossier **contrast-renderer**, vous aurez ainsi par héritage l'ensemble de la documentation du projet.
+> Attention : ne lancez pas **cargo run** depuis la racine de **contrast** et **contrast-renderer** car il ne dispose pas d'exécutable.
 
 ### Arborescence
-Tout le code, à l'exception de la macro procédurale, est dans le dossier *src*. Il est divisé en 
-plusieurs fichiers qui sont des modules *Rust*. Le seul shader actuellement utilisé, celui pour afficher
-les marques de type point, est dans le dossier *src/shaders*.
 
-La macro procédurale a pour but de générer automatiquement du code à la compilation.
-Elle nous permet d'éviter de dupliquer le code commun aux marques. Vous pourrez la trouver dans
-le dossier *mark_macro_derive*.
+Le projet est découpé en deux crates principales :
+* *contrast* : la couche bas niveau qui représente le cœur de notre implémentation.
+* *contrast-renderer* : la couche haut niveau qui dépend de *contrast* et *luminance* en charge du rendu.
 
-Concernant la contenu des fichiers, *pointmark.rs*, *linemark.rs* et *polygonmark.rs* sont les fichiers
-contenant la structure de la marque correspondant au nom du fichier, ainsi que son implémentation.
-*properties.rs* contient les structures communes utilisées par toutes les marques.
-*lib.rs* permet de lier les différents modules entre eux et *camera.rs* contient le code de prototype de caméra.
+L'ensemble des programmes de démonstration de *contrast* sont présent dans le dossier **contrast-renderer/examples**.
 
-Enfin, *markscontainer.rs* est le fichier contenant la structure principale de la bibliothèque, ainsi que son
-implémentation et des tests appropriés.
+### Hello Triangle
+
+```rust
+use contrast_renderer::LumiRenderer;
+use contrast::marks::pointmark::Shape;
+
+const WINDOW_WIDTH : u32 = 800;
+const WINDOW_HEIGHT : u32 = 800;
+
+fn main()
+{
+    // Initialize the renderer, opening a window.
+    let mut renderer = LumiRenderer::init(WINDOW_WIDTH, WINDOW_HEIGHT, "Hello, world!");
+
+    // Initialize contrast, allowing us to handle the marks.
+    let contrast = renderer.get_contrast_mut();
+
+    // Add a mark into contrast
+    contrast.add_point_mark().set_position((400.0, 400.0, 0.0))
+            .set_size((300.0, 300.0))
+            .set_color((1.0, 0.0, 0.0, 1.0))
+            .set_shape(Shape::Triangle);
+
+    // Indicate to contrast that a new mark was added and that it needs to refresh.
+    contrast.mark_dirty_all();
+
+    // Run the renderer, which makes it display the marks and listen to devices events.
+    renderer.run();
+}
+```
