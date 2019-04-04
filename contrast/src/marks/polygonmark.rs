@@ -133,11 +133,11 @@ impl PolygonMark {
         &mut self.points
     }
 
-    pub fn get_points(&mut self) -> &mut Vec<Position> {
-        &mut self.points
+    pub fn get_points(&mut self) -> &Vec<Position> {
+        &self.points
     }
 
-    pub fn get_fill(&mut self) -> bool {
+    pub fn is_fill(&mut self) -> bool {
         self.fill
     }
 

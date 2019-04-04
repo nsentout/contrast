@@ -82,8 +82,8 @@ impl LineMark {
         &mut self.points
     }
 
-    pub fn get_points(&mut self) -> &mut Vec<Position> {
-        &mut self.points
+    pub fn get_points(&self) -> &Vec<Position> {
+        &self.points
     }
 
 }

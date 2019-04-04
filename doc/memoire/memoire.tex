@@ -247,12 +247,12 @@ Pour l'API, l'utilisateur devra décrire les divers propriétés de chaque marqu
      let layer_0 = contrast.get_layer(0);
      layer_0.add_mark(m);
     \end{minted}
-    \item Pour la gestion du clavier, on aura deux fonctions, une qui permet une action sur une marque spécifique, une autre qui le permet sur un ensemble 
+    \item Pour la gestion du clavier, on aura deux fonctions, une qui permet une action sur une marque spécifique, une autre qui le permet sur un ensemble
     de marques :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     // m1 est une marque
     renderer.add_mark_action_on_press(Key::Space, action1, m1);
-    // marks est un vecteur de plusieurs marques 
+    // marks est un vecteur de plusieurs marques
     renderer.(Key::F, action2, marks);
     \end{minted}
     \item Il faut aussi notifier à \textit{contrast} de se mettre à jour lorsque de nouvelles marques sont ajoutées, pour cela nous utiliserons :
@@ -267,7 +267,7 @@ Pour l'API, l'utilisateur devra décrire les divers propriétés de chaque marqu
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     let contrast = renderer.get_contrast_mut();
     \end{minted}
-    \item Toujours en haut niveau, il faudra lancer une boucle de rendu avec 
+    \item Toujours en haut niveau, il faudra lancer une boucle de rendu avec
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     renderer.run();
     \end{minted}
@@ -426,16 +426,6 @@ On retrouve toutes les formes pouvant être générées par nos shaders des marq
 \subsubsection{Les shaders utilisés}
 Pour cette marque, nous avons utilisé trois types de shaders OpenGL, qui sont les mêmes que ceux de la rubrique précédente.
 
-<<<<<<< HEAD
-Pour l’implémentation de cette marque le vertex shader sert seulement à envoyer
- les données vers le geometry shader, de ce fait il y a peu à dire sur ce shader.
- Le vertex shader reçoit donc et envoie donc les données utiles pour l’affichage
- d’une sous ligne de la polyligne, de fait il reçoit comme information la position
- d’origine et de fin de la sous-ligne en question et de plus il reçoit les informations
- de position du point précédent la sous-ligne et celle du point suivant la sous-ligne
- (nous expliquerons plus en détail pourquoi nous avons besoins de ces informations).
- Le fragment shader sert exclusivement à appliquer la couleur de la ligne sur les fragments.
-=======
 Le vertex shader sert seulement à envoyer les données vers le geometry shader. De ce fait, il y a peu à dire sur ce shader.
 Le vertex shader reçoit et envoie donc les données utiles pour l’affichage
 d’une sous ligne de la polyligne, de fait elle reçoit comme information la position
@@ -443,7 +433,6 @@ d’origine et de fin de la sous-ligne en question. De plus, elle reçoit les in
 de position du point précédent de la sous-ligne et celle du point suivant la sous-ligne
 (nous expliquerons plus en détail pourquoi nous avons besoins de ces informations).
 Le fragment shader sert exclusivement à appliquer la couleur de la ligne sur les fragments.
->>>>>>> 33a55a547aedbbed4dd12e320810e25452c4d4bc
 
 Pour afficher une ligne à largeur variable nous avons deux possibilités :
 \begin{itemize}
@@ -496,7 +485,15 @@ Et finalement voici le résultat figure~\ref{fig:line}.
   \label{fig:line}
 \end{figure}
 
+\subsubsection{Difficultés rencontrées}
+Il y a eu des essais de pointillés non ajouté au projet final parce que le résultat était très décevant voir illisible,
+cela consistait en une suppression de fragments en fonction de la distance un peu comme dans la marque point, mais modulé
+de façons à répéter un motif sur le long de la ligne.
 
+\subsubsection{Gestions des animations}
+Si l'on voulait rajouter des animations, il faudrait tout simplement envoyer au vertex shader
+les informations de la ligne de départ et celle d'arrivée, et utiliser la fonction mix d'OpenGL
+sur les informations pour les interpoler.
 
 \subsection{Implémentation des marques de type polygone}
 
@@ -571,6 +568,13 @@ Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_fill} les deux polygo
   \caption{Exemple d'affichage de polygones remplis}
   \label{fig:capture_polygon_fill}
 \end{figure}
+
+\subsubsection{Difficultés rencontrées}
+Le plus grand problème de l'implémentation de cette marque c'est qu'il a fallu choisir quel type
+de polygones afficher et comment les afficher.
+
+\subsubsection{Gestions des animations}
+Les animations pouraient être implémentées de manière similaire à celle des lignes.
 
 
 \subsection{Implémentation des marques texte}
