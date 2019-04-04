@@ -1038,18 +1038,6 @@ but est que ces derniers et les attributs de la structure test soient identiques
 
 \section{Conclusion}
 
-A notre connaissance, il n'y a pas de bugs dans notre implémentation.
-
-Cependant, le comportement des calques n'est pas vraiment celui souhaité.
-Nos calques ont la capacité de comporter plusieurs type de marques mais ils ne
-fonctionneront pas correctement. C'est-à-dire qu'une marque point à la couche 0 (qui
-doit être tout devant) pourra se retrouver derrière une marque ligne qui est à la couche 1.
-La raison pour cela est que nous affichons les marques type par type puis calque par
-calque.
-Les  calques marchent cependant correctement s'ils comportent seulement des marques du même type.
-
-\section{Conclusion}
-
 Nous avons réussi le coeur de notre bibliothèque ainsi que certaines fonctionnalités
 secondaires.
 
