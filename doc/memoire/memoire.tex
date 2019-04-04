@@ -116,85 +116,97 @@ Finalement notre client nous a aussi donner un proof of concept de ce que nous d
 
 \section{Analyse des besoins}
 %% Etoffer la partie analyse des besoins
-\section{Analyse des besoins fonctionnels}
+\subsection{Analyse des besoins fonctionnels}
 
 L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque permettant d'afficher des
-\gls{marque}s \cite{VegaMarks}. Il doit notamment être capable de préciser des \gls{canaux} associés à
-ces marques : la position de la marque, sa taille, sa rotation, sa profondeur, sa couleur, sa forme,
-l'épaisseur et la couleur de son contour, son contraste, sa luminance, son rayon, ses angles, etc.
-\textit{Contrast} offrira la possibilité d'afficher les marques suivantes :
-\begin{itemize}
-    \item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
-    distance calculée en GLSL. Les marques de type Points peuvent prendre différentes formes (triangle, rectangle, diamant, trèfle, astérisque, etc.).
+\gls{marque}s \cite{VegaMarks}. Les divers types de marque sont les suivants:
+	\begin{itemize}
+	\item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
+    distance calculée en GLSL. Nous reprendrons les mêmes marques que celles du proof of concept de notre client.
+    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point,Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 			Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini, Flèche. 
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
-    (continu, tirets, pointillés...).
-    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un
+    (continu, tirets, pointillés...). 
+    \item Polygones : utilisable pour représenter des polygones pleins ou vides, où l'on appelle vide un 
     polygone dont seulement les contours sont dessinés, la couleur de remplissage du polygone plein peut être
-    différente de la couleur des contours.
+    différente de la couleur des contours. 
     \item Aires : utilisable pour représenter des polygones ayant un mode d'affichage légèrement différent
-    \cite{VegaMarks}.
+    \cite{VegaMarks}. Ces aires doivent permettre à l'utilisateur de représenter des aires sous la courbe lorsqu'il fait de la
+    visualisation de données. Ces types de marque ne sont pas le plus prioritaire à implémenter.
     \item Texte : utilisable pour représenter du texte et peut avoir différentes propriétés : italique,
     gras, centré, aligné à droite, en haut, etc.
-\end{itemize}
-
-Pour tester cette fonctionnalité, il devra y avoir des tests permettant d'afficher des marques de façon
-contrôlée et de ce fait vérifier si les marques s'affichent bien suivant leurs \gls{canaux} associés.
-
-\textit{Contrast} devra également être capable de gérer des calques, c'est-à-dire que l'utilisateur pourra
+    \end{itemize}
+\begin{itemize}
+\item L'utilisateur doit notamment être capable de préciser des \gls{canaux} associés à
+ces marques : la position de la marque, sa taille, sa rotation, sa profondeur, sa couleur, sa forme,
+l'épaisseur et la couleur de son contour, son contraste, sa luminance, son rayon, ses angles, etc.
+\item \textit{Contrast} devra également être capable de gérer des calques, c'est-à-dire que l'utilisateur pourra
 décider de placer une marque sur un certain calque et une autre marque sur un différent calque. Si ces
 marques ont la même position, l'une des deux marques cachera la seconde. Cet exemple utilise deux calques
 mais il peut y en avoir autant que l'utilisateur le souhaite.
-
-Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
+\item Une caméra simple pour visualiser la scène en 2D doit être implémentée. À priori, elle ne fait pas
 de translation, le seul paramètre qu'elle prend en compte est un niveau de zoom ainsi que la taille
 de la fenêtre d'affichage.
+\item La bibliothèque devra être implémenté de deux façons différentes. Un implémentation bas-niveau et une implémentation haut-niveau. 
+		Le bas-niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut-niveau nous
+		fournissons le moteur de rendu.
+		\begin{itemize}
+			\item Pour simplifier le rendu en OpenGL nous utiliserons \textit{luminance} \cite{luminance}, nous avons choisi cette bibliothèque
+			premièrement elle nous a été proposé par notre client et de plus c'est une des seules bibliothèque de rendu OpenGL sur Rust et celle-ci est
+			très souvent mise à jour.
+		\end{itemize}
+\item Les marques devront être animées de façon similaire à FATuM.
+	\begin{itemize}
+	\item Pour ce faire nous utiliserons un double tampon pour la visualisation, un tampon servant de tampon avant et un tampon servant de tampon arrière.
+	Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise
+	à jour est finie (c'est-à dire que l'on a une autre image à afficher).
+	\item Les deux tampons peuvent être échangés par différentes techniques notamment un simple échange : le tampon arrière devient le tampon avant et
+	inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée
+	que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu
+	lisible.
+	\item Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une
+	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
+	\end{itemize}
+\end{itemize}  
 
-Ces marques pourront également être animées. La gestion des animations sera implémentée de manière similaire
-à FATuM, c'est-à-dire avec un double tampon pour la visualisation, un tampon servant de tampon avant et un tampon servant de tampon arrière. Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise à jour est finie (c'est-à-dire que l'on a une autre image à afficher). Les deux tampons peuvent être échangés par différentes techniques notamment un simple échange : le tampon arrière devient le tampon avant et inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu lisible. Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
 
-Dans un premier temps la bibliothèque ainsi développée devra être capable d'afficher,
-à 50 images par seconde, au moins 10 fois plus d’éléments que la librairie JavaScript D3.js.
-Le but final étant que \textit{contrast} ait de meilleures performances que FATuM.
 
-\section{Analyse des besoins non fonctionnels}
+\subsection{Analyse des besoins non fonctionnels}
 
-Selon le client, il serait préférable d'implémenter les marques dans l'ordre suivant :
+L'objectif principal de ce projet est avant tout les performances.Le but est de dépasser les performances de la bibliothèque FATuM.Pour garantir
+ce besoin plusieurs choix ont été fait:
+	\begin{itemize}
+		\item Le client nous a demandé de réaliser le projet avec le langage Rust \cite{rust}, l'intérêt de ce langage est qu'il offre de très bonnes
+		performances pour l'application, comparable à du C mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
+		sans fuite mémoire ni erreur de segmentation.
+		\begin{itemize}
+			\item Nous serons obligés de réaliser du code \gls{unsafe} pour cette bibliothèques mais l'objectif et d'en faire le moins possible.
+			\begin{itemize}
+				\item Il faudra donc mettre en place une batterie de tests importante pour ces parties particulièrement sensibles.
+			\end{itemize}
+			\item Nos devrons écrire des macros afin d'éviter les doublons dans le code.
+		\end{itemize}
+		\item Le client nous demande aussi de réaliser la partie GPU à l'aide d'OpenGL. Le but est de réaliser le maximum des algorithmes de génération de 		nos marques sur GPU et donc en OpenGL afin d'épargner un maximum de calcul au processeur.
+		\begin{itemize}
+			\item Nous devrons utiliser un \gls{geom} en glsl pour les marques afin de limiter le nombre de vertices passées au GPU.
+			\item Il faudra séparer les \gls{shader}s de chaque type de marque dans plusieurs fichiers différents.
+			\item Notre client souhaite que nous utilisons une crate Rust pour compiler
+			nos shaders en GLSL, afin de construire et nous assurer de leur bonne conformité.
+			La crate en question porte le même nom que GLSL\cite{GLSL}.
+		\end{itemize}
+		\item Des benchmark devront être réaliser pour comparer les performances de notre programme aux logiciels déjà existant, principalement FATuM.
+	
+	\end{itemize}
+Le niveau de priorité de chaque besoin est le suivant :
 \begin{itemize}
-    \item Points
-    \item Lignes
-    \item Polygones
-    \item Aires
-    \item Texte
+	\item Marque Point
+	\item Marque Ligne
+	\item Calques
+	\item Animations
+	\item Marque Texte
+	\item Marque Polygone
+	\item Marque Aire
 \end{itemize}
-
-Concernant l'API de \textit{contrast}, l'utilisateur n'aura pas accès aux
-couches inférieures à la bibliothèque. Il n'aura pas accès aux types des marques,
-il décrira seulement les propriétés de la marque et \textit{contrast} déterminera
-s'il s'agit d'une marque de type point, ligne, texte, etc.
-Voici un exemple de syntaxe pour ajouter une marque de type Texte :
-
-%|addMark().set_center(0.5,0.5).set_color(Color.Blue)|\newline
-%|.set_font("ComicSansMS").set_font_size(20).text("Bonjour").show()|
-
-Notons que cette syntaxe n'est pas définitive mais cela donne une idée de la façon
-dont l'utilisateur manipule les marques.
-
-Notre client souhaite que nous utilisons une crate Rust pour compiler
-nos shaders en GLSL, afin de construire et nous assurer de leur bonne conformité.
-La crate en question porte le même nom que GLSL\cite{GLSL}.
-
-Pour atteindre les demandes de performances imposées par le client, nous allouerons les données au maximum possible sur la pile.
-La consommation mémoire n'est pas une contrainte importante pour le développement de \textit{contrast}. Tant
-que la vitesse est satisfaisante, nous n'aurons pas à optimiser au mieux la gestion de la mémoire.
-
-Nous devrons mettre en place une batterie de tests importants car ce genre de bibliothèque impose de faire
-du code \og non stable \fg{}.
-C'est-à-dire du code qui désactive les garanties de sécurité comme celle citée dans l'introduction.
-Ces tests permettront en outre de valider nos structures de données.
-Nous allons également réaliser des tests de performance afin de nous assurer que notre solution réponde bien
-aux exigences de vitesse qui nous sont fixés.
-
 \section{Description du logiciel}
 %% Parler des problèmes rencontrés au sain de l'archi
 \subsection{Organisation de l'architecture}
