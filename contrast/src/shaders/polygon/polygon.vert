@@ -6,6 +6,7 @@ layout (location = 4) in vec3 previous;
 layout (location = 5) in vec3 next;
 layout (location = 6) in float thickness;
 layout (location = 7) in vec3 polygon_centroid;
+layout (location = 8) in int fill;
 
 out vec4 v_color;
 out float v_rotation;
@@ -14,6 +15,7 @@ out vec4 v_target;
 out vec4 v_previous;
 out vec4 v_next;
 out vec3 v_centroid;
+out int v_fill;
 
 void main() {
   gl_Position = vec4(origin,1.0);
@@ -24,4 +26,5 @@ void main() {
   v_rotation = rotation;
   v_thick = thickness;
   v_centroid = polygon_centroid;
+  v_fill = fill;
 }
