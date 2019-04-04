@@ -21,7 +21,7 @@
 \addbibresource{bibli.bib}
 \makeglossaries
 
-\title{\gls{PdP} \smallbreak Mémoire }
+\title{\gls{PdP} \smallbreak Mémoire \medbreak Développement d'un moteur de rendu 2D en Rust et OpenGL4 }
 \author{Lorian Corbel \\ Camille Meyrignac \\ Maxime Pacaud \\ Nicolas Sentout}
 
 \begin{document}
@@ -105,9 +105,9 @@
 
 De nos jours, le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels 
 tout en maintenant un nombre d'image par seconde satisfaisant.
-C'est dans ce contexte que Romain Giot a proposé de réaliser un moteur de rendu en Rust, gérant les animations et dont la performance est l'objectif 
-principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont 
-supérieures à celles de bibliothèques similaires.
+C'est dans ce contexte que notre client Romain Giot a proposé de réaliser un moteur de rendu en Rust, gérant les animations et dont la performance est 
+l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les 
+performances sont supérieures à celles de bibliothèques similaires.
 
 
 \section{Travaux précédents}
@@ -220,7 +220,7 @@ Le niveau de priorité de chaque besoin est le suivant :
 	\item Marque Aire
 \end{itemize}
 
-Pour l'API, l'utilisateur devra décrire les divers propriétés de chaque marque de la façon suivante :
+Pour l'API, l'utilisateur devra décrire les diverses propriétés de chaque marque de la façon suivante :
 \begin{itemize}
     \item Pour les marques point :
 
@@ -390,7 +390,7 @@ Malheureusement, il peut arriver que la taille du tess soit dépassée. Dans ce 
 
 \begin{figure}[htp]
   \centering
-  \includegraphics[scale=0.8]{images/archi}
+  \includegraphics[scale=0.8]{images/pipeline}
   \caption{Diagramme de schématisation du pipeline}
   \label{fig:pipe}
 \end{figure}
@@ -499,7 +499,7 @@ Il y a eu des essais pour faire des lignes pointillés non ajouté au projet fin
 voir illisible. Cela consistait en une suppression de fragments en fonction de la distance un peu comme dans la marque point, 
 mais modulé de façons à répéter un motif sur le long de la ligne.
 
-\subsubsection{Gestions des animations}
+\subsubsection{Gestion des animations}
 Si l'on voulait rajouter des animations, il faudrait tout simplement envoyer au vertex shader
 les informations de la ligne de départ et celle d'arrivée, et utiliser la fonction mix d'OpenGL
 sur les informations pour les interpoler.
@@ -582,7 +582,7 @@ Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_fill} les deux polygo
 Le plus grand problème de l'implémentation de cette marque est qu'il a fallu choisir quel type
 de polygone afficher et comment les afficher.
 
-\subsubsection{Gestions des animations}
+\subsubsection{Gestion des animations}
 Les animations pouraient être implémentées de manière similaire à celle des lignes.
 
 
@@ -665,7 +665,7 @@ sous une autre clef et il pourra s'en servir.
 Nous n'allons pas détailler le shader de cette marque, il n'utilise pas de géometrie shader, fonction de distance ou autre sucrerie.
 Il ne represente pas la partie intéressante de l'implémentation. Il ne mérite donc pas que nous nous y attardions.
 
-\subsubsection{Petites subtilitées}
+\subsubsection{Petites subtilités}
 
 Il faut savoir que lorsque FreeType rastérise un glyphe, le bitmap qu'il produit a son axe Y inversé par rapport à celui de \textit{contrast}. Par défaut donc, les glyphes sont dessinés la tête en bas.
 Ce n'est pas pratique à lire vous en conviendrez. Pour ne pas compliquer les calculs de nos shaders, nous avons décidé d'inverser directement les bitmaps produits avant de les envoyer
