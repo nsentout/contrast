@@ -293,6 +293,14 @@ Ainsi nous arrivons ensuite dans le dernier shader, le fragment shader, le princ
 Cette implémentation à été choisi car grâce à ça nous n'avons besoin que d'un seul sommet pour réaliser des formes complexes, tous les traitements sont réalisés coté GPU ce qui permet un énorme gain de performance par rapport à une implémentation où l'on devrait fournir tous les sommets de notre forme avant de devoir l'afficher. C'est un gain particulièrement important pour des formes arrondis nécessitant beaucoup de sommets pour éviter l'aliasing.
 L'avantage du fragment shader c'est aussi que chaque \gls{frag} est traité de manière indépendant, il y a donc une très forte parallélisation des traitements au sein du fragment shader, parallélisation qui est la grande force des GPU.
 
+On retrouve toutes les formes pouvant être générés par nos shaders des marques point dans la figure~\ref{fig:point-marks}.
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.5]{images/point_mark}
+  \caption{Affichage de toutes les marques de type point}
+  \label{fig:point-marks}
+\end{figure}
+
 \subsection{Implémentation des marques ligne}
 \subsubsection{Les shaders utilisés}
 Pour cette marque nous avons utilisé trois types de shaders OpenGL, qui sont les même que ceux de la rubrique précédente.
