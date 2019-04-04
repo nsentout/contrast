@@ -177,7 +177,7 @@ L'objectif principal de ce projet est avant tout les performances.Le but est de 
 ce besoin plusieurs choix ont été fait:
 	\begin{itemize}
 		\item Le client nous a demandé de réaliser le projet avec le langage Rust \cite{rust}, l'intérêt de ce langage est qu'il offre de très bonnes
-		performances pour l'application, comparable à du C mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
+		performances pour l'application, comparable à du C++ mais aussi un système de sécurité de la gestion de mémoire,permettant de garantir un programme
 		sans fuite mémoire ni erreur de segmentation.
 		\begin{itemize}
 			\item Nous serons obligés de réaliser du code \gls{unsafe} pour cette bibliothèques mais l'objectif et d'en faire le moins possible.
@@ -500,6 +500,45 @@ un calque de profondeur 0 apparaîtront devant des marques appartenant à un cal
   \label{fig:calque-ex}
 \end{figure}
 
+Le code ayant produit les marques de la deuxième image est décrit au listing ~\ref{lst:code-calque}.
+
+\begin{listing}[H]
+    \caption{Morceau de code illustrant l'utilisateur des calques}
+    \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
+    
+    [...]
+    contrast.set_current_layer(2);  
+
+    contrast.add_point_mark()
+        .set_position((pos.x + 230.0, pos.y, 0.0))
+        .set_size((200.0, 200.0))
+        .set_color(Color::red())
+        .set_shape(Shape::Rectangle)
+        .get_id();
+
+    contrast.set_current_layer(1);
+
+    contrast.add_point_mark()
+        .set_position((pos.x + 270.0, pos.y + 20.0, 0.0))
+        .set_size((200.0, 200.0))
+        .set_color(Color::green())
+        .set_shape(Shape::Rectangle)
+        .get_id();
+
+    contrast.set_current_layer(0);
+
+    contrast.add_point_mark()
+        .set_position((pos.x + 310.0, pos.y + 40.0, 0.0))
+        .set_size((200.0, 200.0))
+        .set_color(Color::blue())
+        .set_shape(Shape::Rectangle)
+        .get_id();
+        
+    [...]
+    \end{minted}
+    \label{lst:code-calque}
+\end{listing}
+
 La figure~\ref{fig:calque-ex} représente deux captures d'écran de marques.
 Ces marques ont la même position et la même couleur dans les deux cas, mais nous avons échangé le calque
 de la marque rouge avec celui de la marque bleue dans la deuxième capture, mettant ainsi la marque bleue
@@ -702,27 +741,7 @@ variable qu'une seule fois.
 C'est la raison pour laquelle nous avons opté pour l'approche décrite en début de
 partie.
 
-\subsection{Bibliothèques externes utilisées}
-\subsubsection{lazy\_static}
-Nous utilisons cette bibliothèque \cite{lazy-static} une seule fois dans
-\textit{contrast} : pour déclarer le timer. Nous avons besoin qu'il soit valide pendant
-toute la durée du programme et nous voulons qu'il soit accessible partout dans le code.
-C'est ce que cette bibliothèque permet de faire : déclarer facilement des variables
-statiques en Rust.
-
-\subsubsection{rand}
-C'est une bibliothèque \cite{rand} permettant de générer des nombres aléatoirement. Nous
-l'utilisons dans le but de fournir une fonction permettant de retourner une forme
-aléatoire.
-
-\subsubsection{nalgebra}
-Nous utilisons cette bibliothèque \cite{nalgebra} uniquement pour calculer une matrice de projection orthographique.
-C'est le coeur de notre caméra 2D. C'est un calcul tout de même fastidieux alors nous considérons cette bibliothèque totalement justifiée.
-
-\subsubsection{freetype-rs et rect-packer}
-Ces deux bibliothèques sont indispensable pour implémenter la marque texte et nous l'avons expliqué pourquoi dans la section qui lui est dédié.
-
-\section{Problèmes généraux rencontrés}
+\section{Problème général rencontré}
 \subsection{Les identifiants de marques}
 
 L'utilisateur manipule des marques. Mais pour retrouver une marque existante et y
@@ -774,6 +793,26 @@ fois que l'utilisateur souhaite modifier une marque, il doit passer une référe
 de la copie dont il dispose pour que nous puissions la mettre à jour en même temps que
 le réel identifiant.
 
+\subsection{Bibliothèques externes utilisées}
+\subsubsection{lazy\_static}
+Nous utilisons cette bibliothèque \cite{lazy-static} une seule fois dans
+\textit{contrast} : pour déclarer le timer. Nous avons besoin qu'il soit valide pendant
+toute la durée du programme et nous voulons qu'il soit accessible partout dans le code.
+C'est ce que cette bibliothèque permet de faire : déclarer facilement des variables
+statiques en Rust.
+
+\subsubsection{rand}
+C'est une bibliothèque \cite{rand} permettant de générer des nombres aléatoirement. Nous
+l'utilisons dans le but de fournir une fonction permettant de retourner une forme
+aléatoire.
+
+\subsubsection{nalgebra}
+Nous utilisons cette bibliothèque \cite{nalgebra} uniquement pour calculer une matrice de projection orthographique.
+C'est le coeur de notre caméra 2D. C'est un calcul tout de même fastidieux alors nous considérons cette bibliothèque totalement justifiée.
+
+\subsubsection{freetype-rs et rect-packer}
+Ces deux bibliothèques sont indispensable pour implémenter la marque texte et nous l'avons expliqué pourquoi dans la section qui lui est dédié.
+
 \section{Analyse du fonctionnement du logiciel}
 
 \subsection{Ce qui fonctionne}
@@ -784,6 +823,13 @@ le réel identifiant.
 
 Nous avons intensivement testé la structure principale, \textit{contrast}, ainsi que toutes ses méthodes.
 L'ajout de marque dans les calques et le système d'invalidation des marques ont également subi beaucoup de tests.
+
+Le test sur l'invalidation des marques est particulièrement intéressant : nous créons
+une structure \textit{contrast}, à laquelle nous ajoutons et enlevons des éléments 
+successivement. Nous créons ensuite une autre structure \textit{contrast}, à laquelle
+nous rajoutons manuellement les marques que la première structure était censée contenir,
+la validité des marques, etc.
+Nous comparons ensuite ces deux structures. Le but est qu'elles soient parfaitement identique.
 
 Les structures de données des marques ont peu voir aucun test car leur comportement
 est plutôt trivial.
@@ -801,6 +847,24 @@ calque.
 Les  calques marchent cependant correctement s'ils comportent seulement des marques du même type.
 
 \section{Conclusion}
+
+Nous avons réussi le coeur de notre bibliothèque ainsi que certaines fonctionnalités
+secondaires.
+
+Il y a cependant des éléments manquants et extensions possibles.
+Voici une liste non-exhaustive :
+
+\begin{itemize}
+\item Les marques aires. La structure pour les stocker serait la même que pour les
+polygones mais leurs shaders seraient différents
+\item Différents modes de dessin pour les lignes : en tirets, pointillets, fléchées
+\item La gestion des polygones sécants
+\item Les animations pour toutes les marques. Actuellement, seulement les marques points
+sont animées
+\item La technique qu'utilise FATuM pour les animations, le triple buffering
+\item Des calques pouvant gérer plusieurs types de marques.
+\end{itemize}
+
 %\nocite{*}
 \printglossaries
 \printbibliography
