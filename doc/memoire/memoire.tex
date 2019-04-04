@@ -103,18 +103,25 @@
 
 \section{Résumé}
 
-De nos jours, le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels tout en maintenant un nombre d'image par seconde satisfaisant.
-C'est dans ce contexte que Romain Giot a proposé de réaliser un moteur de rendu en Rust, gérant les animations et dont la performance est l'objectif principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont supérieures à celles de bibliothèques similaires.
+De nos jours, le Big Data demande de créer des bibliothèques de visualisation de données pouvant afficher plusieurs centaines de milliers de visuels 
+tout en maintenant un nombre d'image par seconde satisfaisant.
+C'est dans ce contexte que Romain Giot a proposé de réaliser un moteur de rendu en Rust, gérant les animations et dont la performance est l'objectif 
+principal. Nous avons réalisé une bibliothèque pouvant manipuler plusieurs types de formes, supportant les animations et dont les performances sont 
+supérieures à celles de bibliothèques similaires.
 
 
 \section{Travaux précédents}
 
 Nous nous sommes basés sur deux bibliothèques afin de réaliser ce projet.
-Premièrement la bibliothèque FATuM \cite{FATuM}, une bibliothèque C++ qui se veut être un compromis entre le haut et le bas niveau. La bibliothèque donne la possibilité d'utiliser d'autres bibliothèques dont l'interface serait plus adaptée pour une utilisation de haut niveau sans avoir à se soucier de la vitesse de rendu.
+Premièrement la bibliothèque FATuM \cite{FATuM}, une bibliothèque C++ qui se veut être un compromis entre le haut et le bas niveau. La bibliothèque 
+donne la possibilité d'utiliser d'autres bibliothèques dont l'interface serait plus adaptée pour une utilisation de haut niveau sans avoir à se 
+soucier de la vitesse de rendu.
 
-La seconde bibliothèque, Vega\cite{VegaMarks}, écrite en JavaScript, est une bibliothèque visant à donner divers outils de dessin pour des bibliothèques de plus haut niveau.
+La seconde bibliothèque, Vega\cite{VegaMarks}, écrite en JavaScript, est une bibliothèque visant à donner divers outils de dessin pour des 
+bibliothèques de plus haut niveau.
 
-Finalement, notre client nous a aussi donné un proof of concept de ce que nous devions implémenter. Écrite en Rust, cette bibliothèque propose l'affichage de plusieurs types de formes que nous devions nous aussi être capable d'afficher.
+Finalement, notre client nous a aussi donné un proof of concept de ce que nous devions implémenter. Écrite en Rust, cette bibliothèque propose 
+l'affichage de plusieurs types de formes que nous devions nous aussi être capable d'afficher.
 
 \section{Analyse des besoins}
 
@@ -125,7 +132,8 @@ L'utilisateur doit être capable d'appeler des fonctions de la bibliothèque per
 	\begin{itemize}
 	\item Points : utilisable pour faire des nuages de points. La forme des points dépend d'une fonction de
     distance calculée en GLSL. Nous reprendrons les mêmes marques que celles du proof of concept de notre client.
-    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point, Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini et Flèche.
+    Ainsi les marques à implémenter seront: Rectangle, Triangle, Cercle, Point, Diamant, Donut, Pointeur (pointeur de carte ou de gps), Trèfle, Cœur, 
+Pique, Chevron, Trèfle à trois feuilles (recoupement de trois cercles), Anneau, Dièse, Croix, Astérisque, Infini et Flèche.
     \item Lignes : utilisable tel quel ou pour faire des connexions entre d'autres marques. Les lignes
     peuvent être des segments, des polylignes ou des courbes, elles peuvent aussi avoir différents types
     (continu, tirets, pointillés...).
@@ -151,24 +159,26 @@ mais il peut y en avoir autant que l'utilisateur le souhaite.
 de translation, le seul paramètre qu'elle prend en compte est un niveau de zoom ainsi que la taille
 de la fenêtre d'affichage.
 \item La bibliothèque devra être implémentée de deux façons différentes : une implémentation bas niveau et une implémentation haut niveau.
-		Le bas niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut niveau nous
-		fournissons un moteur de rendu.
+		Le bas niveau permettra à l'utilisateur d'implémenter le moteur de rendu comme il le souhaite afin de gérer le contexte OpenGL, en haut niveau 
+nous fournissons un moteur de rendu.
 		\begin{itemize}
 			\item Pour simplifier le rendu en OpenGL, nous utiliserons \textit{luminance} \cite{luminance}. Nous avons choisi cette bibliothèque
-			premièrement car elle nous a été proposée par notre client, et de plus c'est une des seules bibliothèques de rendu OpenGL sur Rust. De plus, elle a l'air très prometteuse, la version 1.0 devant arriver sous peu.
+			premièrement car elle nous a été proposée par notre client, et de plus c'est une des seules bibliothèques de rendu OpenGL sur Rust. De 
+plus, elle a l'air très prometteuse, la version 1.0 devant arriver sous peu.
 			\item En haut-niveau nous aurons aussi besoin de gérer les événements clavier.
 		\end{itemize}
 \item Les marques devront être animées de façon similaire à FATuM.
 	\begin{itemize}
 	\item Pour ce faire nous utiliserons un double tampon pour la visualisation, un tampon avant et un tampon arrière.
-	Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de mise
-	à jour est finie (c'est-à dire quand l'on a une autre image à afficher).
+	Le tampon avant est utilisé pour l'affichage et le tampon arrière est utilisé pour les modifications de l'image affichée et quand l'opération de 
+mise à jour est finie (c'est-à dire quand l'on a une autre image à afficher).
 	\item Les deux tampons peuvent être échangés par différentes techniques : le tampon arrière devient le tampon avant et
-	inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est changée
-	que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations peu
-	lisibles.
+	inversement, ou on peut utiliser une interpolation progressive des deux images stockées dans les tampons. De ce fait, l'image affichée n'est 
+changée que quand il y a une autre image prête, ce qui évite le problème de l'affichage se mettant à jour petit à petit, donnant lieu à des animations 
+peu lisibles.
 	\item Un troisième tampon peut être utilisé pour empêcher l'annulation d'une animation si l'utilisateur demande une modification pendant une
-	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine animation.
+	animation. Le troisième tampon stocke les modifications faites par l'utilisateur durant l'animation et seront utilisées pour la prochaine 
+animation.
 	\end{itemize}
 \end{itemize}
 
@@ -247,7 +257,8 @@ Pour l'API, l'utilisateur devra décrire les divers propriétés de chaque marqu
      let layer_0 = contrast.get_layer(0);
      layer_0.add_mark(m);
     \end{minted}
-    \item Pour la gestion du clavier, on aura deux fonctions, une qui permet une action sur une marque spécifique, une autre qui le permet sur un ensemble
+    \item Pour la gestion du clavier, on aura deux fonctions permettant d'opérer sur des marques, une qui permet une action 
+sur une marque spécifique, une autre qui le permet sur un ensemble
     de marques :
     \begin{minted}[bgcolor=back, tabsize=4, fontfamily=courier, fontsize=\small, xleftmargin=5pt, xrightmargin=5pt]{rust}
     // m1 est une marque
@@ -377,7 +388,6 @@ manque de temps et par facilité d'implémentation. \textit{contrast} peut prév
 
 Malheureusement, il peut arriver que la taille du tess soit dépassée. Dans ce cas nous n'avons plus le choix, le tess doit être détruit et ré-alloué en conséquence avec une dimension plus convenable.
 
-
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.8]{images/archi}
@@ -485,9 +495,9 @@ Et finalement voici le résultat figure~\ref{fig:line}.
 \end{figure}
 
 \subsubsection{Difficultés rencontrées}
-Il y a eu des essais de pointillés non ajouté au projet final parce que le résultat était très décevant voir illisible,
-cela consistait en une suppression de fragments en fonction de la distance un peu comme dans la marque point, mais modulé
-de façons à répéter un motif sur le long de la ligne.
+Il y a eu des essais pour faire des lignes pointillés non ajouté au projet final parce que le résultat était très décevant , 
+voir illisible. Cela consistait en une suppression de fragments en fonction de la distance un peu comme dans la marque point, 
+mais modulé de façons à répéter un motif sur le long de la ligne.
 
 \subsubsection{Gestions des animations}
 Si l'on voulait rajouter des animations, il faudrait tout simplement envoyer au vertex shader
@@ -569,8 +579,8 @@ Nous pouvons voir sur ce schéma ~\ref{fig:capture_polygon_fill} les deux polygo
 \end{figure}
 
 \subsubsection{Difficultés rencontrées}
-Le plus grand problème de l'implémentation de cette marque c'est qu'il a fallu choisir quel type
-de polygones afficher et comment les afficher.
+Le plus grand problème de l'implémentation de cette marque est qu'il a fallu choisir quel type
+de polygone afficher et comment les afficher.
 
 \subsubsection{Gestions des animations}
 Les animations pouraient être implémentées de manière similaire à celle des lignes.
@@ -989,26 +999,44 @@ Ces deux bibliothèques sont indispensable pour implémenter la marque texte et 
 
 \section{Analyse du fonctionnement du logiciel}
 
-\subsection{Ce qui fonctionne}
+\subsection{Fonctionnement}
 
-\subsection{Ce qui ne fonctionne pas}
+Les fonctionnalités décrites dans la section \og Description du logiciel \fg{} 
+fonctionnent.
+
+Cependant, le comportement des calques n'est pas vraiment celui souhaité.
+Nos calques ont la capacité de comporter plusieurs type de marques mais ils ne
+fonctionneront pas correctement. C'est-à-dire qu'une marque point à la couche 0 (qui
+doit être tout devant) pourra se retrouver derrière une marque ligne qui est à la couche 1.
+La raison pour cela est que nous affichons les marques type par type puis calque par
+calque.
+Les  calques marchent cependant correctement s'ils comportent uniquement des marques du même type.
 
 \subsection{Tests et résultats}
 
-Nous avons intensivement testé la structure principale, \textit{contrast}, ainsi que toutes ses méthodes.
-L'ajout de marque dans les calques et le système d'invalidation des marques ont également subi beaucoup de tests.
+Nous avons intensivement testé la structure principale, \textit{contrast}, ainsi que 
+toutes ses méthodes.
+L'ajout de marque dans les calques et le système d'invalidation des marques ont 
+également subi beaucoup de tests.
+Nous avons également testé les rares fonctions contenant du code unsafe.
 
 Le test sur l'invalidation des marques est particulièrement intéressant : nous créons
-une structure \textit{contrast}, à laquelle nous ajoutons et enlevons des éléments
-successivement. Nous créons ensuite une autre structure \textit{contrast}, à laquelle
-nous rajoutons manuellement les marques que la première structure était censée contenir,
-la validité des marques, etc.
-Nous comparons ensuite ces deux structures. Le but est qu'elles soient parfaitement identique.
+une structure test \textit{contrast}, à laquelle nous ajoutons et enlevons des éléments
+successivement, comme le ferait un utilisateur lambda. 
+Nous créons ensuite des attributs de \textit{contrast}, manuellement, censés 
+représentés l'état dans lequel notre structure test devrait se trouver.
+Par manuellement, j'entends que nous ne modifions pas les attributs en utilisant les
+méthodes publiques mais que nous les créons directement dans l'état qu'est censée être
+notre structure de test.
 
-Les structures de données des marques ont peu voir aucun test car leur comportement
-est plutôt trivial.
+Nous comparons ensuite la structure de test avec les attributs créés manuellement. Le 
+but est que ces derniers et les attributs de la structure test soient identiques. 
 
 \subsection{Les bugs}
+
+À notre connaissance, il n'y a pas de bug dans notre implémentation.
+
+\section{Conclusion}
 
 A notre connaissance, il n'y a pas de bugs dans notre implémentation.
 
