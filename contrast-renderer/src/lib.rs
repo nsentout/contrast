@@ -31,7 +31,6 @@ use contrast::properties::Color;
 use std::collections::LinkedList;
 use std::collections::HashMap;
 use std::iter;
-use std::time::Instant;
 
 pub use luminance_glfw::event::Key;
 
@@ -291,10 +290,6 @@ impl<'a> LumiRenderer<'a>
     /// Main loop.
     pub fn run(&mut self)
     {
-        let mut time = Instant::now();
-        let mut frames = 0;
-        let mut elapsed;
-
         'app: loop
         {
             // Execute events.
@@ -355,16 +350,6 @@ impl<'a> LumiRenderer<'a>
             let commands = &self.font_cmmds;
             let textures = &self.font_atlas;
             let blending = Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement));
-
-            // FPS process.
-            elapsed = time.elapsed();
-            frames += 1;
-
-            if elapsed.as_secs() >= 1 {
-                println!("FPS : {}", frames);
-                time = Instant::now();
-                frames = 0;
-            }
 
             // Main Pipeline.
             ctx.pipeline_builder().pipeline(back_buffer, *self.background_color.to_array(), |pipeline, shd_gate|

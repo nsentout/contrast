@@ -16,7 +16,6 @@ use contrast_renderer::LumiRenderer;
 use contrast::properties::Position;
 use contrast::properties::Rotation;
 use contrast::properties::Size;
-use contrast::marks::linemark::LineMode;
 use contrast::marks::pointmark::Shape;
 use contrast::marks::mark::Mark;
 use contrast::MarkMacro;
@@ -62,7 +61,6 @@ fn main()
         .add_point((pos.x, pos.y, pos.z))
         .set_thickness(20.0)
         .set_color((1.0, 0.0, 0.0, 1.0))
-        .set_mode(LineMode::Linear)
         .get_id();
 
     let mut _mark_triangle = contrast.add_point_mark().set_position(pos)

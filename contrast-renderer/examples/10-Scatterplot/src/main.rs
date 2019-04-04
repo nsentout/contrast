@@ -11,7 +11,6 @@ use contrast_renderer::LumiRenderer;
 use contrast_renderer::Key;
 use contrast::MarkMacro;
 use contrast::marks::pointmark::Shape;
-use contrast::marks::linemark::LineMode;
 use contrast::markscontainer::Contrast;
 use contrast::properties::MarkId;
 use contrast::properties::Color;
@@ -70,15 +69,13 @@ fn main()
         .add_point(bottom_left)
         .add_point((WINDOW_WIDTH as f32 - bottom_left.x, bottom_left.y, 0.0))
         .set_thickness(3.0)
-        .set_color(Color::black())
-        .set_mode(LineMode::Linear);
+        .set_color(Color::black());
 
     contrast.add_line_mark()
         .add_point(bottom_left)
         .add_point((bottom_left.x, WINDOW_HEIGHT as f32 - bottom_left.y, 0.0))
         .set_thickness(3.0)
-        .set_color(Color::black())
-        .set_mode(LineMode::Linear);
+        .set_color(Color::black());
 
     // Add text to name the axis
     contrast.register_font("fatty", "../../crimson-b.ttf", 40);
