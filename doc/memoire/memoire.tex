@@ -261,8 +261,8 @@ Côté GLSL, nous disposons de shaders différents pour chaque type de marque. T
 \subsection{Pipeline graphique}
 
 Le pipeline graphique est la succession des opérations généralement réalisées par une carte graphique nécessaires au rendu d’un lot de données. Nous allons essayer de vous décrire en détails comment
-fonctionne celui de Contrast. Nous allons nous appuyez sur OpenGL comme exemple mais c'est quelque d'assez générique à toute les API graphiques. Ce seront donc les mêmes concepts pour
-Vulkan ou DirectX seulement probablement sous un autre dénomination.
+fonctionne celui de Contrast. Appuyons nous sur OpenGL comme exemple mais c'est quelque chose d'assez générique à toute les API graphiques. Ce seront donc les mêmes concepts pour
+Vulkan ou DirectX seulement probablement sous une autre dénomination.
 
 OpenGL ne sait dessiner que des primitives de dessins très simple comme le point (literalement un pixel) ou le triangle. Toute forme complexe est impossible sans traitement.
 Ces primitives sont définies par des vertices, se sont des sommets qui portent différents attributs. Nous avons par exemple deux attributs très utilisés qui sont la position et
@@ -287,15 +287,36 @@ C'est un appels \og draw \fg{} qui s'occupe de cette tâche, il prend en paramè
 La quantité de primitive à dessiner est très importante. C'est une optimisation primordiale à maximiser. Il faut diminuer le plus possible la communication entre le CPU et le GPU pour
 qu'au final le GPU soit quasiment autonome et puisse sous-traiter le plus possible le travail du CPU pour que celui-ci se concentre sur des tâches plus importantes.
 C'est pour cette raison qu'on essaye d'afficher le plus de primitives d'un seul appels pour que le CPU n'est seulement à communiquer ses appels draw à chaque frame pour dessiner entièrement
-un rendu. Cette méthode s'appelle le batching, c'est-à-dire le dessins par lot.
+un rendu. Cette méthode s'appelle le batching, c'est-à-dire le dessin par lot.
 
 Ainsi la couche bas niveau de Contrast possède un shader program et un format de vertex par type de marque qui seront transmis à la couche haut niveau pour afficher les marques.
-Pou rappel, c'est la partie haut niveau qui s'occupe d'OpenGL car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique si besoin. Les vertices que nous avons
+Pour rappel, c'est la partie haut niveau qui s'occupe d'OpenGL car selon notre cahier des besoins, on doit pouvoir utiliser une autre API graphique. Les vertices que nous avons
 défini dans nos shaders sont complètement générique pour fonctionner sur une autre implémentation.
 
 \subsection{Architecture haut niveau}
 
+L'architecture haut niveau est chargé de ce que nous appelons le \og renderer \fg{}. Il dépend entièrement de l'API graphique que nous allons utiliser ainsi que la bibliothèque
+de fenêtrage qui gère aussi les événements clavier/souris. Cette couche haut niveau contient Contrast et masque toute la partie rendu.
+Nous avons implémenter un renderer avec la crate \textbf{luminance} \cite{luminance}, comme demandé par notre client dans un de ses besoins.
+Luminance utilise OpenGL mais ne nous donne pas accès directement à toutes ses fonctions, il nous a falu respecter la nomenclature et l'utilisation de l'API de Luminance.
 
+Notre architecture haut niveau est donc intrésequement lié à Luminance. La seule implémentation interessante dans cette partie est comment nous avons mis à jour les VBOs que Luminance cache
+en réalité derrière ce qu'elle appelle un \og Tess \fg{}. C'est en réalité un VBO + VAO.
+
+Le tess de Luminance prend à sa création une taille fixe de vertices (la capacité du VBO). Cette taille ne peut pas être modifié par la suite. Comment faire dans ce cas pour afficher davantage
+de marque lors de l'exécution ?
+
+Nous avons réglé le problème plustôt simplement, il nous a suffit d'allouer un tess de grande taille, initialisé completement à zéro. Les vertices des marques à afficher sont ajouter
+progressivement dans le tess et pour afficher nous appelons le \og draw \fg{} du batching uniquement sur la partie remplis du tess. Nous n'avons pas poussé la gestion de la mémoire très loin.
+Si par exemple on veut supprimer une marque, nous demandons à Contrast l'intégralité des vertices de ce type de marque et nous les recopions en tête de tableau. Reste à prendre en compte la
+nouvelle taille et la mise à jour est terminé. Nous avons choisi de faire la même chose pour l'ajout, la suppresion ou simplement pour mettre à jour une marque. C'est essentiellement à cause d'un
+manque de temps et par facilité d'implémentation. Contrast peut prevenir notre renderer à l'aide de flags pour savoir qu'elle tess il doit mettre à jour.
+
+Malheureusement il peut arriver que la taille du tess soit dépassé. Dans ce cas nous n'avons plus le choix, le tess doit être détruit et re-allouer en conséquence d'une dimension plus convenable.
+
+%TODO NICOLAS il faut PARLER => "bind juste des actions à des touches"
+
+%% TODO ce schema doit être mis à jour
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.8]{images/pipeline}
@@ -381,7 +402,7 @@ Et finalement voici le résultat figure~\ref{fig:line}.
 
 
 \subsection{Implémentation des marques texte}
-%TODO ceci n'est pas complet
+
 Un texte est une marque qui permet d'afficher une chaîne de caractère dont le contenu, la police, la taille de police ainsi que la position et couleur sont définis par l'utilisateur.
 
 \subsubsection{Généralité}
@@ -632,7 +653,7 @@ aléatoire.
 Nous utilisons cette bibliothèque \cite{nalgebra} uniquement pour calculer une matrice de projection orthographique.
 C'est le coeur de notre caméra 2D. C'est un calcul tout de même fastidieux alors nous considérons cette bibliothèque totalement justifiée.
 
-\subsubsection{freetype-rs et rect\_packer}
+\subsubsection{freetype-rs et rect-packer}
 Ces deux bibliothèques sont indispensable pour implémenter la marque texte et nous l'avons expliqué pourquoi dans la section qui lui est dédié.
 
 \textbf{TODO: les autres crates}
