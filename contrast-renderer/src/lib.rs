@@ -89,7 +89,7 @@ const DUMMY_POINT: &'static VertexPoint = &([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.
                                             [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], 0.0, 0.0, 0.0, 0.0, 0u32, 0u32, 0.0);
 const DUMMY_LINE: &'static VertexSubLine = &([0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0);
 const DUMMY_TEXT: &'static VertexText = &([0.0, 0.0, 0.0], [0.0, 0.0]);
-const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0,0.0,0.0]);
+const DUMMY_POLYGON: &'static VertexPolygon = &([0.0, 0.0, 0.0, 0.0], 0.0, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0, [0.0,0.0,0.0], 0);
 
 /// Manage a Tess to update & resize.
 /// Its size is initialized wider to update its unused vertices gradually on demand.

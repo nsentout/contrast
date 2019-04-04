@@ -8,7 +8,7 @@ use mark_macro_derive::MarkMacro;
 /// This is the type that will receive our shaders when we will want to render our polygon marks.
 /// We could describe it this way to be more clear :
 /// type VertexPolygon = (color, rotation, origin).                                             //centroid
-pub type VertexPolygon = ([f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, [f32; 3]);
+pub type VertexPolygon = ([f32; 4], f32, [f32; 3], [f32; 3], [f32; 3], [f32; 3], f32, [f32; 3], u32);
 
 /// This is the structure that describes the marks of type Polygon.
 /// Each type of mark share some properties, that is an id and a color.
@@ -22,7 +22,7 @@ pub struct PolygonMark {
     pub(crate) rotation : f32,
     pub(crate) points : Vec<Position>,
     pub(crate) stroke_width : f32,
-    pub(crate) fill : bool /*TODO */
+    pub(crate) fill : bool
 }
 
 impl PolygonMark {
@@ -41,6 +41,8 @@ impl PolygonMark {
 
     /// Compute the centroid of the polygon
     /// and return the centroid
+    /// which is the arithmetic mean position
+    /// of all the points in the polygon
     fn compute_centroid(&self) -> Position {
         let mut centroid = Position { x : 0.0, y : 0.0, z : 0.0 };
         for point in self.points.clone() {
@@ -61,12 +63,16 @@ impl PolygonMark {
             let mut previous = self.points[0];
             let mut origin = self.points[0];
             let mut target = self.points[0];
+            let mut fill_mode = 0;
+            if self.fill  {
+                fill_mode = 1;
+            }
             for next in self.points.clone() {
                 if previous == origin { previous = self.points[self.points.len()-1]}
                 let vl : VertexPolygon = (*self.color.to_array(),
                 self.rotation,
                 *origin.to_array(), *target.to_array(), *previous.to_array(),
-                *next.to_array(),self.stroke_width, *centroid.to_array());
+                *next.to_array(),self.stroke_width, *centroid.to_array(), fill_mode);
                 vertex_polygon.push(vl);
                 previous = origin;
                 origin = target;
@@ -75,12 +81,14 @@ impl PolygonMark {
             let vl : VertexPolygon = (*self.color.to_array(),
             self.rotation,
             *origin.to_array(), *target.to_array(),
-            *previous.to_array(), *self.points[0].to_array(),self.stroke_width, *centroid.to_array());
+            *previous.to_array(), *self.points[0].to_array(),self.stroke_width,
+            *centroid.to_array(), fill_mode);
             vertex_polygon.push(vl);
             let vr : VertexPolygon = (*self.color.to_array(),
             self.rotation,
             *self.points[self.points.len()-1].to_array(), *self.points[0].to_array(),
-            *self.points[self.points.len()-2].to_array(), *self.points[1].to_array(),self.stroke_width, *centroid.to_array());
+            *self.points[self.points.len()-2].to_array(), *self.points[1].to_array(),
+            self.stroke_width, *centroid.to_array(), fill_mode);
             vertex_polygon.push(vr);
         }
         vertex_polygon
@@ -116,4 +124,9 @@ impl PolygonMark {
         &mut self.points
     }
 
+    pub fn get_points(&mut self) -> &mut Vec<Position> {
+        &mut self.points
+    }
+    // TODO : ajouter getter
 }
+//TODO : ajouter test compute_centroid
